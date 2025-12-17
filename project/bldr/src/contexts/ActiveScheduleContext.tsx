@@ -24,6 +24,9 @@ interface ActiveScheduleContextType {
   userSchedules: Schedule[];
   setUserSchedules: (schedules: Schedule[]) => void;
 
+  // Loading state for fetching schedules
+  isLoadingSchedules: boolean;
+
   // Helper functions
   loadSchedule: (scheduleId: string) => void;
   clearActiveSchedule: () => void;
@@ -84,6 +87,9 @@ export const ActiveScheduleProvider = ({
     []
   );
 
+  // Loading state for schedules
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
+
   // Load a specific schedule by ID
   const loadSchedule = (scheduleId: string) => {
     const schedule = userSchedules.find((s) => s.id === scheduleId);
@@ -136,6 +142,7 @@ export const ActiveScheduleProvider = ({
       return;
     }
 
+    setIsLoadingSchedules(true);
     try {
       const response = await fetch("/api/getUserSchedules", {
         method: "GET",
@@ -155,6 +162,8 @@ export const ActiveScheduleProvider = ({
     } catch (error) {
       console.error("Error fetching user schedules:", error);
       setUserSchedules([]);
+    } finally {
+      setIsLoadingSchedules(false);
     }
   };
 
@@ -200,6 +209,7 @@ export const ActiveScheduleProvider = ({
         setActiveSemester,
         userSchedules,
         setUserSchedules,
+        isLoadingSchedules,
         loadSchedule,
         clearActiveSchedule,
         addScheduleToList,

@@ -1,10 +1,10 @@
 /**
  * ClassSearch.tsx
- * 
+ *
  * A comprehensive class search component that allows users to search for courses,
  * view search results, and manage their selected classes. This is the primary
  * interface for building a schedule.
- * 
+ *
  * Features:
  * - Real-time search with debounced API calls (400ms delay)
  * - Floating dropdown with search results using Floating UI
@@ -15,7 +15,7 @@
  * - Ability to remove classes from both sections
  * - Grouped display of class sections by course
  * - Accessible with ARIA roles and keyboard support
- * 
+ *
  * @component
  */
 "use client";
@@ -47,14 +47,15 @@ import {
 import { SearchedClass } from "@/types";
 import { Trash2, Search } from "lucide-react";
 import Class from "./Class";
+import Loader from "./Loader";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 
 /**
  * ClassSearch Component
- * 
+ *
  * Provides the main interface for searching and selecting classes.
  * Manages both the search functionality and the display of selected classes.
- * 
+ *
  * @returns {JSX.Element} The class search panel with search input and accordion sections
  */
 export default function ClassSearch() {
@@ -66,22 +67,27 @@ export default function ClassSearch() {
 
   // Search results from the API
   const [classes, setClasses] = useState<SearchedClass[]>([]);
-  
+
+  // Loading state for search
+  const [isLoading, setIsLoading] = useState(false);
+
   // Current search input value
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Controls visibility of the search results dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  
+
   // Currently highlighted item index for keyboard navigation
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  
+
   // Refs for DOM elements used by Floating UI
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLUListElement | null>(null);
-  
+
   // Dynamic positioning styles for the dropdown
-  const [dropdownPosStyle, setDropdownPosStyle] = useState<React.CSSProperties | undefined>(undefined);
+  const [dropdownPosStyle, setDropdownPosStyle] = useState<
+    React.CSSProperties | undefined
+  >(undefined);
 
   /**
    * Floating UI configuration for the search results dropdown.
@@ -121,8 +127,10 @@ export default function ClassSearch() {
     const delay = setTimeout(() => {
       if (!searchQuery.trim()) {
         setClasses([]);
+        setIsLoading(false);
         return;
       }
+      setIsLoading(true);
       fetch("/api/searchclass", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,8 +140,12 @@ export default function ClassSearch() {
         .then((d) => {
           setClasses(d || []);
           setHighlightedIndex(0); // Reset highlight on new results
+          setIsLoading(false);
         })
-        .catch(() => setClasses([]));
+        .catch(() => {
+          setClasses([]);
+          setIsLoading(false);
+        });
     }, 400);
     return () => clearTimeout(delay);
   }, [searchQuery]);
@@ -151,10 +163,10 @@ export default function ClassSearch() {
   // Ensure the highlighted item is visible in the dropdown (keyboard navigation)
   useEffect(() => {
     if (!dropdownRef.current || !dropdownOpen) return;
-    const listItems = dropdownRef.current.querySelectorAll('li');
+    const listItems = dropdownRef.current.querySelectorAll("li");
     const highlightedItem = listItems[highlightedIndex];
     if (highlightedItem) {
-      highlightedItem.scrollIntoView({ block: 'nearest' });
+      highlightedItem.scrollIntoView({ block: "nearest" });
     }
   }, [highlightedIndex, dropdownOpen]);
 
@@ -163,7 +175,7 @@ export default function ClassSearch() {
    * Toggles the class in the selectedClasses list:
    * - If already selected, removes it
    * - If not selected, adds it to the beginning of the list
-   * 
+   *
    * @param {string} uuid - The unique identifier of the selected class
    */
   function handleDropdownSelect(uuid: string) {
@@ -263,7 +275,7 @@ export default function ClassSearch() {
           </div>
 
           <FloatingPortal>
-            {classes.length > 0 && dropdownOpen && (
+            {dropdownOpen && searchQuery.trim() && (
               <ul
                 ref={(el) => {
                   refs.setFloating(el);
@@ -276,34 +288,44 @@ export default function ClassSearch() {
                 role="listbox"
                 aria-label="Search results"
               >
-                <AnimatePresence mode="popLayout">
-                  {classes.map((c, index) => (
-                    <motion.li
-                      key={c.uuid}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      onMouseDown={async (e) => {
-                        e.preventDefault();
-                        await handleDropdownSelect(c.uuid);
-                        setDropdownOpen(false);
-                      }}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                      role="option"
-                      aria-selected={index === highlightedIndex}
-                      className={`p-2 text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
-                        index === highlightedIndex
-                          ? "bg-[#181818]"
-                          : "hover:bg-[#181818]"
-                      }`}
-                    >
-                      <strong>
-                        {c.dept} {c.code}
-                      </strong>{" "}
-                      - {c.title}
-                    </motion.li>
-                  ))}
-                </AnimatePresence>
+                {isLoading ? (
+                  <li className="p-4 flex items-center justify-center">
+                    <Loader />
+                  </li>
+                ) : classes.length === 0 ? (
+                  <li className="p-4 text-sm text-[#888888] text-center font-inter">
+                    No results found
+                  </li>
+                ) : (
+                  <AnimatePresence mode="popLayout">
+                    {classes.map((c, index) => (
+                      <motion.li
+                        key={c.uuid}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        onMouseDown={async (e) => {
+                          e.preventDefault();
+                          await handleDropdownSelect(c.uuid);
+                          setDropdownOpen(false);
+                        }}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        role="option"
+                        aria-selected={index === highlightedIndex}
+                        className={`p-2 text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
+                          index === highlightedIndex
+                            ? "bg-[#181818]"
+                            : "hover:bg-[#181818]"
+                        }`}
+                      >
+                        <strong>
+                          {c.dept} {c.code}
+                        </strong>{" "}
+                        - {c.title}
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                )}
               </ul>
             )}
           </FloatingPortal>
