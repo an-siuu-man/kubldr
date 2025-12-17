@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   UserPlus,
   Info,
+  Undo2,
 } from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
 import ClassSearch from "@/components/ClassSearch";
@@ -32,6 +33,7 @@ export default function Builder() {
   const {
     clearDraft,
     draftSchedule,
+    setDraftSchedule,
     draftScheduleName,
     draftSemester,
     draftYear,
@@ -312,6 +314,27 @@ export default function Builder() {
     return null;
   }
 
+  const handleRevertChanges = () => {
+    if (!activeSchedule) {
+      // No saved schedule to revert to - just clear the draft
+      clearDraft();
+      toast.info("Draft cleared", {
+        style: { ...toastStyle },
+        duration: 2000,
+        icon: <Undo2 className="h-5 w-5" />,
+      });
+      return;
+    }
+
+    // Revert to the last saved state from activeSchedule
+    setDraftSchedule(activeSchedule.classes || []);
+    toast.success("Reverted to last saved state", {
+      style: { ...toastStyle },
+      duration: 2000,
+      icon: <Undo2 className="h-5 w-5" />,
+    });
+  };
+
   return (
     <div className="flex min-h-screen bg-[#080808]">
       {/* Sidebar */}
@@ -407,86 +430,98 @@ export default function Builder() {
             {/* Calendar Section */}
             <div className="flex flex-col items-end">
               <CalendarEditor />
-              <div className="w-full flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-                <div className="text-sm flex flex-wrap gap-2 items-center text-[#A8A8A8] font-inter">
-                  <motion.div
-                    layout
-                    initial={false}
-                    transition={{ layout: { duration: 0.22, ease: "easeOut" } }}
-                    className="bg-white text-gray-950 rounded-full py-1 px-3 inline-flex items-center"
-                  >
-                    <span className="md:whitespace-nowrap">
-                      Total Credit Hours:
-                    </span>
-                    <b className="ml-1">{creditHours}</b>
-                  </motion.div>
+              {activeSchedule && (
+                <div className="w-full flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                  <div className="text-sm flex flex-wrap gap-2 items-center text-[#A8A8A8] font-inter">
+                    <motion.div
+                      layout
+                      initial={false}
+                      transition={{
+                        layout: { duration: 0.22, ease: "easeOut" },
+                      }}
+                      className="bg-white text-gray-950 rounded-full py-1 px-3 inline-flex items-center"
+                    >
+                      <span className="md:whitespace-nowrap">
+                        Total Credit Hours:
+                      </span>
+                      <b className="ml-1">{creditHours}</b>
+                    </motion.div>
 
-                  <AnimatePresence mode="wait">
-                    {schedulesMatch && (
-                      <motion.div
-                        key="saved-badge"
-                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.22 }}
-                        className="bg-green-800/50 border border-green-600/50  text-green-300 rounded-full py-1 px-3"
-                      >
-                        Saved schedule
-                      </motion.div>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {schedulesMatch && (
+                        <motion.div
+                          key="saved-badge"
+                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                          transition={{ duration: 0.22 }}
+                          className="bg-green-800/50 border border-green-600/50  text-green-300 rounded-full py-1 px-3"
+                        >
+                          Saved schedule
+                        </motion.div>
+                      )}
 
-                    {!schedulesMatch && (
-                      <motion.div
-                        key="unsaved-badge"
-                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.22 }}
-                        className="rounded-full py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 "
-                      >
-                        Unsaved changes
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      {!schedulesMatch && (
+                        <motion.div
+                          key="unsaved-badge"
+                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                          transition={{ duration: 0.22 }}
+                          className="rounded-full py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 "
+                        >
+                          Unsaved changes
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto md:justify-end">
+                    <Button
+                      onClick={handleRevertChanges}
+                      className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px]"
+                      disabled={schedulesMatch}
+                    >
+                      <Undo2 className="h-4 w-4 mr-2" />
+                      Undo Changes
+                    </Button>
+                    <Button
+                      onClick={handleSaveSchedule}
+                      className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px]"
+                      disabled={isSaving || schedulesMatch}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Spinner />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          {!schedulesMatch ? (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Schedule
+                            </>
+                          ) : (
+                            <>
+                              <CheckCheck className="text-green-600" />
+                              Synced
+                            </>
+                          )}
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleClearSchedule}
+                      variant="destructive"
+                      className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px]"
+                      disabled={draftSchedule.length === 0}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear Schedule
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto md:justify-end">
-                  <Button
-                    onClick={handleSaveSchedule}
-                    className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px]"
-                    disabled={isSaving || schedulesMatch}
-                  >
-                    {isSaving ? (
-                      <>
-                        <Spinner />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        {!schedulesMatch ? (
-                          <>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Schedule
-                          </>
-                        ) : (
-                          <>
-                            <CheckCheck className="text-green-600" />
-                            Synced
-                          </>
-                        )}
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={handleClearSchedule}
-                    variant="destructive"
-                    className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px]"
-                    disabled={draftSchedule.length === 0}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Clear Schedule
-                  </Button>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
