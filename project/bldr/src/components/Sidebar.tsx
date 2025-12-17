@@ -1,10 +1,10 @@
 /**
  * Sidebar.tsx
- * 
+ *
  * The main navigation sidebar component for the schedule builder application.
  * Provides schedule management functionality including creating, renaming,
  * deleting, and switching between schedules.
- * 
+ *
  * Features:
  * - Collapsible sidebar with smooth animations
  * - Create new schedules with custom names
@@ -14,7 +14,7 @@
  * - User account information display
  * - Upgrade prompt for guest users
  * - Responsive design with toggle button
- * 
+ *
  * @component
  */
 "use client";
@@ -62,17 +62,17 @@ import Link from "next/link";
 
 /**
  * Sidebar Component
- * 
+ *
  * Renders the collapsible sidebar with schedule management controls.
  * Integrates with multiple contexts for authentication, active schedule,
  * and schedule builder state management.
- * 
+ *
  * @returns {JSX.Element} The sidebar navigation panel
  */
 export function Sidebar() {
   // Authentication context for user info and session
   const { user, session } = useAuth();
-  
+
   // Active schedule context for managing user's schedules
   const {
     activeSchedule,
@@ -80,6 +80,7 @@ export function Sidebar() {
     activeSemester,
     setActiveSemester,
     userSchedules,
+    isLoadingSchedules,
     loadSchedule,
     addScheduleToList,
     updateScheduleInList,
@@ -89,26 +90,26 @@ export function Sidebar() {
   // Schedule builder context for draft schedule management
   const { clearDraft, draftSchedule, draftScheduleName, setDraftScheduleName } =
     useScheduleBuilder();
-    
+
   // Sidebar open/closed state
   const [open, setOpen] = useState(true);
-  
+
   // Loading state for async operations (e.g., creating schedules)
   const [loading, setLoading] = useState(false);
-  
+
   // Input value for new schedule name
   const [newScheduleName, setNewScheduleName] = useState("");
-  
+
   // Track which schedule is being hovered for showing action buttons
   const [hoveredScheduleId, setHoveredScheduleId] = useState<string | null>(
     null
   );
-  
+
   // Track which schedule is in rename mode
   const [renamingScheduleId, setRenamingScheduleId] = useState<string | null>(
     null
   );
-  
+
   // Input value for renaming a schedule
   const [renameValue, setRenameValue] = useState("");
 
@@ -122,7 +123,7 @@ export function Sidebar() {
   /**
    * Creates a new schedule via API and adds it to the local state.
    * Defaults to "Untitled" if no name is provided.
-   * 
+   *
    * @param {string} newScheduleName - The name for the new schedule
    */
   const handleCreateSchedule = async (newScheduleName: string) => {
@@ -171,7 +172,7 @@ export function Sidebar() {
   /**
    * Renames an existing schedule via API.
    * Updates both the backend and local state on success.
-   * 
+   *
    * @param {string} scheduleId - The ID of the schedule to rename
    * @param {string} newName - The new name for the schedule
    */
@@ -237,7 +238,7 @@ export function Sidebar() {
   /**
    * Initiates the rename mode for a schedule.
    * Sets the current name as the initial input value.
-   * 
+   *
    * @param {any} schedule - The schedule object to rename
    */
   const startRenaming = (schedule: any) => {
@@ -257,7 +258,7 @@ export function Sidebar() {
    * Deletes a schedule after user confirmation.
    * Shows a toast with confirm/cancel buttons instead of browser dialog.
    * On confirmation, removes from both backend and local state.
-   * 
+   *
    * @param {string} scheduleId - The ID of the schedule to delete
    */
   const handleDeleteSchedule = async (scheduleId: string) => {
@@ -360,9 +361,9 @@ export function Sidebar() {
               onClick={toggleSidebar}
             />
           </div>
-              </div>
+        </div>
 
-        <div className="main-content flex-grow flex flex-col justify-between">
+        <div className="main-content grow flex flex-col justify-between">
           {/* Main Sidebar Content */}
           <AnimatePresence>
             {open && (
@@ -427,7 +428,11 @@ export function Sidebar() {
 
                       {/* Schedule list */}
                       <ul className="list-none overflow-y-scroll overflow-x-hidden scrollbar-hidden max-h-[300px]">
-                        {userSchedules.length === 0 ? (
+                        {isLoadingSchedules ? (
+                          <div className="flex items-center justify-center gap-2 py-8">
+                            <Spinner className="size-6" /> Loading schedules...
+                          </div>
+                        ) : userSchedules.length === 0 ? (
                           <p className="text-sm text-gray-400">
                             No schedules found.
                           </p>

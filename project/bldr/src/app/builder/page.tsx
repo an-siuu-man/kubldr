@@ -352,7 +352,7 @@ export default function Builder() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="mb-6 bg-blue-900/40 border border-blue-600/50 rounded-lg p-4 flex items-center justify-between"
+              className="mb-6 bg-blue-900/40 border mt-4 border-blue-600/50 rounded-lg p-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <Info className="h-5 w-5 text-white shrink-0" />
