@@ -34,6 +34,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
@@ -112,6 +122,11 @@ export function Sidebar() {
 
   // Input value for renaming a schedule
   const [renameValue, setRenameValue] = useState("");
+
+  // Track which schedule is being deleted (for AlertDialog)
+  const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(
+    null
+  );
 
   /**
    * Toggles the sidebar between open and closed states.
@@ -256,12 +271,12 @@ export function Sidebar() {
 
   /**
    * Deletes a schedule after user confirmation.
-   * Shows a toast with confirm/cancel buttons instead of browser dialog.
+   * Shows an AlertDialog for confirmation.
    * On confirmation, removes from both backend and local state.
    *
    * @param {string} scheduleId - The ID of the schedule to delete
    */
-  const handleDeleteSchedule = async (scheduleId: string) => {
+  const handleDeleteSchedule = (scheduleId: string) => {
     if (!session?.access_token) {
       toast.error("You must be logged in to delete schedules", {
         style: toastStyle,
@@ -269,72 +284,49 @@ export function Sidebar() {
       return;
     }
 
-    // Show a toast confirmation UI instead of browser confirm
-    const performDelete = async () => {
-      try {
-        const res = await fetch("/api/deleteSchedule", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ scheduleId }),
-        });
+    // Open the AlertDialog by setting the schedule ID
+    setDeletingScheduleId(scheduleId);
+  };
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to delete schedule");
-        }
+  /**
+   * Confirms the deletion of a schedule.
+   * Called when user clicks "Delete" in the AlertDialog.
+   */
+  const confirmDelete = async () => {
+    if (!deletingScheduleId || !session?.access_token) return;
 
-        // Remove from local context
-        removeScheduleFromList(scheduleId);
-        setActiveSchedule(null);
-        setActiveSemester("");
-        clearDraft();
-        toast.success("Schedule deleted", {
-          duration: 2000,
-          style: toastStyle,
-        });
-      } catch (err: any) {
-        console.error("Error deleting schedule:", err);
-        toast.error(err?.message || "Failed to delete schedule", {
-          style: toastStyle,
-        });
+    try {
+      const res = await fetch("/api/deleteSchedule", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ scheduleId: deletingScheduleId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete schedule");
       }
-    };
 
-    const id = toast(
-      <div className="flex flex-col gap-2">
-        <p className="font-inter text-white">
-          Delete this schedule? This action cannot be undone.
-        </p>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={async () => {
-              toast.dismiss(id);
-              await performDelete();
-            }}
-            className="font-dmsans"
-          >
-            Confirm
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => toast.dismiss(id)}
-            className="font-dmsans"
-          >
-            Cancel
-          </Button>
-        </div>
-      </div>,
-      {
-        duration: Infinity,
-        icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
-      }
-    );
+      // Remove from local context
+      removeScheduleFromList(deletingScheduleId);
+      setActiveSchedule(null);
+      setActiveSemester("");
+      clearDraft();
+      toast.success("Schedule deleted", {
+        duration: 2000,
+        style: toastStyle,
+      });
+    } catch (err: any) {
+      console.error("Error deleting schedule:", err);
+      toast.error(err?.message || "Failed to delete schedule", {
+        style: toastStyle,
+      });
+    } finally {
+      setDeletingScheduleId(null);
+    }
   };
 
   return (
@@ -608,6 +600,35 @@ export function Sidebar() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation AlertDialog */}
+      <AlertDialog
+        open={deletingScheduleId !== null}
+        onOpenChange={(open) => !open && setDeletingScheduleId(null)}
+      >
+        <AlertDialogContent className="bg-[#1a1a1a] border-[#404040]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#fafafa] font-figtree">
+              Delete Schedule?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#888888] font-inter">
+              This action cannot be undone. This will permanently delete this
+              schedule from your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="font-dmsans border-[#404040] hover:bg-[#2a2a2a]">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive/60 hover:bg-destructive/70 text-white border-red-200 font-dmsans"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -91,7 +91,7 @@ export default function RootLayout({
             <ActiveScheduleProvider>
               <ScheduleBuilderProvider>
                 {children}
-                <Toaster />
+                <Toaster position="top-right" />
               </ScheduleBuilderProvider>
             </ActiveScheduleProvider>
           </AuthProvider>

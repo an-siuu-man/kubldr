@@ -1,10 +1,10 @@
 /**
  * CalendarEditor.tsx
- * 
+ *
  * A visual calendar component that displays class sections in a weekly grid format.
  * This component renders classes as colored blocks positioned according to their
  * scheduled days and times, providing an intuitive view of the user's schedule.
- * 
+ *
  * Features:
  * - Weekly calendar grid (Monday-Friday, 8AM-8PM)
  * - Dynamic positioning of class blocks based on start time and duration
@@ -12,7 +12,7 @@
  * - Tooltip on hover showing detailed class information (instructor, room, days, ID)
  * - Animated transitions for adding/removing classes
  * - Responsive design for different screen sizes
- * 
+ *
  * @component
  */
 "use client";
@@ -27,25 +27,46 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { Trash2 } from "lucide-react";
 
 /**
  * CalendarEditor Component
- * 
+ *
  * Renders a weekly calendar grid displaying the user's draft schedule.
  * Each class section is displayed as a colored block with its position
  * calculated based on the class's day(s) and time slot.
- * 
+ *
  * returns {JSX.Element} The calendar grid with positioned class blocks
  */
 const CalendarEditor = () => {
   // Access the draft schedule data from the ScheduleBuilder context
-  const { draftSchedule, draftScheduleName } = useScheduleBuilder();
+  const { draftSchedule, draftScheduleName, removeClassFromDraft } =
+    useScheduleBuilder();
 
   // Days of the week to display as column headers
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  
+
   // Hour slots from 8 AM to 8 PM (13 hours total)
   const hours = Array.from({ length: 13 }, (_, i) => 8 + i);
+
+  /**
+   * Handles removing a class section from the draft schedule
+   * @param cls - The class section to remove
+   */
+  const handleRemoveSection = (cls: ClassSection) => {
+    const index = draftSchedule.findIndex(
+      (item: ClassSection) => item.uuid === cls.uuid
+    );
+    if (index !== -1) {
+      removeClassFromDraft(index);
+    }
+  };
 
   return (
     <div
@@ -117,11 +138,6 @@ const CalendarEditor = () => {
                               const offset = (startTime - hour) * baseRowHeight;
                               const height = duration * baseRowHeight;
 
-                              /**
-                               * Color palette for class blocks.
-                               * Colors are pastel shades for good readability with dark text.
-                               * Each class gets a consistent color based on its dept+code hash.
-                               */
                               const colors = [
                                 "#f5d2d2", // soft pink
                                 "#efd8c1", // peach
@@ -137,11 +153,6 @@ const CalendarEditor = () => {
                                 "#efc1d8", // rose
                               ];
 
-                              /**
-                               * Generate a deterministic color index from the class code.
-                               * Uses a simple hash function to ensure the same class
-                               * always gets the same color across renders.
-                               */
                               const classcode = (
                                 `${cls.dept} ${cls.code}` || ""
                               ).toUpperCase();
@@ -154,80 +165,94 @@ const CalendarEditor = () => {
                               const colorIndex = Math.abs(hash) % colors.length;
 
                               return (
-                                <TooltipProvider key={idx}>
-                                  <Tooltip delayDuration={200}>
-                                    <TooltipTrigger asChild>
-                                      <motion.div
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden`}
-                                        style={{
-                                          top: `${offset}px`,
-                                          height: `${height}px`,
-                                          backgroundColor: colors[colorIndex],
-                                        }}
-                                      >
-                                        <div className="font-bold text-xs font-dmsans truncate w-full">
-                                          {cls.dept} {cls.code} ({cls.component}
-                                          )
-                                        </div>
-                                      </motion.div>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                      className="font-figtree"
-                                      side="top"
-                                      style={{
-                                        borderTopWidth: "2px",
-                                        borderColor: colors[colorIndex],
-                                      }}
+                                <ContextMenu key={idx}>
+                                  <ContextMenuTrigger>
+                                    <TooltipProvider>
+                                      <Tooltip delayDuration={200}>
+                                        <TooltipTrigger asChild>
+                                          <motion.div
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden `}
+                                            style={{
+                                              top: `${offset}px`,
+                                              height: `${height}px`,
+                                              backgroundColor:
+                                                colors[colorIndex],
+                                            }}
+                                          >
+                                            <div className="font-bold text-xs font-dmsans truncate w-full">
+                                              {cls.dept} {cls.code} (
+                                              {cls.component})
+                                            </div>
+                                          </motion.div>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                          className="font-figtree"
+                                          side="top"
+                                          style={{
+                                            borderTopWidth: "2px",
+                                            borderColor: colors[colorIndex],
+                                          }}
+                                        >
+                                          <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              {/* <p className="text-sm font-bold text-slate-100 truncate">
+                                                {cls.dept} {cls.code} <span className="font-normal text-slate-300">({cls.component})</span>
+                                              </p> */}
+                                            </div>
+
+                                            <p className="text-xs text-slate-300">
+                                              <span className="font-semibold text-slate-200">
+                                                Instructor:{" "}
+                                              </span>
+                                              <span className="text-slate-100">
+                                                {cls.instructor || "Staff"}
+                                              </span>
+                                            </p>
+
+                                            <p className="text-xs text-slate-300">
+                                              <span className="font-semibold text-slate-200">
+                                                Room:{" "}
+                                              </span>
+                                              <span className="text-slate-100">
+                                                {cls.room || "TBA"}
+                                              </span>
+                                            </p>
+
+                                            <div className="flex items-center text-xs text-slate-300">
+                                              <p className="mr-4">
+                                                <span className="font-semibold text-slate-200">
+                                                  ID{" "}
+                                                </span>
+                                                <span className="text-slate-100">
+                                                  #{cls.classID}
+                                                </span>
+                                              </p>
+                                              <p>
+                                                <span className="font-semibold text-slate-200">
+                                                  Days{" "}
+                                                </span>
+                                                <span className="text-slate-100">
+                                                  {cls.days}
+                                                </span>
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </ContextMenuTrigger>
+                                  <ContextMenuContent className=" bg-[#2a2a2a] border-[#404040]">
+                                    <ContextMenuItem
+                                      className="text-destructive font-dmsans focus:bg-[#404040] focus:text-destructive cursor-pointer"
+                                      onClick={() => handleRemoveSection(cls)}
                                     >
-                                      <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                          {/* <p className="text-sm font-bold text-slate-100 truncate">
-                                            {cls.dept} {cls.code} <span className="font-normal text-slate-300">({cls.component})</span>
-                                          </p> */}
-                                        </div>
-
-                                        <p className="text-xs text-slate-300">
-                                          <span className="font-semibold text-slate-200">
-                                            Instructor:{" "}
-                                          </span>
-                                          <span className="text-slate-100">
-                                            {cls.instructor || "Staff"}
-                                          </span>
-                                        </p>
-
-                                        <p className="text-xs text-slate-300">
-                                          <span className="font-semibold text-slate-200">
-                                            Room:{" "}
-                                          </span>
-                                          <span className="text-slate-100">
-                                            {cls.room || "TBA"}
-                                          </span>
-                                        </p>
-
-                                        <div className="flex items-center text-xs text-slate-300">
-                                          <p className="mr-4">
-                                            <span className="font-semibold text-slate-200">
-                                              ID{" "}
-                                            </span>
-                                            <span className="text-slate-100">
-                                              #{cls.classID}
-                                            </span>
-                                          </p>
-                                          <p>
-                                            <span className="font-semibold text-slate-200">
-                                              Days{" "}
-                                            </span>
-                                            <span className="text-slate-100">
-                                              {cls.days}
-                                            </span>
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                      <Trash2 className="mr-1 h-4 text-destructive" />
+                                      Remove Section
+                                    </ContextMenuItem>
+                                  </ContextMenuContent>
+                                </ContextMenu>
                               );
                             })}
                         </td>
