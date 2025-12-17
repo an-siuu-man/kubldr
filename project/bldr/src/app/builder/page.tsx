@@ -512,8 +512,7 @@ export default function Builder() {
                     </Button>
                     <Button
                       onClick={handleClearSchedule}
-                      variant="destructive"
-                      className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px]"
+                      className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer w-full md:w-auto max-w-[600px]"
                       disabled={draftSchedule.length === 0}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
