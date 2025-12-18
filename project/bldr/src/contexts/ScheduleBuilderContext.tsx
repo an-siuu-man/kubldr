@@ -386,6 +386,17 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     [permutations, setDraftSchedule]
   );
 
+  // Sync permutation index to match a given schedule (without changing draft)
+  const syncPermutationIndex = useCallback(
+    (schedule: ClassSection[]) => {
+      if (permutations.length === 0) return;
+      const index = findPermutationIndex(schedule, permutations);
+      setPermutationIndex(index);
+      savePermutationsToStorage(permutations, index, prevDraftHashRef.current);
+    },
+    [permutations, findPermutationIndex]
+  );
+
   // Helper functions
   const checkTimeConflict = (newClass: any, existingClasses: any[]) => {
     const newDays = parseDays(newClass.days);
@@ -637,6 +648,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         nextPermutation,
         prevPermutation,
         goToPermutation,
+        syncPermutationIndex,
         generateSchedulePermutations,
       }}
     >

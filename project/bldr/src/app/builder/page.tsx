@@ -41,6 +41,7 @@ export default function Builder() {
     existingScheduleId,
     setIsEditingExisting,
     setExistingScheduleId,
+    syncPermutationIndex,
   } = useScheduleBuilder();
   const {
     activeSchedule,
@@ -328,7 +329,10 @@ export default function Builder() {
     }
 
     // Revert to the last saved state from activeSchedule
-    setDraftSchedule(activeSchedule.classes || []);
+    const savedClasses = activeSchedule.classes || [];
+    setDraftSchedule(savedClasses);
+    // Sync the permutation index to match the saved schedule
+    syncPermutationIndex(savedClasses);
     toast.success("Reverted to last saved state", {
       style: { ...toastStyle },
       duration: 2000,
@@ -484,7 +488,7 @@ export default function Builder() {
                     <Button
                       onClick={handleRevertChanges}
                       className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px] text-xs lg:text-sm px-3 lg:px-4 py-2"
-                      disabled={schedulesMatch}
+                      disabled={schedulesMatch || isSaving}
                     >
                       <Undo2 className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
                       Undo
