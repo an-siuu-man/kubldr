@@ -332,13 +332,13 @@ export function Sidebar() {
   return (
     <div
       className={`${
-        open ? "mr-[360px]" : "mr-[90px]"
+        open ? "mr-[325px]" : "mr-[90px]"
       } z-45 transition-all duration-300`}
     >
       <div
         className={`sidebar mr-2 flex flex-col justify-between rounded-tr-2xl rounded-br-2xl fixed top-0 left-0 h-screen transition-all duration-300 ${
           open
-            ? "min-w-[350px] max-w-[350px] bg-[#1a1a1a]"
+            ? "min-w-[315px] max-w-[315px] bg-[#1a1a1a]"
             : "bg-transparent min-w-20 max-w-20"
         } overflow-hidden p-5`}
       >
@@ -406,7 +406,7 @@ export function Sidebar() {
                           onClick={() => {
                             handleCreateSchedule(newScheduleName);
                           }}
-                          className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans text-md"
+                          className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans"
                         >
                           {loading ? (
                             <>
@@ -452,7 +452,7 @@ export function Sidebar() {
                                   onMouseLeave={() =>
                                     setHoveredScheduleId(null)
                                   }
-                                  className={`flex justify-between items-center text-sm text-[#fafafa] font-inter my-2 rounded-md ${
+                                  className={`flex justify-between items-center text-xs text-[#fafafa] font-inter my-2 rounded-md ${
                                     activeSchedule?.id === schedule.id
                                       ? "bg-[#555] font-bold"
                                       : "hover:bg-[#333]"

@@ -1,10 +1,10 @@
 /**
  * Class.tsx
- * 
+ *
  * A component that displays detailed information about a specific class/course,
  * including all available sections. Users can click on a section to add it
  * to their draft schedule.
- * 
+ *
  * Features:
  * - Fetches and displays class information from the API on mount
  * - Shows course title, description, and department/code
@@ -15,7 +15,7 @@
  *   - Seat availability with color-coded indicators
  * - Disables sections with no available seats
  * - Animated loading state while fetching data
- * 
+ *
  * @component
  * @param {ClassProps} props - Contains uuid, classcode, and dept for the class
  */
@@ -35,27 +35,27 @@ import { timeToDecimal, calculateDuration } from "@/lib/timeUtils";
 
 /**
  * Class Component
- * 
+ *
  * Displays a class card with all its sections. Fetches class details
  * from the API and allows users to add sections to their schedule.
- * 
+ *
  * @param {ClassProps} props - The class properties (uuid, classcode, dept)
  * @returns {JSX.Element} The class card with sections list
  */
 export default function Class(props: ClassProps) {
   // Access the schedule builder context to add classes
   const { addClassToDraft } = useScheduleBuilder();
-  
+
   // Local state for tracking selected classes (for UI feedback)
   const [selectedClasses, setSelectedClasses] = useState<any>({});
-  
+
   // State to hold the fetched class information from the API
   const [classInfo, setClassInfo] = useState<ClassInfoResponse>({ data: [] });
 
   /**
    * Handles when a user clicks on a class section to add it to their schedule.
    * Combines section data with parent class data and adds to the draft schedule.
-   * 
+   *
    * @param {ClassSection} section - The selected section's data
    * @param {ClassData} classData - The parent class data (dept, code, title)
    */
@@ -83,7 +83,7 @@ export default function Class(props: ClassProps) {
   /**
    * Fetches detailed class information from the API.
    * Retrieves all sections for the specified department and course code.
-   * 
+   *
    * @param {string} dept - Department code (e.g., "EECS")
    * @param {string} code - Course code (e.g., "581")
    */
@@ -121,13 +121,13 @@ export default function Class(props: ClassProps) {
           }}
           exit={{ scale: 0.6, opacity: 0 }}
           key={props.uuid}
-          className="flex flex-col p-2 mt-2 mb-6 rounded-md text-[#fafafa] border-2 max-w-[420px] border-[#404040] shadow-md justify-start items-center"
+          className="flex flex-col p-2 mt-2 mb-6 rounded-md text-[#fafafa] border-2 max-w-[340px] lg:max-w-[378px] xl:max-w-[400px] border-[#404040] shadow-md justify-start items-center"
         >
-          <h1 className="font-dmsans text-lg font-bold self-start">
+          <h1 className="font-dmsans text-base font-bold self-start">
             {classInfo.data[0].dept} {classInfo.data[0].code}:{" "}
             {classInfo.data[0].title}
           </h1>
-          <p className="text-sm text-[#b0b0b0] font-inter self-start">
+          <p className="text-xs text-[#b0b0b0] font-inter self-start">
             {classInfo.data[0].description || "No description available."}
           </p>
           {classInfo.data[0].sections.map((section: ClassSection) => (
@@ -136,14 +136,14 @@ export default function Class(props: ClassProps) {
               key={section.uuid}
               onClick={() => handleSectionClick(section, classInfo.data[0])}
               className={
-                `w-full font-inter rounded-md mt-2 bg-[#181818] transition duration-100 px-3  text-left` +
+                `w-full font-inter rounded-md mt-2 bg-[#181818] transition duration-100 px-2  text-left` +
                 ((section.seats_available ?? 0) > 0
                   ? " cursor-pointer hover:bg-[#232323]"
                   : " cursor-default opacity-60")
               }
             >
-              <div className="flex flex-row w-full justify-between gap-4 items-start my-1">
-                <div className="flex flex-row gap-4 items-start">
+              <div className="flex flex-row w-full justify-between gap-3 items-start my-1">
+                <div className="flex flex-row gap-3 items-start">
                   <div className="flex flex-col">
                     <span className="font-semibold">#{section.classID}</span>
                     <span className="text-xs text-[#a8a8a8] self-center">

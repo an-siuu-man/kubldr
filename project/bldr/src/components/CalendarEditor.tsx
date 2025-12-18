@@ -69,10 +69,7 @@ const CalendarEditor = () => {
   };
 
   return (
-    <div
-      className="relative flex justify-center items-center my-5 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full"
-      style={{ height: "600px" }}
-    >
+    <div className="relative flex justify-center items-center my-5 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[90%] lg:max-w-[85%] xl:max-w-[1100px] mx-auto h-[500px] lg:h-[550px] xl:h-[600px]">
       <div className="w-full h-full overflow-hidden">
         <AnimatePresence>
           {draftScheduleName && draftSchedule.length > 0 ? (
@@ -93,7 +90,8 @@ const CalendarEditor = () => {
                         key={day}
                         className="text-center font-semibold font-figtree p-1 md:p-2 text-xs md:text-sm"
                       >
-                        {day}
+                        <span className="hidden md:inline">{day}</span>
+                        <span className="md:hidden">{day.substring(0, 2)}</span>
                       </th>
                     ))}
                   </tr>
@@ -238,6 +236,9 @@ const CalendarEditor = () => {
                                                 </span>
                                               </p>
                                             </div>
+                                            <p className="text-slate-400">
+                                              Right click for more options
+                                            </p>
                                           </div>
                                         </TooltipContent>
                                       </Tooltip>
