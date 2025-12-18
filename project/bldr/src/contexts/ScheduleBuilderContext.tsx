@@ -1,15 +1,38 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { timeToDecimal } from "@/lib/timeUtils";
 import { parseDays } from "@/lib/timeUtils";
 import { toast } from "sonner";
-import { AlertTriangle, AlertCircle, Check, Repeat } from "lucide-react";
+import {
+  AlertTriangle,
+  AlertCircle,
+  Check,
+  Repeat,
+  Shuffle,
+} from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
 import { ActiveScheduleProvider } from "@/contexts/ActiveScheduleContext";
 import { Trash2 } from "lucide-react";
+import { ClassSection } from "@/types";
+import {
+  getUniqueClassesFromDraft,
+  generatePermutations,
+  createDraftHash,
+  savePermutationsToStorage,
+  loadPermutationsFromStorage,
+  clearPermutationsFromStorage,
+} from "@/lib/permutationUtils";
+
 const ScheduleBuilderContext = createContext<any>(undefined);
 
 export const ScheduleBuilderProvider = ({ children }: any) => {
@@ -71,6 +94,16 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     null
   );
 
+  // Permutation browsing state
+  const [permutations, setPermutations] = useState<ClassSection[][]>([]);
+  const [permutationIndex, setPermutationIndex] = useState<number>(0);
+  const [isGeneratingPermutations, setIsGeneratingPermutations] =
+    useState<boolean>(false);
+  const [allSectionsCache, setAllSectionsCache] = useState<
+    Map<string, ClassSection[]>
+  >(new Map());
+  const prevDraftHashRef = useRef<string>("");
+
   // Try to read the active schedule from ActiveScheduleContext. If the
   // provider isn't present higher in the tree, the hook will throw; we
   // catch that and treat it as "no active schedule available" so this
@@ -118,7 +151,14 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         localStorage.removeItem("draftYear");
         localStorage.removeItem("isEditingExisting");
         localStorage.removeItem("existingScheduleId");
+        // Clear permutation storage
+        clearPermutationsFromStorage();
       }
+
+      // Clear permutation state
+      setPermutations([]);
+      setPermutationIndex(0);
+      setAllSectionsCache(new Map());
     }
 
     // Update the ref for next comparison
@@ -142,6 +182,220 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     setIsEditingExisting(true);
     setExistingScheduleId(activeSchedule.id || null);
   }, [activeSchedule?.id]);
+
+  // Load permutations from localStorage on mount
+  useEffect(() => {
+    const stored = loadPermutationsFromStorage();
+    if (stored) {
+      setPermutations(stored.permutations);
+      setPermutationIndex(stored.currentIndex);
+      prevDraftHashRef.current = stored.draftHash;
+    }
+  }, []);
+
+  // Helper function to check if two schedules are equivalent (same sections)
+  const areSchedulesEquivalent = useCallback(
+    (schedule1: ClassSection[], schedule2: ClassSection[]): boolean => {
+      if (schedule1.length !== schedule2.length) return false;
+      const uuids1 = new Set(schedule1.map((s) => s.uuid));
+      const uuids2 = new Set(schedule2.map((s) => s.uuid));
+      if (uuids1.size !== uuids2.size) return false;
+      for (const uuid of uuids1) {
+        if (!uuids2.has(uuid)) return false;
+      }
+      return true;
+    },
+    []
+  );
+
+  // Find the index of a schedule in the permutations list
+  const findPermutationIndex = useCallback(
+    (schedule: ClassSection[], permutationsList: ClassSection[][]): number => {
+      for (let i = 0; i < permutationsList.length; i++) {
+        if (areSchedulesEquivalent(schedule, permutationsList[i])) {
+          return i;
+        }
+      }
+      return 0; // Default to 0 if not found
+    },
+    [areSchedulesEquivalent]
+  );
+
+  // Fetch all sections for a class from the API
+  const fetchAllSectionsForClass = useCallback(
+    async (dept: string, code: string): Promise<ClassSection[]> => {
+      const classKey = `${dept}-${code}`;
+
+      // Check cache first
+      if (allSectionsCache.has(classKey)) {
+        return allSectionsCache.get(classKey) || [];
+      }
+
+      try {
+        const response = await fetch("/api/getClassInfo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subject: `${dept} ${code}` }),
+        });
+
+        if (!response.ok) {
+          console.error(`Failed to fetch sections for ${classKey}`);
+          return [];
+        }
+
+        const data = await response.json();
+        if (!data.success || !data.data || data.data.length === 0) {
+          return [];
+        }
+
+        // Map the sections to include dept, code, and title
+        const sections: ClassSection[] = data.data[0].sections.map(
+          (section: any) => ({
+            ...section,
+            dept: data.data[0].dept,
+            code: data.data[0].code,
+            title: data.data[0].title,
+          })
+        );
+
+        // Cache the result
+        setAllSectionsCache((prev) => new Map(prev).set(classKey, sections));
+
+        return sections;
+      } catch (error) {
+        console.error(`Error fetching sections for ${classKey}:`, error);
+        return [];
+      }
+    },
+    [allSectionsCache]
+  );
+
+  // Generate permutations when draft schedule changes
+  const generateSchedulePermutations = useCallback(async () => {
+    if (draftSchedule.length === 0) {
+      setPermutations([]);
+      setPermutationIndex(0);
+      clearPermutationsFromStorage();
+      return;
+    }
+
+    const currentDraftHash = createDraftHash(draftSchedule);
+
+    // If the unique classes haven't changed, no need to regenerate
+    if (
+      currentDraftHash === prevDraftHashRef.current &&
+      permutations.length > 0
+    ) {
+      return;
+    }
+
+    setIsGeneratingPermutations(true);
+
+    try {
+      const uniqueClasses = getUniqueClassesFromDraft(draftSchedule);
+
+      // Fetch all sections for each unique class
+      const allSections = new Map<string, ClassSection[]>();
+
+      await Promise.all(
+        uniqueClasses.map(async (cls) => {
+          const sections = await fetchAllSectionsForClass(cls.dept, cls.code);
+          allSections.set(cls.classKey, sections);
+        })
+      );
+
+      // Generate permutations
+      const newPermutations = generatePermutations(allSections, uniqueClasses);
+
+      // Find the index of the current draft in the permutations
+      const currentIndex = findPermutationIndex(draftSchedule, newPermutations);
+
+      setPermutations(newPermutations);
+      setPermutationIndex(currentIndex);
+      prevDraftHashRef.current = currentDraftHash;
+
+      // Save to localStorage
+      savePermutationsToStorage(
+        newPermutations,
+        currentIndex,
+        currentDraftHash
+      );
+
+      if (newPermutations.length > 1) {
+        toast.success(
+          `Found ${newPermutations.length} valid schedule combinations`,
+          {
+            style: toastStyle,
+            duration: 2000,
+            icon: <Shuffle className="h-5 w-5" />,
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error generating permutations:", error);
+    } finally {
+      setIsGeneratingPermutations(false);
+    }
+  }, [
+    draftSchedule,
+    permutations.length,
+    fetchAllSectionsForClass,
+    findPermutationIndex,
+  ]);
+
+  // Trigger permutation generation when draft schedule changes
+  useEffect(() => {
+    // Debounce the generation to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      generateSchedulePermutations();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [draftSchedule]);
+
+  // Navigate to next permutation
+  const nextPermutation = useCallback(() => {
+    if (permutations.length <= 1) return;
+
+    const newIndex = (permutationIndex + 1) % permutations.length;
+    setPermutationIndex(newIndex);
+    setDraftSchedule(permutations[newIndex]);
+    savePermutationsToStorage(permutations, newIndex, prevDraftHashRef.current);
+  }, [permutations, permutationIndex, setDraftSchedule]);
+
+  // Navigate to previous permutation
+  const prevPermutation = useCallback(() => {
+    if (permutations.length <= 1) return;
+
+    const newIndex =
+      (permutationIndex - 1 + permutations.length) % permutations.length;
+    setPermutationIndex(newIndex);
+    setDraftSchedule(permutations[newIndex]);
+    savePermutationsToStorage(permutations, newIndex, prevDraftHashRef.current);
+  }, [permutations, permutationIndex, setDraftSchedule]);
+
+  // Jump to a specific permutation
+  const goToPermutation = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= permutations.length) return;
+
+      setPermutationIndex(index);
+      setDraftSchedule(permutations[index]);
+      savePermutationsToStorage(permutations, index, prevDraftHashRef.current);
+    },
+    [permutations, setDraftSchedule]
+  );
+
+  // Sync permutation index to match a given schedule (without changing draft)
+  const syncPermutationIndex = useCallback(
+    (schedule: ClassSection[]) => {
+      if (permutations.length === 0) return;
+      const index = findPermutationIndex(schedule, permutations);
+      setPermutationIndex(index);
+      savePermutationsToStorage(permutations, index, prevDraftHashRef.current);
+    },
+    [permutations, findPermutationIndex]
+  );
 
   // Helper functions
   const checkTimeConflict = (newClass: any, existingClasses: any[]) => {
@@ -353,6 +607,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     setDraftSchedule([]);
     setIsEditingExisting(false);
     // setExistingScheduleId(null);
+    // Clear permutations when draft is cleared
+    setPermutations([]);
+    setPermutationIndex(0);
+    clearPermutationsFromStorage();
   };
 
   const loadExistingScheduleIntoDraft = (schedule: any) => {
@@ -383,6 +641,15 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         removeClassFromDraft,
         clearDraft,
         loadExistingScheduleIntoDraft,
+        // Permutation browsing
+        permutations,
+        permutationIndex,
+        isGeneratingPermutations,
+        nextPermutation,
+        prevPermutation,
+        goToPermutation,
+        syncPermutationIndex,
+        generateSchedulePermutations,
       }}
     >
       {children}

@@ -25,6 +25,7 @@ import toastStyle from "@/components/ui/toastStyle";
 import ClassSearch from "@/components/ClassSearch";
 import { Sidebar } from "@/components/Sidebar";
 import CalendarEditor from "@/components/CalendarEditor";
+import PermutationBrowser from "@/components/PermutationBrowser";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 
@@ -40,6 +41,7 @@ export default function Builder() {
     existingScheduleId,
     setIsEditingExisting,
     setExistingScheduleId,
+    syncPermutationIndex,
   } = useScheduleBuilder();
   const {
     activeSchedule,
@@ -327,7 +329,10 @@ export default function Builder() {
     }
 
     // Revert to the last saved state from activeSchedule
-    setDraftSchedule(activeSchedule.classes || []);
+    const savedClasses = activeSchedule.classes || [];
+    setDraftSchedule(savedClasses);
+    // Sync the permutation index to match the saved schedule
+    syncPermutationIndex(savedClasses);
     toast.success("Reverted to last saved state", {
       style: { ...toastStyle },
       duration: 2000,
@@ -431,8 +436,8 @@ export default function Builder() {
             <div className="flex flex-col items-end">
               <CalendarEditor />
               {activeSchedule && (
-                <div className="w-full flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-                  <div className="text-xs lg:text-sm flex flex-wrap gap-2 items-center text-[#A8A8A8] font-inter">
+                <div className="w-full flex flex-row justify-between gap-3 mt-4">
+                  <div className="text-xs lg:text-sm flex gap-2 items-center text-[#A8A8A8] font-inter">
                     <motion.div
                       layout
                       initial={false}
@@ -457,7 +462,7 @@ export default function Builder() {
                           transition={{ duration: 0.22 }}
                           className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-1 px-2 lg:px-3 text-xs lg:text-sm"
                         >
-                          Saved schedule
+                          Saved
                         </motion.div>
                       )}
 
@@ -470,19 +475,23 @@ export default function Builder() {
                           transition={{ duration: 0.22 }}
                           className="rounded-full py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-xs lg:text-sm"
                         >
-                          Unsaved changes
+                          Unsaved
                         </motion.div>
                       )}
                     </AnimatePresence>
+                  </div>
+                  {/* Permutation Browser - appears when multiple combinations are available */}
+                  <div className="w-full flex justify-center my-2">
+                    <PermutationBrowser />
                   </div>
                   <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto md:justify-end">
                     <Button
                       onClick={handleRevertChanges}
                       className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px] text-xs lg:text-sm px-3 lg:px-4 py-2"
-                      disabled={schedulesMatch}
+                      disabled={schedulesMatch || isSaving}
                     >
                       <Undo2 className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                      Undo Changes
+                      Undo
                     </Button>
                     <Button
                       onClick={handleSaveSchedule}
@@ -499,7 +508,7 @@ export default function Builder() {
                           {!schedulesMatch ? (
                             <>
                               <Save className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                              Save Schedule
+                              Save
                             </>
                           ) : (
                             <>
@@ -516,7 +525,7 @@ export default function Builder() {
                       disabled={draftSchedule.length === 0}
                     >
                       <Trash2 className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                      Clear Schedule
+                      Clear
                     </Button>
                   </div>
                 </div>
