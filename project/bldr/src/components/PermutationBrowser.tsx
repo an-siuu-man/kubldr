@@ -88,7 +88,7 @@ export default function PermutationBrowser() {
             </TooltipTrigger>
             <TooltipContent side="top" className="font-inter">
               <p className="text-xs">
-                Browse through {permutations.length} valid schedule combinations
+                Browse through {permutations.length} schedule combinations
               </p>
             </TooltipContent>
           </Tooltip>

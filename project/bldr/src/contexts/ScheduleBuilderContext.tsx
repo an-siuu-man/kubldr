@@ -321,16 +321,6 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         currentDraftHash
       );
 
-      if (newPermutations.length > 1) {
-        toast.success(
-          `Found ${newPermutations.length} valid schedule combinations`,
-          {
-            style: toastStyle,
-            duration: 2000,
-            icon: <Shuffle className="h-5 w-5" />,
-          }
-        );
-      }
     } catch (error) {
       console.error("Error generating permutations:", error);
     } finally {

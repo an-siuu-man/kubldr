@@ -33,7 +33,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Trash2 } from "lucide-react";
+import { Trash2, AlertTriangle } from "lucide-react";
 
 /**
  * CalendarEditor Component
@@ -171,7 +171,7 @@ const CalendarEditor = () => {
                                           <motion.div
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden `}
+                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden`}
                                             style={{
                                               top: `${offset}px`,
                                               height: `${height}px`,
@@ -179,9 +179,15 @@ const CalendarEditor = () => {
                                                 colors[colorIndex],
                                             }}
                                           >
-                                            <div className="font-bold text-xs font-dmsans truncate w-full">
-                                              {cls.dept} {cls.code} (
-                                              {cls.component})
+                                            <div className="flex items-center justify-between font-bold text-xs font-dmsans truncate w-full">
+                                              <>
+                                                {cls.dept} {cls.code} (
+                                                {cls.component})
+                                              </>
+                                              {(cls.seats_available ?? 0) <=
+                                                0 && (
+                                                <AlertTriangle className="inline-block mr-1 h-5 text-red-600" />
+                                              )}
                                             </div>
                                           </motion.div>
                                         </TooltipTrigger>
@@ -236,6 +242,13 @@ const CalendarEditor = () => {
                                                 </span>
                                               </p>
                                             </div>
+                                            {
+                                              (cls.seats_available ?? 0) <= 0 &&
+                                              <p>
+                                              <span className="font-semibold text-red-400">
+                                                Warning: No open seats!
+                                              </span>
+                                            </p>}
                                             <p className="text-slate-400">
                                               Right click for more options
                                             </p>
