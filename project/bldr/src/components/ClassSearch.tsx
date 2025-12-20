@@ -437,11 +437,11 @@ export default function ClassSearch() {
                                 className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
                               >
                                 <div className="flex flex-col gap-1">
-                                  <div className="justify-between flex text-sm font-semibold text-purple-400">
+                                  <div className="flex flex-row items-center justify-start gap-1 text-sm font-semibold text-purple-400">
                                     {section.component} ({section.classID})
                                     {
                                       (section.seats_available ?? 0) <= 0 &&
-                                      <span className="flex items-center text-red-400 mx-1">
+                                      <span className="flex items-center text-red-400">
                                       <AlertCircle className="inline h-4 w-4 mr-1" />
                                       No open seats
                                     </span>}
