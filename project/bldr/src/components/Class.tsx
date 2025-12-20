@@ -132,15 +132,10 @@ export default function Class(props: ClassProps) {
           </p>
           {classInfo.data[0].sections.map((section: ClassSection) => (
             <button
-              disabled={(section.seats_available ?? 0) <= 0}
+              // disabled={(section.seats_available ?? 0) <= 0}
               key={section.uuid}
               onClick={() => handleSectionClick(section, classInfo.data[0])}
-              className={
-                `w-full font-inter rounded-md mt-2 bg-[#181818] transition duration-100 px-2  text-left` +
-                ((section.seats_available ?? 0) > 0
-                  ? " cursor-pointer hover:bg-[#232323]"
-                  : " cursor-default opacity-60")
-              }
+              className={`w-full font-inter rounded-md mt-2 bg-[#181818] hover:bg-[#232323] transition duration-100 px-2 text-left cursor-pointer`}
             >
               <div className="flex flex-row w-full justify-between gap-3 items-start my-1">
                 <div className="flex flex-row gap-3 items-start">
