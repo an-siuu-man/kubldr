@@ -19,6 +19,7 @@ import {
   Check,
   Repeat,
   Shuffle,
+  Pin,
 } from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
 import { ActiveScheduleProvider } from "@/contexts/ActiveScheduleContext";
@@ -304,8 +305,19 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         })
       );
 
-      // Generate permutations
-      const newPermutations = generatePermutations(allSections, uniqueClasses);
+      // Get pinned section UUIDs from the draft schedule
+      const pinnedSections = new Set<string>(
+        draftSchedule
+          .filter((section: ClassSection) => section.pinned)
+          .map((section: ClassSection) => section.uuid)
+      );
+
+      // Generate permutations (respecting pinned sections)
+      const newPermutations = generatePermutations(
+        allSections,
+        uniqueClasses,
+        pinnedSections
+      );
 
       // Find the index of the current draft in the permutations
       const currentIndex = findPermutationIndex(draftSchedule, newPermutations);
@@ -320,7 +332,6 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         currentIndex,
         currentDraftHash
       );
-
     } catch (error) {
       console.error("Error generating permutations:", error);
     } finally {
@@ -593,6 +604,37 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     );
   };
 
+  /**
+   * Toggles the pinned state of a class section
+   * Pinned sections are preserved during permutation browsing
+   * @param uuid - The uuid of the section to toggle
+   */
+  const togglePinSection = (uuid: string) => {
+    setDraftSchedule((prev: ClassSection[]) => {
+      return prev.map((item: ClassSection) => {
+        if (item.uuid === uuid) {
+          const newPinned = !item.pinned;
+          const section = { ...item, pinned: newPinned };
+
+          // Show toast notification
+          toast(
+            <div>
+              {newPinned ? "Pinned" : "Unpinned"} {item.dept} {item.code} (
+              {item.component}) #{item.classID}
+            </div>,
+            {
+              style: toastStyle,
+              duration: 2000,
+            }
+          );
+
+          return section;
+        }
+        return item;
+      });
+    });
+  };
+
   const clearDraft = () => {
     setDraftSchedule([]);
     setIsEditingExisting(false);
@@ -629,6 +671,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         setExistingScheduleId,
         addClassToDraft,
         removeClassFromDraft,
+        togglePinSection,
         clearDraft,
         loadExistingScheduleIntoDraft,
         // Permutation browsing

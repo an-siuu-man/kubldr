@@ -118,14 +118,17 @@ export function getUniqueClassesFromDraft(
 /**
  * Generates all valid schedule permutations using backtracking.
  * Each permutation contains exactly one section for each component of each class.
+ * Pinned sections are preserved and not changed during permutation generation.
  *
  * @param allSections - Map of classKey to all available sections (fetched from API)
  * @param uniqueClasses - Unique classes extracted from draft schedule
+ * @param pinnedSections - Array of pinned section UUIDs that should not be changed
  * @returns Array of valid schedule permutations (each is an array of ClassSection)
  */
 export function generatePermutations(
   allSections: Map<string, ClassSection[]>,
-  uniqueClasses: ClassWithComponents[]
+  uniqueClasses: ClassWithComponents[],
+  pinnedSections: Set<string> = new Set()
 ): ClassSection[][] {
   const permutations: ClassSection[][] = [];
 
@@ -137,6 +140,7 @@ export function generatePermutations(
     code: string;
     component: string;
     sections: ClassSection[];
+    pinnedSection?: ClassSection; // If a section is pinned for this component
   }[] = [];
 
   for (const cls of uniqueClasses) {
@@ -144,6 +148,11 @@ export function generatePermutations(
     const allClassSections = allSections.get(classKey) || [];
 
     for (const compGroup of cls.components) {
+      // Check if any section in this component group is pinned
+      const pinnedSection = compGroup.sections.find((s) =>
+        pinnedSections.has(s.uuid)
+      );
+
       // Get all sections for this component from the fetched data
       const sectionsForComponent = allClassSections.filter(
         (s) => s.component === compGroup.component
@@ -156,6 +165,9 @@ export function generatePermutations(
           code: cls.code,
           component: compGroup.component,
           sections: sectionsForComponent,
+          pinnedSection: pinnedSection
+            ? { ...pinnedSection, pinned: true }
+            : undefined,
         });
       }
     }
@@ -175,7 +187,19 @@ export function generatePermutations(
 
     const choice = componentChoices[index];
 
-    // Try each section for this component
+    // If this component has a pinned section, only use that section
+    if (choice.pinnedSection) {
+      // Check if the pinned section conflicts with current schedule
+      if (!conflictsWithSchedule(choice.pinnedSection, currentSchedule)) {
+        currentSchedule.push(choice.pinnedSection);
+        backtrack(index + 1, currentSchedule);
+        currentSchedule.pop();
+      }
+      // If pinned section conflicts, this branch is invalid - don't proceed
+      return;
+    }
+
+    // Try each section for this component (non-pinned)
     for (const section of choice.sections) {
       // Check if this section conflicts with the current schedule
       if (!conflictsWithSchedule(section, currentSchedule)) {
@@ -201,16 +225,23 @@ export const PERMUTATION_DRAFT_HASH_KEY = "permutationDraftHash";
 /**
  * Creates a hash of the draft schedule to detect changes
  * @param draftSchedule - The draft schedule
- * @returns A string hash representing the unique class components in the draft
+ * @returns A string hash representing the unique class components and pinned sections in the draft
  */
 export function createDraftHash(draftSchedule: ClassSection[]): string {
   const uniqueComponents = new Set<string>();
+  const pinnedSections: string[] = [];
   for (const section of draftSchedule) {
     uniqueComponents.add(
       `${section.dept}-${section.code}-${section.component}`
     );
+    // Include pinned sections in the hash so regeneration happens when pins change
+    if (section.pinned) {
+      pinnedSections.push(`pinned:${section.uuid}`);
+    }
   }
-  return Array.from(uniqueComponents).sort().join("|");
+  const componentsHash = Array.from(uniqueComponents).sort().join("|");
+  const pinnedHash = pinnedSections.sort().join("|");
+  return `${componentsHash}||${pinnedHash}`;
 }
 
 /**
