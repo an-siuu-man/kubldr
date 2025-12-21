@@ -33,7 +33,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Trash2, AlertTriangle, Pin } from "lucide-react";
+import { Trash2, AlertTriangle, Pin, PinIcon, PinOff } from "lucide-react";
 
 /**
  * CalendarEditor Component
@@ -267,8 +267,8 @@ const CalendarEditor = () => {
                                             {cls.pinned && (
                                               <p>
                                                 <span className="font-semibold text-amber-400">
-                                                  📌 Pinned - won't change
-                                                  during permutations
+                                                  Pinned - won't change during
+                                                  permutations
                                                 </span>
                                               </p>
                                             )}
@@ -295,7 +295,12 @@ const CalendarEditor = () => {
                                       className="text-amber-400 font-dmsans focus:bg-[#404040] focus:text-amber-400 cursor-pointer"
                                       onClick={() => handleTogglePin(cls)}
                                     >
-                                      <Pin className="mr-1 h-4 text-amber-400" />
+                                      {
+                                        cls.pinned ? (
+                                        <PinOff className="mr-1 h-4 text-amber-400" />
+                                        ) : (
+                                        <Pin className="mr-1 h-4 text-amber-400" />
+                                        )}
                                       {cls.pinned
                                         ? "Unpin Section"
                                         : "Pin Section"}
