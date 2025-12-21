@@ -18,6 +18,7 @@ export interface ClassSection {
   credithours?: number;
   location?: string;
   room?: string;
+  pinned?: boolean; // Whether this section is pinned (won't change during permutations)
 }
 
 /**

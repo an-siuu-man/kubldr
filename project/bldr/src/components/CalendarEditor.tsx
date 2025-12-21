@@ -33,7 +33,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Pin } from "lucide-react";
 
 /**
  * CalendarEditor Component
@@ -46,8 +46,12 @@ import { Trash2, AlertTriangle } from "lucide-react";
  */
 const CalendarEditor = () => {
   // Access the draft schedule data from the ScheduleBuilder context
-  const { draftSchedule, draftScheduleName, removeClassFromDraft } =
-    useScheduleBuilder();
+  const {
+    draftSchedule,
+    draftScheduleName,
+    removeClassFromDraft,
+    togglePinSection,
+  } = useScheduleBuilder();
 
   // Days of the week to display as column headers
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -66,6 +70,14 @@ const CalendarEditor = () => {
     if (index !== -1) {
       removeClassFromDraft(index);
     }
+  };
+
+  /**
+   * Handles toggling the pinned state of a class section
+   * @param cls - The class section to toggle pin
+   */
+  const handleTogglePin = (cls: ClassSection) => {
+    togglePinSection(cls.uuid);
   };
 
   return (
@@ -171,19 +183,29 @@ const CalendarEditor = () => {
                                           <motion.div
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden`}
+                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer ${
+                                              cls.pinned
+                                                ? "ring-2 ring-amber-500"
+                                                : ""
+                                            }`}
                                             style={{
                                               top: `${offset}px`,
                                               height: `${height}px`,
                                               backgroundColor:
                                                 colors[colorIndex],
                                             }}
+                                            onDoubleClick={() =>
+                                              handleTogglePin(cls)
+                                            }
                                           >
                                             <div className="flex items-center justify-between font-bold text-xs font-dmsans truncate w-full">
-                                              <>
+                                              <span className="flex items-center gap-0.5">
+                                                {cls.pinned && (
+                                                  <Pin className="h-3 w-3 text-amber-600 flex-shrink-0" />
+                                                )}
                                                 {cls.dept} {cls.code} (
                                                 {cls.component})
-                                              </>
+                                              </span>
                                               {(cls.seats_available ?? 0) <=
                                                 0 && (
                                                 <AlertTriangle className="inline-block mr-1 h-5 text-red-600" />
@@ -242,15 +264,26 @@ const CalendarEditor = () => {
                                                 </span>
                                               </p>
                                             </div>
-                                            {
-                                              (cls.seats_available ?? 0) <= 0 &&
+                                            {cls.pinned && (
                                               <p>
-                                              <span className="font-semibold text-red-400">
-                                                Warning: No open seats!
-                                              </span>
-                                            </p>}
+                                                <span className="font-semibold text-amber-400">
+                                                  📌 Pinned - won't change
+                                                  during permutations
+                                                </span>
+                                              </p>
+                                            )}
+                                            {(cls.seats_available ?? 0) <=
+                                              0 && (
+                                              <p>
+                                                <span className="font-semibold text-red-400">
+                                                  Warning: No open seats!
+                                                </span>
+                                              </p>
+                                            )}
                                             <p className="text-slate-400">
-                                              Right click for more options
+                                              Double-click to{" "}
+                                              {cls.pinned ? "unpin" : "pin"} •
+                                              Right-click for options
                                             </p>
                                           </div>
                                         </TooltipContent>
@@ -258,6 +291,15 @@ const CalendarEditor = () => {
                                     </TooltipProvider>
                                   </ContextMenuTrigger>
                                   <ContextMenuContent className=" bg-[#2a2a2a] border-[#404040]">
+                                    <ContextMenuItem
+                                      className="text-amber-400 font-dmsans focus:bg-[#404040] focus:text-amber-400 cursor-pointer"
+                                      onClick={() => handleTogglePin(cls)}
+                                    >
+                                      <Pin className="mr-1 h-4 text-amber-400" />
+                                      {cls.pinned
+                                        ? "Unpin Section"
+                                        : "Pin Section"}
+                                    </ContextMenuItem>
                                     <ContextMenuItem
                                       className="text-destructive font-dmsans focus:bg-[#404040] focus:text-destructive cursor-pointer"
                                       onClick={() => handleRemoveSection(cls)}
