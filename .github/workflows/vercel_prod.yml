@@ -19,17 +19,38 @@ jobs:
         run: npm install -g vercel
 
       - name: Pull Vercel env
+        working-directory: ./project/bldr
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
+      - name: Load and log Vercel env variables
+        working-directory: ./project/bldr
+        run: |
+          echo "=== Environment variables pulled from Vercel ==="
+          if [ -f .vercel/.env.production.local ]; then
+            echo "Found .vercel/.env.production.local"
+            echo "Variables found:"
+            grep -E "^[A-Z_]+=" .vercel/.env.production.local | cut -d'=' -f1 | while read var; do
+              echo "  - $var"
+            done
+            echo ""
+            echo "Exporting variables to GITHUB_ENV..."
+            cat .vercel/.env.production.local >> $GITHUB_ENV
+            echo "Done!"
+          else
+            echo "ERROR: .vercel/.env.production.local not found!"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        working-directory: ./project/bldr
+        run: npm install
+
       - name: Build
         working-directory: ./project/bldr
-        run: vercel build --prod --cwd=. --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npm run build
 
       - name: Deploy
         working-directory: ./project/bldr
