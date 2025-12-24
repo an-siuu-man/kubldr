@@ -7,17 +7,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
-    # Set default working directory for all steps
-    defaults:
-      run:
-        working-directory: project/bldr
 
     steps:
       - uses:  actions/checkout@v4
 
       - uses: actions/setup-node@v4
-        with: 
+        with:  
           node-version: 18
 
       - name: Install Vercel CLI
@@ -25,16 +20,21 @@ jobs:
 
       - name:  Pull Vercel env
         run: |
+          cd project/bldr
           vercel pull --yes --environment=production \
-            --token=${{ secrets.VERCEL_TOKEN }}
+            --token=${{ secrets. VERCEL_TOKEN }}
         env: 
-          VERCEL_ORG_ID: ${{ secrets. VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets. VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build
-        run: vercel build --prod \
-          --token=${{ secrets. VERCEL_TOKEN }}
+        run: |
+          cd project/bldr
+          vercel build --prod \
+            --token=${{ secrets. VERCEL_TOKEN }}
 
       - name: Deploy
-        run:  vercel deploy --prebuilt --prod \
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          cd project/bldr
+          vercel deploy --prebuilt --prod \
+            --token=${{ secrets.VERCEL_TOKEN }}
