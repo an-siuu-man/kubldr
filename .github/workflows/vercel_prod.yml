@@ -18,6 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Override Git Author
+        run: |
+          git config user.email "${{ secrets.VERCEL_GIT_AUTHOR_EMAIL }}"
+          git config user.name "${{ secrets.VERCEL_GIT_AUTHOR_NAME }}"
+          git commit --amend --no-edit --reset-author
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
