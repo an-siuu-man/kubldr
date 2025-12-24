@@ -352,7 +352,7 @@ export default function ClassSearch() {
                       }}
                       className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
                     >
-                      Clear all of them searched
+                      Clear all of the plxplx searched
                     </span>
                   )}
                 </div>
