@@ -352,7 +352,7 @@ export default function ClassSearch() {
                       }}
                       className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
                     >
-                      Clear all searched
+                      Clear all of them searched
                     </span>
                   )}
                 </div>
@@ -439,12 +439,12 @@ export default function ClassSearch() {
                                 <div className="flex flex-col gap-1">
                                   <div className="flex flex-row items-center justify-start gap-1 text-sm font-semibold text-purple-400">
                                     {section.component} ({section.classID})
-                                    {
-                                      (section.seats_available ?? 0) <= 0 &&
+                                    {(section.seats_available ?? 0) <= 0 && (
                                       <span className="flex items-center text-red-400">
-                                      <AlertCircle className="inline h-4 w-4 mr-1" />
-                                      No open seats
-                                    </span>}
+                                        <AlertCircle className="inline h-4 w-4 mr-1" />
+                                        No open seats
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="text-xs text-[#888888]">
                                     {section.days} • {section.starttime} -{" "}
