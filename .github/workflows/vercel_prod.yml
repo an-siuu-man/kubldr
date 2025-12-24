@@ -37,8 +37,12 @@ jobs:
             done
             echo ""
             echo "Exporting variables to GITHUB_ENV..."
-            # Filter out comments and empty lines, only export valid KEY=value pairs
-            grep -E "^[A-Za-z_][A-Za-z0-9_]*=" .vercel/.env.production.local >> $GITHUB_ENV
+            # Filter out comments/empty lines and strip surrounding quotes from values
+            grep -E "^[A-Za-z_][A-Za-z0-9_]*=" .vercel/.env.production.local | while IFS='=' read -r key value; do
+              # Remove surrounding quotes (single or double) from value
+              value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+              echo "$key=$value" >> $GITHUB_ENV
+            done
             echo "Done!"
           else
             echo "ERROR: .vercel/.env.production.local not found!"
