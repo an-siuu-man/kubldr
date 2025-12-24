@@ -32,12 +32,13 @@ jobs:
           if [ -f .vercel/.env.production.local ]; then
             echo "Found .vercel/.env.production.local"
             echo "Variables found:"
-            grep -E "^[A-Z_]+=" .vercel/.env.production.local | cut -d'=' -f1 | while read var; do
+            grep -E "^[A-Za-z_][A-Za-z0-9_]*=" .vercel/.env.production.local | cut -d'=' -f1 | while read var; do
               echo "  - $var"
             done
             echo ""
             echo "Exporting variables to GITHUB_ENV..."
-            cat .vercel/.env.production.local >> $GITHUB_ENV
+            # Filter out comments and empty lines, only export valid KEY=value pairs
+            grep -E "^[A-Za-z_][A-Za-z0-9_]*=" .vercel/.env.production.local >> $GITHUB_ENV
             echo "Done!"
           else
             echo "ERROR: .vercel/.env.production.local not found!"
