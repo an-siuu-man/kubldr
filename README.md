@@ -83,29 +83,29 @@ The application follows a modern full-stack architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Frontend                              │
+│                        Frontend                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
 │  │ Login/Signup│  │   Builder   │  │  Schedule Calendar  │  │
 │  │    Pages    │  │    Page     │  │     Component       │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-│                          │                                   │
+│                          │                                  │
 │  ┌───────────────────────┴───────────────────────────────┐  │
-│  │              React Context Providers                   │  │
-│  │  (AuthContext, ScheduleBuilderContext, ActiveSchedule) │  │
+│  │              React Context Providers                  │  │
+│  │  (AuthContext, ScheduleBuilderContext, ActiveSchedule)│  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     API Routes                               │
-│         (Class Search, Schedule CRUD Operations)             │
+│                     API Routes                              │
+│         (Class Search, Schedule CRUD Operations)            │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   Supabase Backend                           │
+│                   Supabase Backend                          │
 │  ┌─────────────────┐  ┌──────────────────────────────────┐  │
-│  │  Supabase Auth  │  │        PostgreSQL Database        │  │
+│  │  Supabase Auth  │  │        PostgreSQL Database       │  │
 │  │   (JWT, RLS)    │  │  (Users, Schedules, Classes)     │  │
 │  └─────────────────┘  └──────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
@@ -121,122 +121,11 @@ The application follows a modern full-stack architecture:
 - npm, yarn, pnpm, or bun
 - Supabase account (for database and authentication)
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/an-siuu-man/EECS-581-Team-29-Project-3.git
-   cd EECS-581-Team-29-Project-3/project/bldr
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
-
-3. **Set up environment variables**
-   
-   Create a `.env.local` file in the `project/bldr` directory:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-4. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
-
-5. **Open the application**
-   
-   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Available Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run Biome linter |
-| `npm run format` | Format code with Biome |
-
 ---
-
-## 📁 Project Structure
-
-```
-project/bldr/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── api/               # API route handlers
-│   │   ├── builder/           # Main schedule builder page
-│   │   ├── signup/            # User registration page
-│   │   └── page.tsx           # Login page
-│   ├── components/            # React components
-│   │   ├── ui/               # Reusable UI components (shadcn)
-│   │   ├── CalendarEditor.tsx # Schedule calendar view
-│   │   ├── ClassSearch.tsx    # Class search functionality
-│   │   ├── Sidebar.tsx        # Schedule navigation sidebar
-│   │   └── Class.tsx          # Class details component
-│   ├── contexts/              # React Context providers
-│   │   ├── AuthContext.tsx    # Authentication state
-│   │   ├── ScheduleBuilderContext.tsx
-│   │   └── ActiveScheduleContext.tsx
-│   ├── hooks/                 # Custom React hooks
-│   ├── lib/                   # Utility functions
-│   └── types/                 # TypeScript type definitions
-├── public/                    # Static assets
-└── package.json
-```
-
----
-
-## 📊 Database Schema
-
-The application uses a PostgreSQL database with tables for:
-- Course catalog data
-- User-created schedules
-- Schedule-class relationships
-- User account information
-
-For detailed schema information, see the [ER Diagram](./Initial%20Architecture%20diagrams/er_diagram.png).
-
----
-
-## 👥 Team Members - Group 29
-
-| Name | Role |
-|------|------|
-| **Ansuman Sharma** | Team Member |
-| **Achinth Ulagapperoli** | Team Member |
-| **Jahnvi Maddila** | Team Member |
-| **Vamsi Doddapaneni** | Team Member |
-| **Taha Khalid** | Team Member |
-
----
-
-## 📄 Documentation
-
-- [Component Diagram](./Initial%20Architecture%20diagrams/component_diagram.png)
-- [Data Flow Diagram](./Initial%20Architecture%20diagrams/data%20flow.png)
-- [ER Diagram](./Initial%20Architecture%20diagrams/er_diagram.png)
-- [Supabase Auth Overview](./project/bldr/Supabase%20auth%20overview.md)
-
----
-
 
 <div align="center">
 
-**Built with ❤️ by Team 29 for KU Students**
+**Built with ❤️ by KU students for all students**
 
 </div>
 
