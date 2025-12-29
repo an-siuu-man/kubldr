@@ -332,21 +332,21 @@ export function Sidebar() {
   return (
     <div
       className={`${
-        open ? "mr-[325px]" : "mr-[90px]"
+        open ? "mr-[min(280px,25vw)]" : "mr-[70px]"
       } z-45 transition-all duration-300`}
     >
       <div
         className={`sidebar mr-2 flex flex-col justify-between rounded-tr-2xl rounded-br-2xl fixed top-0 left-0 h-screen transition-all duration-300 ${
           open
-            ? "min-w-[315px] max-w-[315px] bg-[#1a1a1a]"
-            : "bg-transparent min-w-20 max-w-20"
-        } overflow-hidden p-5`}
+            ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-[#1a1a1a]"
+            : "bg-transparent min-w-[70px] max-w-[70px]"
+        } overflow-hidden p-3 lg:p-4`}
       >
         {/* Top section */}
         <div>
-          <div className="buttons-container flex items-center justify-between mb-5">
+          <div className="buttons-container flex items-center justify-between mb-3 lg:mb-4">
             <SidebarIcon
-              size={34}
+              size={28}
               className={`cursor-pointer p-1 rounded-md transition duration-500 ${
                 open ? "" : "rotate-180"
               }`}
@@ -355,7 +355,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        <div className="main-content grow flex flex-col justify-between">
+        <div className="main-content grow flex flex-col justify-between overflow-hidden">
           {/* Main Sidebar Content */}
           <AnimatePresence>
             {open && (
@@ -363,8 +363,9 @@ export function Sidebar() {
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0 }}
+                className="flex flex-col h-full overflow-hidden"
               >
-                <h1 className="text-2xl font-bold text-gray-300 mb-4 font-figtree">
+                <h1 className="text-lg lg:text-xl font-bold text-gray-300 mb-2 lg:mb-3 font-figtree">
                   Your Schedules
                 </h1>
 
@@ -372,21 +373,21 @@ export function Sidebar() {
                   type="single"
                   collapsible
                   defaultValue="spring-2026"
-                  className="font-figtree"
+                  className="font-figtree flex-1 overflow-hidden"
                 >
                   <AccordionItem value="spring-2026">
-                    <AccordionTrigger className="text-lg  text-green-400 hover:no-underline hover:cursor-pointer font-bold">
+                    <AccordionTrigger className="text-sm lg:text-base text-green-400 hover:no-underline hover:cursor-pointer font-bold py-2">
                       Spring 2026
                     </AccordionTrigger>
                     <AccordionContent className="font-inter">
                       {/* New schedule input */}
                       <Label
                         htmlFor="schedule-name"
-                        className="text-sm font-dmsans mb-1 text-[#888888]"
+                        className="text-xs lg:text-sm font-dmsans mb-1 text-[#888888]"
                       >
                         Make new schedule
                       </Label>
-                      <div className="flex flex-row items-center justify-between gap-2 mb-4">
+                      <div className="flex flex-row items-center justify-between gap-1 lg:gap-2 mb-2 lg:mb-3">
                         <Input
                           type="text"
                           id="schedule-name"
@@ -398,7 +399,7 @@ export function Sidebar() {
                             }
                           }}
                           placeholder="Schedule name"
-                          className="font-inter border-[#404040] border placeholder:text-xs selection:bg-blue-400 text-xs"
+                          className="font-inter border-[#404040] border placeholder:text-[10px] selection:bg-blue-400 text-[10px] lg:text-xs h-8"
                         />
                         <Button
                           type="submit"
@@ -406,11 +407,11 @@ export function Sidebar() {
                           onClick={() => {
                             handleCreateSchedule(newScheduleName);
                           }}
-                          className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans"
+                          className="bg-[#fafafa] text-[10px] lg:text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans px-2 lg:px-3 h-8"
                         >
                           {loading ? (
                             <>
-                              <Spinner /> Creating...
+                              <Spinner className="h-3 w-3" />
                             </>
                           ) : (
                             "Create"
@@ -419,13 +420,14 @@ export function Sidebar() {
                       </div>
 
                       {/* Schedule list */}
-                      <ul className="list-none overflow-y-scroll overflow-x-hidden scrollbar-hidden max-h-[300px]">
+                      <ul className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden max-h-[min(40vh,250px)]">
                         {isLoadingSchedules ? (
-                          <div className="flex items-center justify-center gap-2 py-8">
-                            <Spinner className="size-6" /> Loading schedules...
+                          <div className="flex items-center justify-center gap-2 py-4">
+                            <Spinner className="size-4" />{" "}
+                            <span className="text-xs">Loading...</span>
                           </div>
                         ) : userSchedules.length === 0 ? (
-                          <p className="text-sm text-gray-400">
+                          <p className="text-xs text-gray-400">
                             No schedules found.
                           </p>
                         ) : (
@@ -452,14 +454,14 @@ export function Sidebar() {
                                   onMouseLeave={() =>
                                     setHoveredScheduleId(null)
                                   }
-                                  className={`flex justify-between items-center text-xs text-[#fafafa] font-inter my-2 rounded-md ${
+                                  className={`flex justify-between items-center text-[10px] lg:text-xs text-[#fafafa] font-inter my-1 lg:my-1.5 rounded-md ${
                                     activeSchedule?.id === schedule.id
                                       ? "bg-[#555] font-bold"
                                       : "hover:bg-[#333]"
                                   }`}
                                 >
                                   {renamingScheduleId === schedule.id ? (
-                                    <div className="flex items-center gap-2 w-full px-2 py-1">
+                                    <div className="flex items-center gap-1 lg:gap-2 w-full px-1.5 lg:px-2 py-0.5 lg:py-1">
                                       <Input
                                         type="text"
                                         value={renameValue}
@@ -559,7 +561,7 @@ export function Sidebar() {
         </div>
 
         {/* Bottom Section */}
-        <div className="flex flex-col w-full gap-3">
+        <div className="flex flex-col w-full gap-2 shrink-0 mt-2">
           {/* Upgrade button for guest users */}
           <AnimatePresence>
             {open && user?.is_anonymous && (
@@ -571,9 +573,9 @@ export function Sidebar() {
                 <Link href="/upgrade">
                   <Button
                     variant="outline"
-                    className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300"
+                    className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 text-xs lg:text-sm py-1.5 lg:py-2"
                   >
-                    <UserPlus className="h-4 w-4 mr-2" />
+                    <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
                     Create Account
                   </Button>
                 </Link>
@@ -582,8 +584,8 @@ export function Sidebar() {
           </AnimatePresence>
 
           {/* User info */}
-          <div className="flex flex-row w-full items-center justify-start gap-2">
-            <User />
+          <div className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2">
+            <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
             <AnimatePresence>
               {open && (
                 <motion.div
@@ -591,7 +593,7 @@ export function Sidebar() {
                   animate={{ opacity: 1, translateY: 0 }}
                   exit={{ opacity: 0, translateY: -40 }}
                   key={user?.email || "guest"}
-                  className="font-figtree text-md"
+                  className="font-figtree text-xs lg:text-sm truncate"
                 >
                   {user?.is_anonymous ? "Guest" : user?.email}
                 </motion.div>

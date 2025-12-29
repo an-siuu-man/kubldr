@@ -81,7 +81,7 @@ const CalendarEditor = () => {
   };
 
   return (
-    <div className="relative flex justify-center items-center mt-5 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[90%] lg:max-w-[85%] xl:max-w-[1100px] mx-auto h-[500px] lg:h-[550px] xl:h-[600px]">
+    <div className="relative flex justify-center items-center mt-2 lg:mt-4 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] mx-auto h-[min(50vh,400px)] lg:h-[min(55vh,500px)] xl:h-[min(60vh,550px)]">
       <div className="w-full h-full overflow-hidden">
         <AnimatePresence>
           {draftScheduleName && draftSchedule.length > 0 ? (
@@ -94,15 +94,18 @@ const CalendarEditor = () => {
               <table className="table-fixed h-full w-full border-collapse">
                 <thead>
                   <tr>
-                    <th className="text-center font-semibold font-figtree h-10 w-10 md:w-[50px] text-xs md:text-sm">
+                    <th className="text-center font-semibold font-figtree h-6 lg:h-8 w-8 lg:w-10 md:w-[50px] text-[10px] lg:text-xs">
                       Time
                     </th>
                     {days.map((day) => (
                       <th
                         key={day}
-                        className="text-center font-semibold font-figtree p-1 md:p-2 text-xs md:text-sm"
+                        className="text-center font-semibold font-figtree p-0.5 lg:p-1 text-[10px] lg:text-xs"
                       >
-                        <span className="hidden md:inline">{day}</span>
+                        <span className="hidden lg:inline">{day}</span>
+                        <span className="hidden md:inline lg:hidden">
+                          {day.substring(0, 3)}
+                        </span>
                         <span className="md:hidden">{day.substring(0, 2)}</span>
                       </th>
                     ))}
@@ -112,16 +115,13 @@ const CalendarEditor = () => {
                   {hours.map((hour) => (
                     <tr
                       key={hour}
-                      className="relative h-7 border-t border-[#404040]"
+                      className="relative h-[calc((100%-2rem)/13)] min-h-5 border-t border-[#404040]"
                     >
-                      <td className="align-top pr-1 md:pr-2 text-[9px] md:text-xs text-right font-figtree">
+                      <td className="align-top pr-0.5 lg:pr-1 text-[8px] lg:text-[10px] text-right font-figtree whitespace-nowrap">
                         {hour}:00
                       </td>
                       {days.map((day) => (
-                        <td
-                          key={day}
-                          className="relative align-top w-20 md:w-[150px]"
-                        >
+                        <td key={day} className="relative align-top w-[18%]">
                           <div className="absolute top-[50%] translate-y-[-50%] w-full border-t border-dashed border-[#424242] z-0" />
 
                           {draftSchedule
@@ -137,7 +137,7 @@ const CalendarEditor = () => {
                               );
                             })
                             .map((cls: ClassSection, idx: number) => {
-                              const baseRowHeight = 38;
+                              // Use CSS calc to make row height responsive
                               const startTime = timeToDecimal(
                                 cls.starttime || ""
                               );
@@ -145,8 +145,9 @@ const CalendarEditor = () => {
                                 cls.starttime || "",
                                 cls.endtime || ""
                               );
-                              const offset = (startTime - hour) * baseRowHeight;
-                              const height = duration * baseRowHeight;
+                              // Calculate offset and height as percentages of row
+                              const offsetPercent = (startTime - hour) * 100;
+                              const heightPercent = duration * 100;
 
                               const colors = [
                                 "#f5d2d2", // soft pink
@@ -183,14 +184,15 @@ const CalendarEditor = () => {
                                           <motion.div
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer ${
+                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer ${
                                               cls.pinned
                                                 ? "ring-2 ring-amber-500"
                                                 : ""
                                             }`}
                                             style={{
-                                              top: `${offset}px`,
-                                              height: `${height}px`,
+                                              top: `${offsetPercent}%`,
+                                              height: `${heightPercent}%`,
+                                              minHeight: "16px",
                                               backgroundColor:
                                                 colors[colorIndex],
                                             }}
@@ -198,17 +200,22 @@ const CalendarEditor = () => {
                                               handleTogglePin(cls)
                                             }
                                           >
-                                            <div className="flex items-center justify-between font-bold text-xs font-dmsans truncate w-full">
-                                              <span className="flex items-center gap-0.5">
+                                            <div className="flex items-center justify-between font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
+                                              <span className="flex items-center gap-0.5 truncate">
                                                 {cls.pinned && (
-                                                  <Pin className="h-3 w-3 text-amber-600 flex-shrink-0" />
+                                                  <Pin className="h-2.5 w-2.5 lg:h-3 lg:w-3 text-amber-600 shrink-0" />
                                                 )}
-                                                {cls.dept} {cls.code} (
-                                                {cls.component})
+                                                <span className="truncate">
+                                                  {cls.dept} {cls.code}
+                                                </span>
+                                                <span className="hidden sm:inline">
+                                                  {" "}
+                                                  ({cls.component})
+                                                </span>
                                               </span>
                                               {(cls.seats_available ?? 0) <=
                                                 0 && (
-                                                <AlertTriangle className="inline-block mr-1 h-5 text-red-600" />
+                                                <AlertTriangle className="inline-block h-3 lg:h-4 text-red-600 shrink-0" />
                                               )}
                                             </div>
                                           </motion.div>
@@ -295,12 +302,11 @@ const CalendarEditor = () => {
                                       className="text-amber-400 font-dmsans focus:bg-[#404040] focus:text-amber-400 cursor-pointer"
                                       onClick={() => handleTogglePin(cls)}
                                     >
-                                      {
-                                        cls.pinned ? (
+                                      {cls.pinned ? (
                                         <PinOff className="mr-1 h-4 text-amber-400" />
-                                        ) : (
+                                      ) : (
                                         <Pin className="mr-1 h-4 text-amber-400" />
-                                        )}
+                                      )}
                                       {cls.pinned
                                         ? "Unpin Section"
                                         : "Pin Section"}
