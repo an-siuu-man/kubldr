@@ -341,19 +341,19 @@ export default function Builder() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#080808]">
+    <div className="flex h-screen max-h-screen overflow-hidden bg-[#080808]">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 p-4 lg:p-6 xl:p-8">
+      <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           {/* Guest Warning Banner */}
 
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl lg:text-3xl xl:text-4xl font-figtree font-semibold mb-2">
+              <h1 className="text-xl lg:text-2xl xl:text-3xl font-figtree font-semibold mb-1">
                 <span className="font-dmsans font-bold">
                   <span className="text-white">b</span>
                   <span className="text-red-500">l</span>
@@ -362,7 +362,7 @@ export default function Builder() {
                 </span>{" "}
                 Schedule Builder
               </h1>
-              <p className="text-sm lg:text-base text-[#A8A8A8] font-inter">
+              <p className="text-xs lg:text-sm text-[#A8A8A8] font-inter">
                 Welcome back, {user.is_anonymous ? "Guest" : user.email}!
               </p>
             </div>
@@ -380,18 +380,17 @@ export default function Builder() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="mb-6 bg-blue-900/40 border mt-4 border-blue-600/50 rounded-lg p-3 lg:p-4 flex items-center justify-between"
+              className="mb-2 lg:mb-4 bg-blue-900/40 border mt-2 lg:mt-3 border-blue-600/50 rounded-lg p-2 lg:p-3 flex items-center justify-between"
             >
-              <div className="flex items-center gap-2 lg:gap-3">
-                <Info className="h-4 w-4 lg:h-5 lg:w-5 text-white shrink-0" />
+              <div className="flex items-center gap-2">
+                <Info className="h-3 w-3 lg:h-4 lg:w-4 text-white shrink-0" />
                 <div>
-                  <p className="text-blue-200 font-inter text-xs lg:text-sm">
+                  <p className="text-blue-200 font-inter text-[10px] lg:text-xs">
                     <span className="font-figtree">
-                      Please note that this app is still in{" "}
-                      <span className="font-mono">beta</span>. We will be
-                      continuously improving the experience and adding new
-                      features, so kindly bear with us!
-                    </span>{" "}
+                      This app is still in{" "}
+                      <span className="font-mono">beta</span>. We're
+                      continuously improving!
+                    </span>
                   </p>
                 </div>
               </div>
@@ -402,16 +401,14 @@ export default function Builder() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="mb-6 bg-yellow-900/40 border border-yellow-600/50 rounded-lg p-3 lg:p-4 flex items-center justify-between"
+                className="mb-2 lg:mb-4 bg-yellow-900/40 border border-yellow-600/50 rounded-lg p-2 lg:p-3 flex items-center justify-between"
               >
-                <div className="flex items-center gap-2 lg:gap-3">
-                  <AlertTriangle className="h-4 w-4 lg:h-5 lg:w-5 text-yellow-500 shrink-0" />
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-500 shrink-0" />
                   <div>
-                    <p className="text-yellow-200 font-figtree text-xs lg:text-sm">
-                      <span className="font-semibold">
-                        You're using guest mode.
-                      </span>{" "}
-                      Your schedules will be lost when you close this tab.{" "}
+                    <p className="text-yellow-200 font-figtree text-[10px] lg:text-xs">
+                      <span className="font-semibold">Guest mode.</span>{" "}
+                      Schedules will be lost when you close this tab.{" "}
                       <Link
                         href="/upgrade"
                         className="underline hover:text-yellow-100 font-medium"
@@ -426,7 +423,7 @@ export default function Builder() {
             )}
           </AnimatePresence>
           {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-[3fr_7fr] gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,350px)_1fr] gap-2 lg:gap-4">
             {/* Class Search Section */}
             <div className="flex justify-center items-start">
               <ClassSearch />
@@ -438,18 +435,18 @@ export default function Builder() {
                 <CalendarEditor />
               </div>
               {activeSchedule && (
-                <div className="w-full flex flex-row justify-between gap-3 mt-4">
-                  <div className="text-xs lg:text-sm flex gap-2 items-center text-[#A8A8A8] font-inter">
+                <div className="w-full flex items-center justify-between gap-2 mt-2 lg:mt-3">
+                  <div className="flex-1 basis-0 text-[10px] lg:text-xs flex flex-wrap gap-1.5 lg:gap-2 items-center text-[#A8A8A8] font-inter justify-start">
                     <motion.div
                       layout
                       initial={false}
                       transition={{
                         layout: { duration: 0.22, ease: "easeOut" },
                       }}
-                      className="bg-white text-gray-950 rounded-full py-1 px-2 lg:px-3 inline-flex items-center"
+                      className="bg-white text-gray-950 rounded-full py-0.5 lg:py-1 px-2 inline-flex items-center"
                     >
-                      <span className="md:whitespace-nowrap text-xs lg:text-sm">
-                        Total Credit Hours:
+                      <span className="whitespace-nowrap text-[10px] lg:text-xs">
+                        Credits:
                       </span>
                       <b className="ml-1">{creditHours}</b>
                     </motion.div>
@@ -462,7 +459,7 @@ export default function Builder() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 6, scale: 0.98 }}
                           transition={{ duration: 0.22 }}
-                          className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-1 px-2 lg:px-3 text-xs lg:text-sm"
+                          className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-0.5 lg:py-1 px-2 text-[10px] lg:text-xs"
                         >
                           Saved
                         </motion.div>
@@ -475,7 +472,7 @@ export default function Builder() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 6, scale: 0.98 }}
                           transition={{ duration: 0.22 }}
-                          className="rounded-full py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-xs lg:text-sm"
+                          className="rounded-full py-0.5 lg:py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-[10px] lg:text-xs"
                         >
                           Unsaved
                         </motion.div>
@@ -483,39 +480,39 @@ export default function Builder() {
                     </AnimatePresence>
                   </div>
                   {/* Permutation Browser - appears when multiple combinations are available */}
-                  <div className="w-full flex justify-center my-2">
+                  <div className="flex-1 basis-0 flex justify-center">
                     <PermutationBrowser />
                   </div>
-                  <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto md:justify-end">
+                  <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
                     <Button
                       onClick={handleRevertChanges}
-                      className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px] text-xs lg:text-sm px-3 lg:px-4 py-2"
+                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
                       disabled={schedulesMatch || isSaving}
                     >
-                      <Undo2 className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                      Undo
+                      <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                      <span className="hidden sm:inline">Undo</span>
                     </Button>
                     <Button
                       onClick={handleSaveSchedule}
-                      className="font-dmsans cursor-pointer w-full md:w-auto max-w-[600px] text-xs lg:text-sm px-3 lg:px-4 py-2"
+                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
                       disabled={isSaving || schedulesMatch}
                     >
                       {isSaving ? (
                         <>
-                          <Spinner />
-                          Saving...
+                          <Spinner className="h-3 w-3" />
+                          <span className="hidden sm:inline">Saving...</span>
                         </>
                       ) : (
                         <>
                           {!schedulesMatch ? (
                             <>
-                              <Save className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                              Save
+                              <Save className="h-3 w-3 mr-0.5 lg:mr-1" />
+                              <span className="hidden sm:inline">Save</span>
                             </>
                           ) : (
                             <>
-                              <CheckCheck className="text-green-600" />
-                              Synced
+                              <CheckCheck className="text-green-600 h-3 w-3" />
+                              <span className="hidden sm:inline">Synced</span>
                             </>
                           )}
                         </>
@@ -523,11 +520,11 @@ export default function Builder() {
                     </Button>
                     <Button
                       onClick={handleClearSchedule}
-                      className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer w-full md:w-auto max-w-[600px] text-xs lg:text-sm px-3 lg:px-4 py-2"
+                      className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
                       disabled={draftSchedule.length === 0}
                     >
-                      <Trash2 className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                      Clear
+                      <Trash2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                      <span className="hidden sm:inline">Clear</span>
                     </Button>
                   </div>
                 </div>

@@ -209,15 +209,15 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col justify-start items-center my-5 w-full min-w-[340px] max-w-[380px] lg:max-w-[420px] xl:max-w-[450px] max-h-[500px] lg:max-h-[550px] xl:max-h-[600px] overflow-y-scroll scrollbar-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
-      <div className="flex flex-col justify-start items-center w-full h-full p-3 lg:p-4">
-        <h1 className="text-base lg:text-lg self-start font-figtree font-bold text-[#fafafa]">
+    <div className="flex flex-col justify-start items-center my-2 lg:my-4 w-full min-w-[280px] max-w-[340px] lg:max-w-[380px] xl:max-w-[420px] h-[min(55vh,450px)] lg:h-[min(60vh,520px)] xl:h-[min(65vh,580px)] overflow-y-auto scrollbar-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
+      <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4">
+        <h1 className="text-sm lg:text-base xl:text-lg self-start font-figtree font-bold text-[#fafafa]">
           Search for classes
         </h1>
         <div className="flex-col justify-start items-center w-full">
           <div
             ref={wrapperRef}
-            className="class-search-form flex flex-row justify-start items-center gap-2 w-full mt-5"
+            className="class-search-form flex flex-row justify-start items-center gap-2 w-full mt-3 lg:mt-4"
             tabIndex={-1}
             onFocus={() => setDropdownOpen(true)}
             onBlur={(e) => {
@@ -332,7 +332,7 @@ export default function ClassSearch() {
           </FloatingPortal>
         </div>
 
-        <div className="w-full max-w-full mt-4">
+        <div className="w-full max-w-full mt-2 lg:mt-3 flex-1 overflow-hidden">
           <Accordion
             type="multiple"
             defaultValue={["item-1", "item-2"]}
@@ -340,7 +340,7 @@ export default function ClassSearch() {
           >
             {/* Searched Section */}
             <AccordionItem value="item-1">
-              <AccordionTrigger className="text-lg text-green-400 font-bold hover:no-underline hover:cursor-pointer">
+              <AccordionTrigger className="text-sm lg:text-base text-green-400 font-bold hover:no-underline hover:cursor-pointer py-2">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span>Searched</span>
                   {selectedClasses.length > 0 && (
@@ -350,16 +350,16 @@ export default function ClassSearch() {
                         setSelectedClasses([]);
                         setSearchQuery("");
                       }}
-                      className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
+                      className="text-[10px] lg:text-xs px-1.5 lg:px-2 py-0.5 lg:py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
                     >
-                      Clear all searched
+                      Clear all
                     </span>
                   )}
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[300px] overflow-y-scroll scrollbar-hidden">
+              <AccordionContent className="font-inter max-h-[min(20vh,180px)] lg:max-h-[min(25vh,220px)] overflow-y-auto scrollbar-hidden">
                 {selectedClasses.length === 0 ? (
-                  <div className="text-sm text-[#888888] font-figtree">
+                  <div className="text-xs lg:text-sm text-[#888888] font-figtree">
                     No classes searched
                   </div>
                 ) : (
@@ -389,12 +389,12 @@ export default function ClassSearch() {
 
             {/* Currently Added Section */}
             <AccordionItem value="item-2">
-              <AccordionTrigger className="text-lg text-purple-400 font-bold hover:no-underline hover:cursor-pointer">
+              <AccordionTrigger className="text-sm lg:text-base text-purple-400 font-bold hover:no-underline hover:cursor-pointer py-2">
                 Currently Selected
               </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[300px] overflow-y-scroll scrollbar-hidden">
+              <AccordionContent className="font-inter max-h-[min(20vh,180px)] lg:max-h-[min(25vh,220px)] overflow-y-auto scrollbar-hidden">
                 {draftSchedule.length === 0 ? (
-                  <div className="text-sm text-[#888888] font-figtree">
+                  <div className="text-xs lg:text-sm text-[#888888] font-figtree">
                     No classes added
                   </div>
                 ) : (
