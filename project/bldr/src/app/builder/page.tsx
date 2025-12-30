@@ -435,7 +435,7 @@ export default function Builder() {
                 <CalendarEditor />
               </div>
               {activeSchedule && (
-                <div className="w-full flex items-center justify-between gap-2 mt-2 lg:mt-3">
+                <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
                   <div className="flex-1 basis-0 text-[10px] lg:text-xs flex flex-wrap gap-1.5 lg:gap-2 items-center text-[#A8A8A8] font-inter justify-start">
                     <motion.div
                       layout

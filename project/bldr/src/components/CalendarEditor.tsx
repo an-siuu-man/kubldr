@@ -206,11 +206,8 @@ const CalendarEditor = () => {
                                                   <Pin className="h-2.5 w-2.5 lg:h-3 lg:w-3 text-amber-600 shrink-0" />
                                                 )}
                                                 <span className="truncate">
-                                                  {cls.dept} {cls.code}
-                                                </span>
-                                                <span className="hidden sm:inline">
-                                                  {" "}
-                                                  ({cls.component})
+                                                  {cls.dept} {cls.code} (
+                                                  {cls.component})
                                                 </span>
                                               </span>
                                               {(cls.seats_available ?? 0) <=
