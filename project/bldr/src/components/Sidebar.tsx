@@ -14,6 +14,7 @@
  * - User account information display
  * - Upgrade prompt for guest users
  * - Responsive design with toggle button
+ * - Mobile-friendly top bar for smaller screens
  *
  * @component
  */
@@ -50,6 +51,7 @@ import { Button } from "./ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import {
   Sidebar as SidebarIcon,
@@ -62,6 +64,8 @@ import {
   User,
   Sparkles,
   UserPlus,
+  Menu,
+  ChevronDown,
 } from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
 import { set } from "date-fns";
@@ -83,6 +87,9 @@ export function Sidebar() {
   // Authentication context for user info and session
   const { user, session } = useAuth();
 
+  // Check if we're on mobile
+  const isMobile = useIsMobile();
+
   // Active schedule context for managing user's schedules
   const {
     activeSchedule,
@@ -101,8 +108,9 @@ export function Sidebar() {
   const { clearDraft, draftSchedule, draftScheduleName, setDraftScheduleName } =
     useScheduleBuilder();
 
-  // Sidebar open/closed state
+  // Sidebar open/closed state (desktop) and mobile menu open state
   const [open, setOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Loading state for async operations (e.g., creating schedules)
   const [loading, setLoading] = useState(false);
@@ -133,6 +141,13 @@ export function Sidebar() {
    */
   const toggleSidebar = () => {
     setOpen(!open);
+  };
+
+  /**
+   * Toggles the mobile menu between open and closed states.
+   */
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   /**
@@ -330,138 +345,153 @@ export function Sidebar() {
   };
 
   return (
-    <div
-      className={`${
-        open ? "mr-[min(280px,25vw)]" : "mr-[70px]"
-      } z-45 transition-all duration-300`}
-    >
-      <div
-        className={`sidebar mr-2 flex flex-col justify-between rounded-tr-2xl rounded-br-2xl fixed top-0 left-0 h-screen transition-all duration-300 ${
-          open
-            ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-[#1a1a1a]"
-            : "bg-transparent min-w-[70px] max-w-[70px]"
-        } overflow-hidden p-3 lg:p-4`}
-      >
-        {/* Top section */}
-        <div>
-          <div className="buttons-container flex items-center justify-between mb-3 lg:mb-4">
-            <SidebarIcon
-              size={28}
-              className={`cursor-pointer p-1 rounded-md transition duration-500 ${
-                open ? "" : "rotate-180"
-              }`}
-              onClick={toggleSidebar}
-            />
-          </div>
-        </div>
-
-        <div className="main-content grow flex flex-col justify-between overflow-hidden">
-          {/* Main Sidebar Content */}
-          <AnimatePresence>
-            {open && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                className="flex flex-col h-full overflow-hidden"
+    <>
+      {/* Mobile Top Bar */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 z-50">
+          {/* Mobile Header Bar */}
+          <div className="bg-[#1a1a1a] border-b border-[#2a2a2a] px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleMobileMenu}
+                className="p-1.5 rounded-md hover:bg-[#333] transition cursor-pointer"
               >
-                <h1 className="text-lg lg:text-xl font-bold text-gray-300 mb-2 lg:mb-3 font-figtree">
-                  Your Schedules
-                </h1>
+                <Menu
+                  size={22}
+                  className={`transition-transform duration-300 ${
+                    mobileMenuOpen ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+              <span className="font-figtree font-bold text-sm text-gray-300">
+                {activeSchedule?.name || draftScheduleName || "Schedules"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {user?.is_anonymous && (
+                <Link href="/upgrade">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 text-xs py-1 px-2 h-7"
+                  >
+                    <UserPlus className="h-3 w-3 mr-1" />
+                    Sign Up
+                  </Button>
+                </Link>
+              )}
+              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                <User className="h-4 w-4" />
+                <span className="font-figtree truncate max-w-20">
+                  {user?.is_anonymous ? "Guest" : user?.email?.split("@")[0]}
+                </span>
+              </div>
+            </div>
+          </div>
 
-                <Accordion
-                  type="single"
-                  collapsible
-                  defaultValue="spring-2026"
-                  className="font-figtree flex-1 overflow-hidden"
+          {/* Mobile Dropdown Menu */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <>
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-black/50 z-40 top-[52px]"
+                  onClick={toggleMobileMenu}
+                />
+                {/* Dropdown Panel */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -20, height: 0 }}
+                  transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                  className="relative bg-[#1a1a1a] border-b border-[#333] shadow-2xl z-50 overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <AccordionItem value="spring-2026">
-                    <AccordionTrigger className="text-sm lg:text-base text-green-400 hover:no-underline hover:cursor-pointer font-bold py-2">
-                      Spring 2026
-                    </AccordionTrigger>
-                    <AccordionContent className="font-inter">
-                      {/* New schedule input */}
-                      <Label
-                        htmlFor="schedule-name"
-                        className="text-xs lg:text-sm font-dmsans mb-1 text-[#888888]"
-                      >
-                        Make new schedule
-                      </Label>
-                      <div className="flex flex-row items-center justify-between gap-1 lg:gap-2 mb-2 lg:mb-3">
-                        <Input
-                          type="text"
-                          id="schedule-name"
-                          value={newScheduleName}
-                          onChange={(e) => setNewScheduleName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleCreateSchedule(newScheduleName);
-                            }
-                          }}
-                          placeholder="Schedule name"
-                          className="font-inter border-[#404040] border placeholder:text-[10px] selection:bg-blue-400 text-[10px] lg:text-xs h-8"
-                        />
-                        <Button
-                          type="submit"
-                          disabled={loading}
-                          onClick={() => {
-                            handleCreateSchedule(newScheduleName);
-                          }}
-                          className="bg-[#fafafa] text-[10px] lg:text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans px-2 lg:px-3 h-8"
-                        >
-                          {loading ? (
-                            <>
-                              <Spinner className="h-3 w-3" />
-                            </>
-                          ) : (
-                            "Create"
-                          )}
-                        </Button>
+                  <div className="p-4 max-h-[70vh] overflow-y-auto">
+                    <h2 className="text-base font-bold text-gray-300 mb-3 font-figtree">
+                      Your Schedules
+                    </h2>
+
+                    {/* Semester Section */}
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 text-green-400 font-bold text-sm mb-2">
+                        <ChevronDown className="h-4 w-4" />
+                        <span>Spring 2026</span>
                       </div>
 
-                      {/* Schedule list */}
-                      <ul className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden max-h-[min(40vh,250px)]">
-                        {isLoadingSchedules ? (
-                          <div className="flex items-center justify-center gap-2 py-4">
-                            <Spinner className="size-4" />{" "}
-                            <span className="text-xs">Loading...</span>
-                          </div>
-                        ) : userSchedules.length === 0 ? (
-                          <p className="text-xs text-gray-400">
-                            No schedules found.
-                          </p>
-                        ) : (
-                          <AnimatePresence initial={false}>
-                            {userSchedules
+                      {/* New schedule input */}
+                      <div className="pl-4">
+                        <Label
+                          htmlFor="mobile-schedule-name"
+                          className="text-xs font-dmsans mb-1 text-[#888888]"
+                        >
+                          Make new schedule
+                        </Label>
+                        <div className="flex flex-row items-center gap-2 mb-3">
+                          <Input
+                            type="text"
+                            id="mobile-schedule-name"
+                            value={newScheduleName}
+                            onChange={(e) => setNewScheduleName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleCreateSchedule(newScheduleName);
+                                setMobileMenuOpen(false);
+                              }
+                            }}
+                            placeholder="Schedule name"
+                            className="font-inter border-[#404040] border placeholder:text-xs selection:bg-blue-400 text-xs h-9 flex-1"
+                          />
+                          <Button
+                            type="submit"
+                            disabled={loading}
+                            onClick={() => {
+                              handleCreateSchedule(newScheduleName);
+                              setMobileMenuOpen(false);
+                            }}
+                            className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans px-3 h-9"
+                          >
+                            {loading ? (
+                              <Spinner className="h-3 w-3" />
+                            ) : (
+                              "Create"
+                            )}
+                          </Button>
+                        </div>
+
+                        {/* Schedule list */}
+                        <div className="space-y-1">
+                          {isLoadingSchedules ? (
+                            <div className="flex items-center justify-center gap-2 py-4">
+                              <Spinner className="size-4" />
+                              <span className="text-xs">Loading...</span>
+                            </div>
+                          ) : userSchedules.length === 0 ? (
+                            <p className="text-xs text-gray-400 py-2">
+                              No schedules found.
+                            </p>
+                          ) : (
+                            userSchedules
                               .filter(
                                 (schedule: any) =>
                                   schedule.semester === activeSemester ||
                                   activeSemester === ""
                               )
                               .map((schedule: any) => (
-                                <motion.li
+                                <div
                                   key={schedule.id}
-                                  initial={{ opacity: 0, y: -10 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: 10 }}
-                                  transition={{
-                                    duration: 0.15,
-                                    ease: [0.4, 0, 0.2, 1],
-                                  }}
-                                  onMouseEnter={() =>
-                                    setHoveredScheduleId(schedule.id)
-                                  }
-                                  onMouseLeave={() =>
-                                    setHoveredScheduleId(null)
-                                  }
-                                  className={`flex justify-between items-center text-[10px] lg:text-xs text-[#fafafa] font-inter my-1 lg:my-1.5 rounded-md ${
+                                  className={`flex items-center justify-between rounded-lg text-sm font-inter ${
                                     activeSchedule?.id === schedule.id
-                                      ? "bg-[#555] font-bold"
-                                      : "hover:bg-[#333]"
-                                  }`}
+                                      ? "bg-[#444] font-semibold"
+                                      : "bg-[#252525] hover:bg-[#333]"
+                                  } transition`}
                                 >
                                   {renamingScheduleId === schedule.id ? (
-                                    <div className="flex items-center gap-1 lg:gap-2 w-full px-1.5 lg:px-2 py-0.5 lg:py-1">
+                                    <div className="flex items-center gap-2 w-full p-2">
                                       <Input
                                         type="text"
                                         value={renameValue}
@@ -479,7 +509,7 @@ export function Sidebar() {
                                           }
                                         }}
                                         autoFocus
-                                        className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
+                                        className="h-8 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
                                       />
                                       <button
                                         onClick={() =>
@@ -488,13 +518,13 @@ export function Sidebar() {
                                             renameValue
                                           )
                                         }
-                                        className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                        className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
                                       >
                                         <Check className="h-4 w-4 text-green-500" />
                                       </button>
                                       <button
                                         onClick={cancelRenaming}
-                                        className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                        className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
                                       >
                                         <X className="h-4 w-4 text-red-500" />
                                       </button>
@@ -502,106 +532,343 @@ export function Sidebar() {
                                   ) : (
                                     <>
                                       <button
-                                        className="py-2 px-3 cursor-pointer w-full text-left truncate"
+                                        className="py-3 px-3 cursor-pointer flex-1 text-left truncate"
                                         onClick={() => {
                                           loadSchedule(schedule.id);
                                           setActiveSemester(schedule.semester);
-                                          console.log(activeSchedule);
+                                          setMobileMenuOpen(false);
                                         }}
                                       >
                                         {schedule.name}
                                       </button>
-                                      {hoveredScheduleId === schedule.id && (
-                                        <Popover>
-                                          <PopoverTrigger asChild>
-                                            <button className="flex items-center z-50 cursor-pointer">
-                                              <MoreHorizontal className="h-4 w-4 mr-2" />
-                                            </button>
-                                          </PopoverTrigger>
-                                          <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
-                                            <div className="flex flex-col items-start justify-between gap-1 text-sm">
-                                              <span
-                                                className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition"
-                                                onClick={() =>
-                                                  startRenaming(schedule)
-                                                }
-                                              >
-                                                <Edit2 className="h-4 w-4" />
-                                                Rename
-                                              </span>
-                                              <hr className="w-full border-t border-[#606060]" />
-                                              <span
-                                                className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-red-500"
-                                                onClick={() =>
-                                                  handleDeleteSchedule(
-                                                    schedule.id
-                                                  )
-                                                }
-                                              >
-                                                <Trash2 className="h-4 w-4 " />
-                                                Delete
-                                              </span>
-                                            </div>
-                                          </PopoverContent>
-                                        </Popover>
-                                      )}
+                                      <div className="flex items-center gap-1 pr-2">
+                                        <button
+                                          onClick={() =>
+                                            startRenaming(schedule)
+                                          }
+                                          className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                        >
+                                          <Edit2 className="h-4 w-4 text-gray-400" />
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteSchedule(schedule.id)
+                                          }
+                                          className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                        >
+                                          <Trash2 className="h-4 w-4 text-red-400" />
+                                        </button>
+                                      </div>
                                     </>
                                   )}
-                                </motion.li>
-                              ))}
-                          </AnimatePresence>
-                        )}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </motion.div>
+                                </div>
+                              ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
         </div>
+      )}
 
-        {/* Bottom Section */}
-        <div className="flex flex-col w-full gap-2 shrink-0 mt-2">
-          {/* Upgrade button for guest users */}
-          <AnimatePresence>
-            {open && user?.is_anonymous && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-              >
-                <Link href="/upgrade">
-                  <Button
-                    variant="outline"
-                    className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 text-xs lg:text-sm py-1.5 lg:py-2"
-                  >
-                    <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-                    Create Account
-                  </Button>
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      {/* Mobile spacer to push content below fixed header */}
+      {isMobile && <div className="h-[52px]" />}
 
-          {/* User info */}
-          <div className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2">
-            <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
-            <AnimatePresence>
-              {open && (
-                <motion.div
-                  initial={{ opacity: 0, translateY: 40 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                  exit={{ opacity: 0, translateY: -40 }}
-                  key={user?.email || "guest"}
-                  className="font-figtree text-xs lg:text-sm truncate"
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <div
+          className={`${
+            open ? "mr-[min(280px,25vw)]" : "mr-[70px]"
+          } z-45 transition-all duration-300 ease-out`}
+        >
+          <div
+            className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed top-0 left-0 h-screen transition-all duration-300 ease-out ${
+              open
+                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-linear-to-b from-[#1a1a1a] to-[#141414] shadow-2xl shadow-black/50"
+                : "bg-transparent min-w-[70px] max-w-[70px]"
+            } overflow-hidden p-4 lg:p-5`}
+          >
+            {/* Top section */}
+            <div>
+              <div className="buttons-container flex items-center justify-between mb-4 lg:mb-5">
+                <div
+                  className={`p-2 rounded-xl transition-all duration-300 cursor-pointer ${
+                    open ? "hover:bg-white/5" : "hover:bg-white/10"
+                  }`}
+                  onClick={toggleSidebar}
                 >
-                  {user?.is_anonymous ? "Guest" : user?.email}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <SidebarIcon
+                    size={22}
+                    className={`transition-transform duration-500 ease-out text-gray-400 ${
+                      open ? "" : "rotate-180"
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="main-content grow flex flex-col justify-between overflow-hidden">
+              {/* Main Sidebar Content */}
+              <AnimatePresence>
+                {open && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                    className="flex flex-col h-full overflow-hidden"
+                  >
+                    <h1 className="text-lg lg:text-xl font-semibold text-gray-200 mb-3 lg:mb-4 font-figtree tracking-tight">
+                      Your Schedules
+                    </h1>
+
+                    <Accordion
+                      type="single"
+                      collapsible
+                      defaultValue="spring-2026"
+                      className="font-figtree flex-1 overflow-hidden"
+                    >
+                      <AccordionItem value="spring-2026" className="border-b-0">
+                        <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:text-emerald-300 hover:no-underline hover:cursor-pointer font-semibold py-2 transition-colors">
+                          Spring 2026
+                        </AccordionTrigger>
+                        <AccordionContent className="font-inter">
+                          {/* New schedule input */}
+                          <Label
+                            htmlFor="schedule-name"
+                            className="text-xs lg:text-sm font-dmsans mb-1 text-[#888888]"
+                          >
+                            Make new schedule
+                          </Label>
+                          <div className="flex flex-row items-center justify-between gap-2 mb-3 lg:mb-4">
+                            <Input
+                              type="text"
+                              id="schedule-name"
+                              value={newScheduleName}
+                              onChange={(e) =>
+                                setNewScheduleName(e.target.value)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  handleCreateSchedule(newScheduleName);
+                                }
+                              }}
+                              placeholder="Schedule name"
+                              className="font-inter bg-white/5 border-white/10 border rounded-lg placeholder:text-xs focus:border-emerald-500/50 focus:ring-emerald-500/20 selection:bg-emerald-400 text-xs h-9 transition-colors"
+                            />
+                            <Button
+                              type="submit"
+                              disabled={loading}
+                              onClick={() => {
+                                handleCreateSchedule(newScheduleName);
+                              }}
+                              className="bg-white text-xs text-[#1a1a1a] hover:bg-white/90 cursor-pointer font-dmsans font-medium px-3 h-9 rounded-lg shadow-sm transition-all"
+                            >
+                              {loading ? (
+                                <Spinner className="h-3 w-3" />
+                              ) : (
+                                "Create"
+                              )}
+                            </Button>
+                          </div>
+
+                          {/* Schedule list with overflow indicator */}
+                          <div className="relative">
+                            <ul className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden max-h-[min(40vh,250px)] pb-4">
+                              {isLoadingSchedules ? (
+                                <div className="flex items-center justify-center gap-2 py-6">
+                                  <Spinner className="size-4 text-emerald-400" />
+                                  <span className="text-xs text-gray-400">
+                                    Loading...
+                                  </span>
+                                </div>
+                              ) : userSchedules.length === 0 ? (
+                                <p className="text-xs text-gray-500 py-2">
+                                  No schedules found.
+                                </p>
+                              ) : (
+                                <AnimatePresence initial={false}>
+                                  {userSchedules
+                                    .filter(
+                                      (schedule: any) =>
+                                        schedule.semester === activeSemester ||
+                                        activeSemester === ""
+                                    )
+                                    .map((schedule: any) => (
+                                      <motion.li
+                                        key={schedule.id}
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        transition={{
+                                          duration: 0.15,
+                                          ease: [0.4, 0, 0.2, 1],
+                                        }}
+                                        onMouseEnter={() =>
+                                          setHoveredScheduleId(schedule.id)
+                                        }
+                                        onMouseLeave={() =>
+                                          setHoveredScheduleId(null)
+                                        }
+                                        className={`flex justify-between items-center text-xs text-gray-200 font-inter my-1 rounded-lg transition-all duration-150 ${
+                                          activeSchedule?.id === schedule.id
+                                            ? "bg-white/10 font-medium shadow-sm"
+                                            : "hover:bg-white/5"
+                                        }`}
+                                      >
+                                        {renamingScheduleId === schedule.id ? (
+                                          <div className="flex items-center gap-1 lg:gap-2 w-full px-1.5 lg:px-2 py-0.5 lg:py-1">
+                                            <Input
+                                              type="text"
+                                              value={renameValue}
+                                              onChange={(e) =>
+                                                setRenameValue(e.target.value)
+                                              }
+                                              onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                  handleRenameSchedule(
+                                                    schedule.id,
+                                                    renameValue
+                                                  );
+                                                } else if (e.key === "Escape") {
+                                                  cancelRenaming();
+                                                }
+                                              }}
+                                              autoFocus
+                                              className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
+                                            />
+                                            <button
+                                              onClick={() =>
+                                                handleRenameSchedule(
+                                                  schedule.id,
+                                                  renameValue
+                                                )
+                                              }
+                                              className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                            >
+                                              <Check className="h-4 w-4 text-green-500" />
+                                            </button>
+                                            <button
+                                              onClick={cancelRenaming}
+                                              className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                            >
+                                              <X className="h-4 w-4 text-red-500" />
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <button
+                                              className="py-2 px-3 cursor-pointer w-full text-left truncate"
+                                              onClick={() => {
+                                                loadSchedule(schedule.id);
+                                                setActiveSemester(
+                                                  schedule.semester
+                                                );
+                                                console.log(activeSchedule);
+                                              }}
+                                            >
+                                              {schedule.name}
+                                            </button>
+                                            {hoveredScheduleId ===
+                                              schedule.id && (
+                                              <Popover>
+                                                <PopoverTrigger asChild>
+                                                  <button className="flex items-center z-50 cursor-pointer">
+                                                    <MoreHorizontal className="h-4 w-4 mr-2" />
+                                                  </button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
+                                                  <div className="flex flex-col items-start justify-between gap-1 text-sm">
+                                                    <span
+                                                      className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition"
+                                                      onClick={() =>
+                                                        startRenaming(schedule)
+                                                      }
+                                                    >
+                                                      <Edit2 className="h-4 w-4" />
+                                                      Rename
+                                                    </span>
+                                                    <hr className="w-full border-t border-[#606060]" />
+                                                    <span
+                                                      className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-red-500"
+                                                      onClick={() =>
+                                                        handleDeleteSchedule(
+                                                          schedule.id
+                                                        )
+                                                      }
+                                                    >
+                                                      <Trash2 className="h-4 w-4 " />
+                                                      Delete
+                                                    </span>
+                                                  </div>
+                                                </PopoverContent>
+                                              </Popover>
+                                            )}
+                                          </>
+                                        )}
+                                      </motion.li>
+                                    ))}
+                                </AnimatePresence>
+                              )}
+                            </ul>
+                            {/* Gradient overlay to indicate scrollable content */}
+                            <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#141414] to-transparent pointer-events-none" />
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Bottom Section */}
+            <div className="flex flex-col w-full gap-3 shrink-0 mt-4 pt-4 border-t border-white/15">
+              {/* Upgrade button for guest users */}
+              <AnimatePresence>
+                {open && user?.is_anonymous && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                  >
+                    <Link href="/upgrade">
+                      <Button
+                        variant="outline"
+                        className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 text-xs lg:text-sm py-1.5 lg:py-2"
+                      >
+                        <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                        Create Account
+                      </Button>
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* User info */}
+              <div className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2">
+                <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
+                <AnimatePresence>
+                  {open && (
+                    <motion.div
+                      initial={{ opacity: 0, translateY: 40 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      exit={{ opacity: 0, translateY: -40 }}
+                      key={user?.email || "guest"}
+                      className="font-figtree text-xs lg:text-sm truncate"
+                    >
+                      {user?.is_anonymous ? "Guest" : user?.email}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Delete Confirmation AlertDialog */}
       <AlertDialog
@@ -631,6 +898,6 @@ export function Sidebar() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
