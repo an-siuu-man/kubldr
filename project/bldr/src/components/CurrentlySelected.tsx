@@ -34,7 +34,7 @@ export default function CurrentlySelected() {
   const { draftSchedule, removeClassFromDraft } = useScheduleBuilder();
 
   return (
-    <div className="flex flex-col justify-start items-center my-2 lg:my-4 w-full min-w-[200px] max-w-[280px] lg:max-w-[300px] xl:max-w-[320px] max-h-[min(55vh,450px)] lg:max-h-[min(60vh,520px)] xl:max-h-[min(65vh,580px)] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
+    <div className="flex flex-col justify-start items-center my-2 lg:my-4 w-full min-w-[280px] max-w-[340px] lg:max-w-[380px] xl:max-w-[420px] h-[min(55vh,450px)] lg:h-[min(60vh,520px)] xl:h-[min(65vh,580px)] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
       <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4">
         <Accordion
           type="single"
