@@ -75,7 +75,7 @@ export default function Builder() {
 
   const schedulesMatch = areSchedulesEqual(
     activeSchedule?.classes,
-    draftSchedule
+    draftSchedule,
   );
 
   // Hydration check - ensures localStorage data is loaded
@@ -238,7 +238,7 @@ export default function Builder() {
               style: { ...toastStyle },
               duration: 6000,
               icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-            }
+            },
           );
         }, 500);
       }
@@ -296,7 +296,7 @@ export default function Builder() {
         style: { ...toastStyle },
         duration: Infinity,
         icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
-      }
+      },
     );
   };
 
