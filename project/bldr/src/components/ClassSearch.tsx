@@ -45,11 +45,9 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { SearchedClass } from "@/types";
-import { Trash2, Search, AlertCircle } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 import Class from "./Class";
 import Loader from "./Loader";
-import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-import { Alert } from "./ui/alert";
 
 /**
  * ClassSearch Component
@@ -60,9 +58,6 @@ import { Alert } from "./ui/alert";
  * @returns {JSX.Element} The class search panel with search input and accordion sections
  */
 export default function ClassSearch() {
-  // Access schedule builder context for draft schedule management
-  const { draftSchedule, removeClassFromDraft } = useScheduleBuilder();
-
   // Classes that the user has selected from search results to view details
   const [selectedClasses, setSelectedClasses] = useState<SearchedClass[]>([]);
 
@@ -184,7 +179,7 @@ export default function ClassSearch() {
     if (isAlreadyPresent) {
       // Remove class if already in the list (toggle behavior)
       setSelectedClasses((prevClasses) =>
-        prevClasses.filter((item) => item.uuid !== uuid)
+        prevClasses.filter((item) => item.uuid !== uuid),
       );
       console.log(selectedClasses);
     } else {
@@ -209,7 +204,7 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col justify-start items-center my-2 lg:my-4 w-full min-w-[280px] max-w-[340px] lg:max-w-[380px] xl:max-w-[420px] h-[min(55vh,450px)] lg:h-[min(60vh,520px)] xl:h-[min(65vh,580px)] overflow-y-auto scrollbar-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
+    <div className="flex flex-col justify-start items-center my-2 lg:my-4 w-full min-w-[280px] max-w-[340px] lg:max-w-[380px] xl:max-w-[420px] h-[min(55vh,450px)] lg:h-[min(60vh,520px)] xl:h-[min(65vh,580px)] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
       <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4">
         <h1 className="text-sm lg:text-base xl:text-lg self-start font-figtree font-bold text-[#fafafa]">
           Search for classes
@@ -245,7 +240,7 @@ export default function ClassSearch() {
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
                   setHighlightedIndex((prev) =>
-                    prev < classes.length - 1 ? prev + 1 : prev
+                    prev < classes.length - 1 ? prev + 1 : prev,
                   );
                 } else if (e.key === "ArrowUp") {
                   e.preventDefault();
@@ -332,14 +327,15 @@ export default function ClassSearch() {
           </FloatingPortal>
         </div>
 
-        <div className="w-full max-w-full mt-2 lg:mt-3 flex-1 overflow-hidden">
+        {/* Searched Section */}
+        <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col">
           <Accordion
-            type="multiple"
-            defaultValue={["item-1", "item-2"]}
-            className="font-figtree"
+            type="single"
+            defaultValue="item-1"
+            collapsible
+            className="font-figtree w-full"
           >
-            {/* Searched Section */}
-            <AccordionItem value="item-1">
+            <AccordionItem value="item-1" className="border-b-0">
               <AccordionTrigger className="text-sm lg:text-base text-green-400 font-bold hover:no-underline hover:cursor-pointer py-2">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span>Searched</span>
@@ -357,7 +353,7 @@ export default function ClassSearch() {
                   )}
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[min(20vh,180px)] lg:max-h-[min(25vh,220px)] overflow-y-auto scrollbar-hidden">
+              <AccordionContent className="font-inter max-h-[min(35vh,300px)] lg:max-h-[min(40vh,350px)] overflow-y-auto scrollbar-hidden">
                 {selectedClasses.length === 0 ? (
                   <div className="text-xs lg:text-sm text-[#888888] font-figtree">
                     No classes searched
@@ -373,7 +369,7 @@ export default function ClassSearch() {
                       <button
                         onClick={() =>
                           setSelectedClasses((prev) =>
-                            prev.filter((cls) => cls.uuid !== c.uuid)
+                            prev.filter((cls) => cls.uuid !== c.uuid),
                           )
                         }
                         className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
@@ -383,95 +379,6 @@ export default function ClassSearch() {
                       </button>
                     </div>
                   ))
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Currently Added Section */}
-            <AccordionItem value="item-2">
-              <AccordionTrigger className="text-sm lg:text-base text-purple-400 font-bold hover:no-underline hover:cursor-pointer py-2">
-                Currently Selected
-              </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[min(20vh,180px)] lg:max-h-[min(25vh,220px)] overflow-y-auto scrollbar-hidden">
-                {draftSchedule.length === 0 ? (
-                  <div className="text-xs lg:text-sm text-[#888888] font-figtree">
-                    No classes added
-                  </div>
-                ) : (
-                  (() => {
-                    // Group sections by class (dept + code)
-                    const groupedClasses = draftSchedule.reduce(
-                      (acc: any, section: any, index: number) => {
-                        const key = `${section.dept}-${section.code}`;
-                        if (!acc[key]) {
-                          acc[key] = {
-                            dept: section.dept,
-                            code: section.code,
-                            title: section.title,
-                            sections: [],
-                          };
-                        }
-                        acc[key].sections.push({
-                          ...section,
-                          originalIndex: index,
-                        });
-                        return acc;
-                      },
-                      {}
-                    );
-
-                    return Object.values(groupedClasses).map(
-                      (classGroup: any) => (
-                        <div
-                          key={`${classGroup.dept}-${classGroup.code}`}
-                          className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
-                        >
-                          <div className="font-bold text-white mb-4">
-                            {classGroup.dept} {classGroup.code}:{" "}
-                            {classGroup.title}
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {classGroup.sections.map((section: any) => (
-                              <div
-                                key={section.originalIndex}
-                                className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
-                              >
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex flex-row items-center justify-start gap-1 text-sm font-semibold text-purple-400">
-                                    {section.component} ({section.classID})
-                                    {(section.seats_available ?? 0) <= 0 && (
-                                      <span className="flex items-center text-red-400">
-                                        <AlertCircle className="inline h-4 w-4 mr-1" />
-                                        No open seats
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-[#888888]">
-                                    {section.days} • {section.starttime} -{" "}
-                                    {section.endtime}
-                                  </div>
-                                  {section.instructor && (
-                                    <div className="text-xs text-[#888888]">
-                                      {section.instructor}
-                                    </div>
-                                  )}
-                                </div>
-                                <button
-                                  onClick={() =>
-                                    removeClassFromDraft(section.originalIndex)
-                                  }
-                                  className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                                  title="Remove section"
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    );
-                  })()
                 )}
               </AccordionContent>
             </AccordionItem>
