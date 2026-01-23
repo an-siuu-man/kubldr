@@ -26,6 +26,7 @@ import ClassSearch from "@/components/ClassSearch";
 import { Sidebar } from "@/components/Sidebar";
 import CalendarEditor from "@/components/CalendarEditor";
 import PermutationBrowser from "@/components/PermutationBrowser";
+import CurrentlySelected from "@/components/CurrentlySelected";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 
@@ -423,7 +424,7 @@ export default function Builder() {
             )}
           </AnimatePresence>
           {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,350px)_1fr] gap-2 lg:gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,350px)_1fr_minmax(200px,320px)] gap-2 lg:gap-4">
             {/* Class Search Section */}
             <div className="flex justify-center items-start">
               <ClassSearch />
@@ -527,6 +528,11 @@ export default function Builder() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Currently Selected Section - Right side */}
+            <div className="flex justify-center items-start">
+              <CurrentlySelected />
             </div>
           </div>
         </div>
