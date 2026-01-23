@@ -342,12 +342,12 @@ export default function Builder() {
   };
 
   return (
-    <div className="flex h-screen max-h-screen overflow-hidden bg-[#080808]">
+    <div className="flex flex-col md:flex-row h-screen max-h-screen overflow-hidden bg-[#080808]">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto">
+      <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto pt-[60px] md:pt-2 lg:pt-4 xl:pt-6">
         <div className="max-w-7xl mx-auto">
           {/* Guest Warning Banner */}
 
