@@ -58,7 +58,6 @@ import Loader from "./Loader";
  * @returns {JSX.Element} The class search panel with search input and accordion sections
  */
 export default function ClassSearch() {
-
   // Classes that the user has selected from search results to view details
   const [selectedClasses, setSelectedClasses] = useState<SearchedClass[]>([]);
 
@@ -180,7 +179,7 @@ export default function ClassSearch() {
     if (isAlreadyPresent) {
       // Remove class if already in the list (toggle behavior)
       setSelectedClasses((prevClasses) =>
-        prevClasses.filter((item) => item.uuid !== uuid)
+        prevClasses.filter((item) => item.uuid !== uuid),
       );
       console.log(selectedClasses);
     } else {
@@ -241,7 +240,7 @@ export default function ClassSearch() {
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
                   setHighlightedIndex((prev) =>
-                    prev < classes.length - 1 ? prev + 1 : prev
+                    prev < classes.length - 1 ? prev + 1 : prev,
                   );
                 } else if (e.key === "ArrowUp") {
                   e.preventDefault();
@@ -370,7 +369,7 @@ export default function ClassSearch() {
                       <button
                         onClick={() =>
                           setSelectedClasses((prev) =>
-                            prev.filter((cls) => cls.uuid !== c.uuid)
+                            prev.filter((cls) => cls.uuid !== c.uuid),
                           )
                         }
                         className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"

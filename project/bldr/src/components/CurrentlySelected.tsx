@@ -71,54 +71,62 @@ export default function CurrentlySelected() {
                       });
                       return acc;
                     },
-                    {}
+                    {},
                   );
 
-                  return Object.values(groupedClasses).map((classGroup: any) => (
-                    <div
-                      key={`${classGroup.dept}-${classGroup.code}`}
-                      className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
-                    >
-                      <div className="font-bold text-white mb-4 text-xs lg:text-sm font-inter">
-                        {classGroup.dept} {classGroup.code}: {classGroup.title}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {classGroup.sections.map((section: any) => (
-                          <div
-                            key={section.originalIndex}
-                            className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-purple-400 font-inter">
-                                {section.component} ({section.classID})
-                                {(section.seats_available ?? 0) <= 0 && (
-                                  <span className="flex items-center text-red-400">
-                                    <AlertCircle className="inline h-3 w-3 lg:h-4 lg:w-4 mr-1" />
-                                    <span className="text-[10px] lg:text-xs">No open seats</span>
-                                  </span>
+                  return Object.values(groupedClasses).map(
+                    (classGroup: any) => (
+                      <div
+                        key={`${classGroup.dept}-${classGroup.code}`}
+                        className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
+                      >
+                        <div className="font-bold text-white mb-4 text-xs lg:text-sm font-inter">
+                          {classGroup.dept} {classGroup.code}:{" "}
+                          {classGroup.title}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {classGroup.sections.map((section: any) => (
+                            <div
+                              key={section.originalIndex}
+                              className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
+                            >
+                              <div className="flex flex-col gap-1">
+                                <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-purple-400 font-inter">
+                                  {section.component} ({section.classID})
+                                  {(section.seats_available ?? 0) <= 0 && (
+                                    <span className="flex items-center text-red-400">
+                                      <AlertCircle className="inline h-3 w-3 lg:h-4 lg:w-4 mr-1" />
+                                      <span className="text-[10px] lg:text-xs">
+                                        No open seats
+                                      </span>
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
+                                  {section.days} • {section.starttime} -{" "}
+                                  {section.endtime}
+                                </div>
+                                {section.instructor && (
+                                  <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
+                                    {section.instructor}
+                                  </div>
                                 )}
                               </div>
-                              <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
-                                {section.days} • {section.starttime} - {section.endtime}
-                              </div>
-                              {section.instructor && (
-                                <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
-                                  {section.instructor}
-                                </div>
-                              )}
+                              <button
+                                onClick={() =>
+                                  removeClassFromDraft(section.originalIndex)
+                                }
+                                className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                title="Remove section"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </button>
                             </div>
-                            <button
-                              onClick={() => removeClassFromDraft(section.originalIndex)}
-                              className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                              title="Remove section"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </button>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ));
+                    ),
+                  );
                 })()
               )}
             </AccordionContent>
