@@ -120,12 +120,12 @@ export function Sidebar() {
 
   // Track which schedule is being hovered for showing action buttons
   const [hoveredScheduleId, setHoveredScheduleId] = useState<string | null>(
-    null
+    null,
   );
 
   // Track which schedule is in rename mode
   const [renamingScheduleId, setRenamingScheduleId] = useState<string | null>(
-    null
+    null,
   );
 
   // Input value for renaming a schedule
@@ -133,7 +133,7 @@ export function Sidebar() {
 
   // Track which schedule is being deleted (for AlertDialog)
   const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(
-    null
+    null,
   );
 
   // Track if the schedule list has overflow (for showing gradient shadow)
@@ -272,7 +272,7 @@ export function Sidebar() {
       setDraftScheduleName(newName.trim());
       // Update the local schedule list with the new name
       const scheduleToUpdate = userSchedules.find(
-        (s: any) => s.id === scheduleId
+        (s: any) => s.id === scheduleId,
       );
       if (scheduleToUpdate) {
         updateScheduleInList(scheduleId, {
@@ -510,7 +510,7 @@ export function Sidebar() {
                               .filter(
                                 (schedule: any) =>
                                   schedule.semester === activeSemester ||
-                                  activeSemester === ""
+                                  activeSemester === "",
                               )
                               .map((schedule: any) => (
                                 <div
@@ -533,7 +533,7 @@ export function Sidebar() {
                                           if (e.key === "Enter") {
                                             handleRenameSchedule(
                                               schedule.id,
-                                              renameValue
+                                              renameValue,
                                             );
                                           } else if (e.key === "Escape") {
                                             cancelRenaming();
@@ -546,7 +546,7 @@ export function Sidebar() {
                                         onClick={() =>
                                           handleRenameSchedule(
                                             schedule.id,
-                                            renameValue
+                                            renameValue,
                                           )
                                         }
                                         className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
@@ -729,7 +729,7 @@ export function Sidebar() {
                                     .filter(
                                       (schedule: any) =>
                                         schedule.semester === activeSemester ||
-                                        activeSemester === ""
+                                        activeSemester === "",
                                     )
                                     .map((schedule: any) => (
                                       <motion.li
@@ -765,7 +765,7 @@ export function Sidebar() {
                                                 if (e.key === "Enter") {
                                                   handleRenameSchedule(
                                                     schedule.id,
-                                                    renameValue
+                                                    renameValue,
                                                   );
                                                 } else if (e.key === "Escape") {
                                                   cancelRenaming();
@@ -778,7 +778,7 @@ export function Sidebar() {
                                               onClick={() =>
                                                 handleRenameSchedule(
                                                   schedule.id,
-                                                  renameValue
+                                                  renameValue,
                                                 )
                                               }
                                               className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
@@ -799,7 +799,7 @@ export function Sidebar() {
                                               onClick={() => {
                                                 loadSchedule(schedule.id);
                                                 setActiveSemester(
-                                                  schedule.semester
+                                                  schedule.semester,
                                                 );
                                                 console.log(activeSchedule);
                                               }}
@@ -830,7 +830,7 @@ export function Sidebar() {
                                                       className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-red-500"
                                                       onClick={() =>
                                                         handleDeleteSchedule(
-                                                          schedule.id
+                                                          schedule.id,
                                                         )
                                                       }
                                                     >
