@@ -20,7 +20,7 @@
  */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Variants } from "framer-motion";
 import {
@@ -135,6 +135,37 @@ export function Sidebar() {
   const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(
     null
   );
+
+  // Track if the schedule list has overflow (for showing gradient shadow)
+  const [hasScheduleListOverflow, setHasScheduleListOverflow] = useState(false);
+  const scheduleListRef = useRef<HTMLUListElement>(null);
+
+  // Check if the schedule list has overflow using ResizeObserver
+  useEffect(() => {
+    const listElement = scheduleListRef.current;
+    if (!listElement) return;
+
+    const checkOverflow = () => {
+      const { scrollHeight, clientHeight } = listElement;
+      setHasScheduleListOverflow(scrollHeight > clientHeight);
+    };
+
+    // Initial check with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(checkOverflow, 50);
+
+    // Use ResizeObserver to detect content size changes
+    const resizeObserver = new ResizeObserver(checkOverflow);
+    resizeObserver.observe(listElement);
+
+    // Also check on window resize
+    window.addEventListener("resize", checkOverflow);
+
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", checkOverflow);
+    };
+  }, [userSchedules, activeSemester, isLoadingSchedules]);
 
   /**
    * Toggles the sidebar between open and closed states.
@@ -677,7 +708,10 @@ export function Sidebar() {
 
                           {/* Schedule list with overflow indicator */}
                           <div className="relative">
-                            <ul className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden max-h-[min(40vh,250px)] pb-4">
+                            <ul
+                              ref={scheduleListRef}
+                              className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden max-h-[min(40vh,250px)] pb-4"
+                            >
                               {isLoadingSchedules ? (
                                 <div className="flex items-center justify-center gap-2 py-6">
                                   <Spinner className="size-4 text-emerald-400" />
@@ -814,8 +848,10 @@ export function Sidebar() {
                                 </AnimatePresence>
                               )}
                             </ul>
-                            {/* Gradient overlay to indicate scrollable content */}
-                            <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#141414] to-transparent pointer-events-none" />
+                            {/* Gradient overlay to indicate scrollable content - only visible when content overflows */}
+                            {hasScheduleListOverflow && (
+                              <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#141414] to-transparent pointer-events-none" />
+                            )}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
