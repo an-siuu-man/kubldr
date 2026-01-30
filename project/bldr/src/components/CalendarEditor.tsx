@@ -65,7 +65,7 @@ const CalendarEditor = () => {
    */
   const handleRemoveSection = (cls: ClassSection) => {
     const index = draftSchedule.findIndex(
-      (item: ClassSection) => item.uuid === cls.uuid
+      (item: ClassSection) => item.uuid === cls.uuid,
     );
     if (index !== -1) {
       removeClassFromDraft(index);
@@ -81,7 +81,7 @@ const CalendarEditor = () => {
   };
 
   return (
-    <div className="relative flex justify-center items-center mt-2 lg:mt-4 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] mx-auto h-[min(50vh,400px)] lg:h-[min(55vh,500px)] xl:h-[min(60vh,550px)]">
+    <div className="relative flex justify-center items-center mt-2 lg:mt-4 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] mx-auto h-[min(50vh,400px)] lg:h-[min(55vh,500px)] xl:h-[min(60vh,550px)] select-none">
       <div className="w-full h-full overflow-hidden">
         <AnimatePresence>
           {draftScheduleName && draftSchedule.length > 0 ? (
@@ -128,7 +128,7 @@ const CalendarEditor = () => {
                             .filter((cls: ClassSection) => {
                               const classDays = parseDays(cls.days || "");
                               const startTime = timeToDecimal(
-                                cls.starttime || ""
+                                cls.starttime || "",
                               );
                               return (
                                 classDays.includes(day) &&
@@ -139,11 +139,11 @@ const CalendarEditor = () => {
                             .map((cls: ClassSection, idx: number) => {
                               // Use CSS calc to make row height responsive
                               const startTime = timeToDecimal(
-                                cls.starttime || ""
+                                cls.starttime || "",
                               );
                               const duration = calculateDuration(
                                 cls.starttime || "",
-                                cls.endtime || ""
+                                cls.endtime || "",
                               );
                               // Calculate offset and height as percentages of row
                               const offsetPercent = (startTime - hour) * 100;
@@ -205,7 +205,7 @@ const CalendarEditor = () => {
                                                 {cls.pinned && (
                                                   <Pin className="h-2.5 w-2.5 lg:h-3 lg:w-3 text-amber-600 shrink-0" />
                                                 )}
-                                                <span className="truncate select-none">
+                                                <span className="truncate">
                                                   {cls.dept} {cls.code} (
                                                   {cls.component})
                                                 </span>
@@ -218,7 +218,7 @@ const CalendarEditor = () => {
                                           </motion.div>
                                         </TooltipTrigger>
                                         <TooltipContent
-                                          className="font-figtree"
+                                          className="font-figtree select-text"
                                           side="top"
                                           style={{
                                             borderTopWidth: "2px",
