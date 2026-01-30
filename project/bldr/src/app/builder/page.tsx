@@ -433,8 +433,10 @@ export default function Builder() {
             </div>
 
             {/* Calendar Section */}
-            <div className="flex flex-col items-end">
-              <CalendarEditor />
+            <div className="flex flex-col w-full">
+              <div className="w-full max-w-[min(100%,700px)] xl:max-w-none mx-auto xl:mx-0">
+                <CalendarEditor />
+              </div>
               {activeSchedule && (
                 <div className="w-full flex flex-row justify-between gap-3 mt-4">
                   <div className="text-xs lg:text-sm flex gap-2 items-center text-[#A8A8A8] font-inter">

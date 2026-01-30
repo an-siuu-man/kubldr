@@ -81,7 +81,7 @@ const CalendarEditor = () => {
   };
 
   return (
-    <div className="relative flex justify-center items-center mt-5 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[90%] lg:max-w-[85%] xl:max-w-[1100px] mx-auto h-[500px] lg:h-[550px] xl:h-[600px]">
+    <div className="relative flex justify-center items-center bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full min-h-[500px] md:aspect-square md:min-h-0 max-w-[min(100%,calc(100vh-200px))]">
       <div className="w-full h-full overflow-hidden">
         <AnimatePresence>
           {draftScheduleName && draftSchedule.length > 0 ? (
