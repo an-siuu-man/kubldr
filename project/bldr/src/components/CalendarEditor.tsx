@@ -65,7 +65,7 @@ const CalendarEditor = () => {
    */
   const handleRemoveSection = (cls: ClassSection) => {
     const index = draftSchedule.findIndex(
-      (item: ClassSection) => item.uuid === cls.uuid
+      (item: ClassSection) => item.uuid === cls.uuid,
     );
     if (index !== -1) {
       removeClassFromDraft(index);
@@ -128,7 +128,7 @@ const CalendarEditor = () => {
                             .filter((cls: ClassSection) => {
                               const classDays = parseDays(cls.days || "");
                               const startTime = timeToDecimal(
-                                cls.starttime || ""
+                                cls.starttime || "",
                               );
                               return (
                                 classDays.includes(day) &&
@@ -139,11 +139,11 @@ const CalendarEditor = () => {
                             .map((cls: ClassSection, idx: number) => {
                               const baseRowHeight = 38;
                               const startTime = timeToDecimal(
-                                cls.starttime || ""
+                                cls.starttime || "",
                               );
                               const duration = calculateDuration(
                                 cls.starttime || "",
-                                cls.endtime || ""
+                                cls.endtime || "",
                               );
                               const offset = (startTime - hour) * baseRowHeight;
                               const height = duration * baseRowHeight;
@@ -295,12 +295,11 @@ const CalendarEditor = () => {
                                       className="text-amber-400 font-dmsans focus:bg-[#404040] focus:text-amber-400 cursor-pointer"
                                       onClick={() => handleTogglePin(cls)}
                                     >
-                                      {
-                                        cls.pinned ? (
+                                      {cls.pinned ? (
                                         <PinOff className="mr-1 h-4 text-amber-400" />
-                                        ) : (
+                                      ) : (
                                         <Pin className="mr-1 h-4 text-amber-400" />
-                                        )}
+                                      )}
                                       {cls.pinned
                                         ? "Unpin Section"
                                         : "Pin Section"}
