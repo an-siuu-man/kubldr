@@ -81,11 +81,12 @@ const CalendarEditor = () => {
   };
 
   return (
-    <div className="relative flex justify-center items-center mt-2 lg:mt-4 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] mx-auto h-[min(50vh,400px)] lg:h-[min(55vh,500px)] xl:h-[min(60vh,550px)] select-none">
+    <div className="relative grid grid-rows-1 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 py-2 w-full aspect-square md:aspect-auto md:h-full md:min-h-[500px]">
       <div className="w-full h-full overflow-hidden">
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {draftScheduleName && draftSchedule.length > 0 ? (
             <motion.div
+              key="calendar"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

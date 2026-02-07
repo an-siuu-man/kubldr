@@ -1,13 +1,13 @@
 /**
  * API Route: /api/getClasses
- * 
+ *
  * Retrieves all classes in a schedule, grouped by department and course code.
  * Returns class UUIDs and IDs organized by their dept+code combination.
- * 
+ *
  * @method POST
  * @body { scheduleid: string } - The UUID of the schedule to get classes from
  * @returns Array of { deptcode: string, selClass: Array<{classid, uuid}> }
- * 
+ *
  * @throws 400 - Missing scheduleid
  * @throws 404 - No classes found for the schedule
  * @throws 500 - Database error
@@ -18,7 +18,7 @@ import { supabase } from "../../lib/supabaseClient";
  * POST handler for getting all classes in a schedule.
  * Fetches class UUIDs from schedule_classes, then looks up
  * class details and groups them by department and code.
- * 
+ *
  * @param {Request} req - The incoming request with scheduleid
  * @returns {Response} JSON array of grouped classes
  */
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     if (userScheduleErr || !userSchedule || userSchedule.length === 0) {
       return Response.json(
         { error: "No classes found for this scheduleid" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     if (classInfoErr || !classInfo) {
       return Response.json(
         { error: "Class info fetch failed" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -79,13 +79,12 @@ export async function POST(req: Request) {
       deptcode,
       selClass,
     }));
-    console.log("Output:", JSON.stringify(output, null, 2));
     return Response.json(output, { status: 200 });
   } catch (err: any) {
     console.error("Server error:", err);
     return Response.json(
       { error: "Server error", details: err.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

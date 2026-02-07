@@ -204,8 +204,8 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col justify-start items-center my-2 lg:my-4 w-full min-w-[280px] max-w-[340px] lg:max-w-[380px] xl:max-w-[420px] h-[min(55vh,450px)] lg:h-[min(60vh,520px)] xl:h-[min(65vh,580px)] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
-      <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4">
+    <div className="flex flex-col justify-start items-center w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] h-[450px] lg:h-[520px] xl:h-[560px] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
+      <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4 overflow-hidden">
         <h1 className="text-sm lg:text-base xl:text-lg self-start font-figtree font-bold text-[#fafafa]">
           Search for classes
         </h1>
@@ -328,15 +328,18 @@ export default function ClassSearch() {
         </div>
 
         {/* Searched Section */}
-        <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col">
+        <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
           <Accordion
             type="single"
             defaultValue="item-1"
             collapsible
-            className="font-figtree w-full"
+            className="font-figtree w-full h-full flex flex-col"
           >
-            <AccordionItem value="item-1" className="border-b-0">
-              <AccordionTrigger className="text-sm lg:text-base text-green-400 font-bold hover:no-underline hover:cursor-pointer py-2">
+            <AccordionItem
+              value="item-1"
+              className="border-b-0 flex flex-col h-full"
+            >
+              <AccordionTrigger className="text-sm lg:text-base text-green-400 font-bold hover:no-underline hover:cursor-pointer py-2 shrink-0">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span>Searched</span>
                   {selectedClasses.length > 0 && (
@@ -353,7 +356,7 @@ export default function ClassSearch() {
                   )}
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[min(35vh,300px)] lg:max-h-[min(40vh,350px)] overflow-y-auto scrollbar-hidden">
+              <AccordionContent className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden">
                 {selectedClasses.length === 0 ? (
                   <div className="text-xs lg:text-sm text-[#888888] font-figtree">
                     No classes searched
