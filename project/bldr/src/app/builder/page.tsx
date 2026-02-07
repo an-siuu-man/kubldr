@@ -348,7 +348,7 @@ export default function Builder() {
 
       {/* Main Content */}
       <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto pt-[60px] md:pt-2 lg:pt-4 xl:pt-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full max-w-[1600px] 2xl:max-w-[1800px] mx-auto">
           {/* Guest Warning Banner */}
 
           {/* Header */}
@@ -424,19 +424,19 @@ export default function Builder() {
             )}
           </AnimatePresence>
           {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,350px)_1fr_minmax(200px,320px)] gap-2 lg:gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-[auto_minmax(0,1fr)_auto] gap-2 lg:gap-3 xl:gap-4 items-start">
             {/* Class Search Section */}
-            <div className="flex justify-center items-start">
+            <div className="flex justify-center items-start w-full xl:w-auto">
               <ClassSearch />
             </div>
 
             {/* Calendar Section */}
-            <div className="flex flex-col w-full">
-              <div className="w-full max-w-[min(100%,700px)] xl:max-w-none mx-auto xl:mx-0">
+            <div className="flex flex-col w-full items-center">
+              <div className="w-full aspect-square md:aspect-auto">
                 <CalendarEditor />
               </div>
               {activeSchedule && (
-                <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
+                <div className="w-full flex items-center justify-between gap-2 mt-2 lg:mt-3 px-1 flex-nowrap">
                   <div className="flex-1 basis-0 text-[10px] lg:text-xs flex flex-wrap gap-1.5 lg:gap-2 items-center text-[#A8A8A8] font-inter justify-start">
                     <motion.div
                       layout
@@ -533,7 +533,7 @@ export default function Builder() {
             </div>
 
             {/* Currently Selected Section - Right side */}
-            <div className="flex justify-center items-start">
+            <div className="flex justify-center items-start w-full xl:w-auto">
               <CurrentlySelected />
             </div>
           </div>
