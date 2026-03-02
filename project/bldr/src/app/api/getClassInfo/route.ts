@@ -1,42 +1,51 @@
 /**
  * API Route: /api/getClassInfo
- * 
+ *
  * Retrieves detailed information about a specific course and all its sections.
- * Returns course metadata (dept, code, title) along with all section details
- * including times, instructor, room, and seat availability.
- * 
+ * Course metadata (dept/code/title) is read from `searchclasses`, and section
+ * details are read from `allclasses` via `searchclass_id`.
+ *
  * @method POST
  * @body {
  *   subject: string, // Format: "DEPT CODE" (e.g., "EECS 581")
- *   term?: string    // Optional term code (not currently used)
+ *   term?: string    // Optional term code (currently unused)
  * }
- * @returns { success: true, data: Array<CourseInfo> }
- * 
+ *
  * @throws 400 - Missing subject or invalid format
  * @throws 500 - Database error
  */
 import { supabase } from "../../lib/supabaseClient";
 
-/**
- * Parses start and end times and calculates duration in hours.
- * Handles both 12-hour (with AM/PM) and 24-hour time formats.
- * 
- * @param {string} start - Start time string
- * @param {string} end - End time string
- * @returns {number} Duration in hours (decimal)
- */
+type SearchClassRow = {
+  id: number;
+  dept: string;
+  code: string;
+  title: string | null;
+};
+
+type SectionRow = {
+  uuid: string;
+  classid: number;
+  component: string | null;
+  starttime: string | null;
+  endtime: string | null;
+  days: string | null;
+  instructor: string | null;
+  availseats: number | null;
+  room: string | null;
+  location: string | null;
+  minhours: number | null;
+  maxhours: number | null;
+  searchclass_id: number;
+};
+
 function parseTimeToFloat(start: string, end: string): number {
-  /**
-   * Converts a time string to 24-hour decimal format.
-   * Handles "HH:MM" (24-hour) and "HH:MM AM/PM" (12-hour) formats.
-   */
   const to24 = (timeStr: string): number => {
-    // If already in 24-hour format or missing AM/PM, parse directly
     if (!/AM|PM/i.test(timeStr)) {
       const [hours, minutes] = timeStr.split(":").map(Number);
       return hours + (minutes || 0) / 60;
     }
-    // Convert from 12-hour format with AM/PM
+
     const [time, meridian] = timeStr.trim().split(" ");
     let [hours, minutes] = time.split(":").map(Number);
     if (meridian.toUpperCase() === "PM" && hours !== 12) hours += 12;
@@ -51,101 +60,118 @@ function parseTimeToFloat(start: string, end: string): number {
   }
 }
 
-/**
- * POST handler for getting detailed class/course information.
- * Fetches all sections for a given course from the database.
- * 
- * @param {Request} req - The incoming request with subject
- * @returns {Response} JSON response with course and sections data
- */
+function deriveCreditHours(minhours: number | null, maxhours: number | null) {
+  if (typeof maxhours === "number") return maxhours;
+  if (typeof minhours === "number") return minhours;
+  return undefined;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { subject, term } = body;
+    const { subject } = body;
 
     if (!subject) {
       return Response.json({ error: "Missing subject" }, { status: 400 });
     }
 
-    // Parse subject into department and code (e.g., "EECS 581")
     const parts = subject.trim().split(/\s+/);
     if (parts.length < 2) {
       return Response.json(
         { error: 'Invalid subject format. Expected "DEPT CODE"' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const dept = parts[0];
     const code = parts[1];
 
-    // Fetch all sections for this course, ordered by component and ID
+    const { data: courses, error: courseErr } = await supabase
+      .from("searchclasses")
+      .select("id, dept, code, title")
+      .eq("dept", dept)
+      .eq("code", code);
+
+    if (courseErr) {
+      console.error("Database fetch error (searchclasses):", courseErr);
+      return Response.json(
+        { error: "Database query failed", details: courseErr.message },
+        { status: 500 },
+      );
+    }
+
+    if (!courses || courses.length === 0) {
+      return Response.json({ success: true, data: [] }, { status: 200 });
+    }
+
+    const courseIds = (courses as SearchClassRow[]).map((course) => course.id);
     const { data: sections, error: fetchErr } = await supabase
       .from("allclasses")
-      .select("*")
-      .eq("dept", dept)
-      .eq("code", code)
+      .select(
+        "uuid, classid, component, starttime, endtime, days, instructor, availseats, room, location, minhours, maxhours, searchclass_id",
+      )
+      .in("searchclass_id", courseIds)
       .order("component", { ascending: true })
       .order("classid", { ascending: true });
 
     if (fetchErr) {
-      console.error("❌ Database fetch error:", fetchErr);
+      console.error("Database fetch error (allclasses):", fetchErr);
       return Response.json(
         { error: "Database query failed", details: fetchErr.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    // Return empty array if no sections found
     if (!sections || sections.length === 0) {
       return Response.json({ success: true, data: [] }, { status: 200 });
     }
 
-    // Transform each section into the expected format
-    const courseSections = sections.map((section) => {
+    const primaryCourse = courses[0] as SearchClassRow;
+    const courseSections = (sections as SectionRow[]).map((section) => {
       const duration = parseTimeToFloat(
-        section.starttime || "",
-        section.endtime || ""
+        section.starttime ?? "",
+        section.endtime ?? "",
       );
 
       return {
         classID: section.classid.toString(),
         uuid: section.uuid,
-        component: section.component,
-        starttime: section.starttime,
-        endtime: section.endtime,
-        days: section.days,
-        instructor: section.instructor,
+        component: section.component ?? "",
+        starttime: section.starttime ?? "",
+        endtime: section.endtime ?? "",
+        days: section.days ?? "",
+        instructor: section.instructor ?? undefined,
         seats_available: section.availseats ?? 0,
-        room: section.room,
-        location: section.location,
-        credithours: section.credithours,
+        room: section.room ?? undefined,
+        location: section.location ?? undefined,
+        minhours: section.minhours ?? undefined,
+        maxhours: section.maxhours ?? undefined,
+        credithours: deriveCreditHours(section.minhours, section.maxhours),
         duration,
       };
     });
 
-    // Build response with course info and all its sections
     const responseToFrontend = [
       {
-        dept: sections[0].dept,
-        code: sections[0].code,
-        title: sections[0].title,
-        description: null, // Description not stored in DB
-        
+        dept: primaryCourse.dept,
+        code: primaryCourse.code,
+        title:
+          primaryCourse.title ?? `${primaryCourse.dept} ${primaryCourse.code}`,
+        description: null,
         sections: courseSections,
       },
     ];
 
     return Response.json(
       { success: true, data: responseToFrontend },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (err) {
     console.error("getClassInfo server error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
     return Response.json(
       { error: "Server error", details: errorMessage },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

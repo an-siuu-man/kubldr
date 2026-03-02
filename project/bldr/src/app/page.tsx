@@ -1,17 +1,16 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
-import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { AlertTriangle, CheckCircle2, UserCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-import { CheckCircle2, XCircle, AlertTriangle, UserCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import toastStyle from "@/components/ui/toastStyle";
-import { motion } from "framer-motion";
-import MaintenanceBanner from "@/components/MaintenanceBanner";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Login() {
   const router = useRouter();
@@ -25,10 +24,12 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // During maintenance, don't auto-redirect logged-in users to builder
         const {
           data: { user },
         } = await supabase.auth.getUser();
+        if (user) {
+          router.push("/builder");
+        }
       } catch (error) {
         console.error("Error checking authentication:", error);
       } finally {
@@ -134,7 +135,6 @@ export default function Login() {
 
   return (
     <div className="landing-page ">
-      <MaintenanceBanner />
       <div className="flex flex-col justify-start items-center h-screen py-10">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
@@ -219,8 +219,8 @@ export default function Login() {
               <Button
                 type="submit"
                 variant={"secondary"}
-                className={`w-full cursor-pointer font-dmsans text-md my-3 opacity-50`}
-                disabled={true}
+                className={`w-full cursor-pointer font-dmsans text-md my-3`}
+                disabled={isLoading || isGuestLoading}
               >
                 {isLoading ? (
                   <>
@@ -242,8 +242,9 @@ export default function Login() {
               <Button
                 type="button"
                 variant={"outline"}
-                className={`w-full cursor-pointer font-dmsans text-md border-[#404040] opacity-50`}
-                disabled={true}
+                className={`w-full cursor-pointer font-dmsans text-md border-[#404040]`}
+                disabled={isLoading || isGuestLoading}
+                onClick={handleGuestLogin}
               >
                 {isGuestLoading ? (
                   <>
@@ -266,9 +267,12 @@ export default function Login() {
             className="text-[#a8a8a8] text-xs mt-3 font-inter"
           >
             Don't have an account with us?{" "}
-            <span className="font-medium text-white/40 font-inter cursor-not-allowed">
+            <Link
+              href={"/signup"}
+              className="font-medium text-white font-inter"
+            >
               Sign up
-            </span>
+            </Link>
           </motion.div>
         </motion.div>
       </div>

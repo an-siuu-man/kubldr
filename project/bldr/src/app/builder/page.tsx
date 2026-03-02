@@ -1,35 +1,35 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Check,
+  CheckCheck,
+  Info,
+  LogOut,
+  Save,
+  Trash2,
+  Undo2,
+  UserPlus,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import CalendarEditor from "@/components/CalendarEditor";
+import ClassSearch from "@/components/ClassSearch";
+import CurrentlySelected from "@/components/CurrentlySelected";
+import PermutationBrowser from "@/components/PermutationBrowser";
+import { Sidebar } from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import toastStyle from "@/components/ui/toastStyle";
+import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
-import {
-  LogOut,
-  AlertCircle,
-  Trash2,
-  X,
-  Check,
-  Save,
-  CheckCheck,
-  AlertTriangle,
-  UserPlus,
-  Info,
-  Undo2,
-} from "lucide-react";
-import toastStyle from "@/components/ui/toastStyle";
-import ClassSearch from "@/components/ClassSearch";
-import { Sidebar } from "@/components/Sidebar";
-import CalendarEditor from "@/components/CalendarEditor";
-import PermutationBrowser from "@/components/PermutationBrowser";
-import CurrentlySelected from "@/components/CurrentlySelected";
-import { Spinner } from "@/components/ui/spinner";
-import Link from "next/link";
-import MaintenanceBanner from "@/components/MaintenanceBanner";
+import type { ClassSection } from "@/types";
 
 export default function Builder() {
   const { user, session, loading, signOut } = useAuth();
@@ -55,18 +55,21 @@ export default function Builder() {
   const [isSaving, setIsSaving] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [showGuestBanner, setShowGuestBanner] = useState(true);
+  const [showGuestBanner, _setShowGuestBanner] = useState(true);
 
   // Check if user is a guest (anonymous)
   const isGuest = user?.is_anonymous === true;
 
   // Helper to compare schedules regardless of order
-  const areSchedulesEqual = (a: any[] | undefined, b: any[] | undefined) => {
+  const areSchedulesEqual = (
+    a: ClassSection[] | undefined,
+    b: ClassSection[] | undefined,
+  ) => {
     if (!a && !b) return true;
     if (!a || !b) return false;
     if (a.length !== b.length) return false;
-    const uuidsA = new Set(a.map((cls: any) => cls.uuid));
-    const uuidsB = new Set(b.map((cls: any) => cls.uuid));
+    const uuidsA = new Set(a.map((cls) => cls.uuid));
+    const uuidsB = new Set(b.map((cls) => cls.uuid));
     if (uuidsA.size !== uuidsB.size) return false;
     for (const uuid of uuidsA) {
       if (!uuidsB.has(uuid)) return false;
@@ -246,9 +249,11 @@ export default function Builder() {
 
       // Refresh the schedule list
       await fetchUserSchedules();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save schedule";
       console.error("Save schedule error:", error);
-      toast.error(error.message || "Failed to save schedule", {
+      toast.error(errorMessage, {
         style: { ...toastStyle },
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5" />,
@@ -343,32 +348,203 @@ export default function Builder() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-h-screen overflow-hidden bg-[#080808]">
-      <MaintenanceBanner />
-      <div className="flex flex-1 items-center justify-center">
-        <div className="flex flex-col items-center gap-6 text-center px-4">
-          <h1 className="text-2xl lg:text-3xl font-figtree font-semibold">
-            <span className="font-dmsans font-bold">
-              <span className="text-white">b</span>
-              <span className="text-red-500">l</span>
-              <span className="text-blue-600">d</span>
-              <span className="text-yellow-300">r</span>
-            </span>{" "}
-            is under maintenance
-          </h1>
-          <p className="text-sm text-[#A8A8A8] font-inter max-w-md">
-            We are solving the issues with full diligence and apologize for any
-            inconvenience. You will not be able to create or update schedules at
-            this time.
-          </p>
-          <Button
-            onClick={handleLogout}
-            variant="secondary"
-            className="font-dmsans cursor-pointer text-sm px-6 py-2"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+    <div className="flex flex-col md:flex-row h-screen max-h-screen overflow-hidden bg-[#080808]">
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main Content */}
+      <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto pt-[60px] md:pt-2 lg:pt-4 xl:pt-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-2 lg:mb-4 bg-orange-900/40 border border-orange-600/50 rounded-lg p-2 lg:p-3 flex items-start gap-2">
+            <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0 mt-0.5" />
+            <p className="text-orange-100 font-inter text-[10px] lg:text-xs">
+              We are facing some difficulties fetching accurate Instructor and
+              Room information for the classes. The data you see in the builder
+              may not be accurate.
+            </p>
+          </div>
+          {/* Guest Warning Banner */}
+
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl lg:text-2xl xl:text-3xl font-figtree font-semibold mb-1">
+                <span className="font-dmsans font-bold">
+                  <span className="text-white">b</span>
+                  <span className="text-red-500">l</span>
+                  <span className="text-blue-600">d</span>
+                  <span className="text-yellow-300">r</span>
+                </span>{" "}
+                Schedule Builder
+              </h1>
+              <p className="text-xs lg:text-sm text-[#A8A8A8] font-inter">
+                Welcome back, {user.is_anonymous ? "Guest" : user.email}!
+              </p>
+            </div>
+            <Button
+              onClick={handleLogout}
+              variant="secondary"
+              className="font-dmsans cursor-pointer text-xs lg:text-sm px-3 lg:px-4 py-2"
+            >
+              Logout
+            </Button>
+          </div>
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="mb-2 lg:mb-4 bg-blue-900/40 border mt-2 lg:mt-3 border-blue-600/50 rounded-lg p-2 lg:p-3 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Info className="h-3 w-3 lg:h-4 lg:w-4 text-white shrink-0" />
+                <div>
+                  <p className="text-blue-200 font-inter text-[10px] lg:text-xs">
+                    <span className="font-figtree">
+                      This app is still in{" "}
+                      <span className="font-mono">beta</span>. We're
+                      continuously improving!
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+            {isGuest && showGuestBanner && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-2 lg:mb-4 bg-yellow-900/40 border border-yellow-600/50 rounded-lg p-2 lg:p-3 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-500 shrink-0" />
+                  <div>
+                    <p className="text-yellow-200 font-figtree text-[10px] lg:text-xs">
+                      <span className="font-semibold">Guest mode.</span>{" "}
+                      Schedules will be lost when you close this tab.{" "}
+                      <Link
+                        href="/upgrade"
+                        className="underline hover:text-yellow-100 font-medium"
+                      >
+                        Create an account
+                      </Link>{" "}
+                      to save them permanently.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Main Grid Layout */}
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,350px)_1fr_minmax(200px,320px)] gap-2 lg:gap-4">
+            {/* Class Search Section */}
+            <div className="flex justify-center items-start">
+              <ClassSearch />
+            </div>
+
+            {/* Calendar Section */}
+            <div className="flex flex-col items-center w-full">
+              <CalendarEditor />
+              {activeSchedule && (
+                <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
+                  <div className="flex-1 basis-0 text-[10px] lg:text-xs flex flex-wrap gap-1.5 lg:gap-2 items-center text-[#A8A8A8] font-inter justify-start">
+                    <motion.div
+                      layout
+                      initial={false}
+                      transition={{
+                        layout: { duration: 0.22, ease: "easeOut" },
+                      }}
+                      className="bg-white text-gray-950 rounded-full py-0.5 lg:py-1 px-2 inline-flex items-center"
+                    >
+                      <span className="whitespace-nowrap text-[10px] lg:text-xs">
+                        Credits:
+                      </span>
+                      <b className="ml-1">{creditHours}</b>
+                    </motion.div>
+
+                    <AnimatePresence mode="wait">
+                      {schedulesMatch && (
+                        <motion.div
+                          key="saved-badge"
+                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                          transition={{ duration: 0.22 }}
+                          className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-0.5 lg:py-1 px-2 text-[10px] lg:text-xs"
+                        >
+                          Saved
+                        </motion.div>
+                      )}
+
+                      {!schedulesMatch && (
+                        <motion.div
+                          key="unsaved-badge"
+                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                          transition={{ duration: 0.22 }}
+                          className="rounded-full py-0.5 lg:py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-[10px] lg:text-xs"
+                        >
+                          Unsaved
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  {/* Permutation Browser - appears when multiple combinations are available */}
+                  <div className="flex-1 basis-0 flex justify-center">
+                    <PermutationBrowser />
+                  </div>
+                  <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
+                    <Button
+                      onClick={handleRevertChanges}
+                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      disabled={schedulesMatch || isSaving}
+                    >
+                      <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                      <span className="hidden sm:inline">Undo</span>
+                    </Button>
+                    <Button
+                      onClick={handleSaveSchedule}
+                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      disabled={isSaving || schedulesMatch}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Spinner className="h-3 w-3" />
+                          <span className="hidden sm:inline">Saving...</span>
+                        </>
+                      ) : !schedulesMatch ? (
+                        <>
+                          <Save className="h-3 w-3 mr-0.5 lg:mr-1" />
+                          <span className="hidden sm:inline">Save</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCheck className="text-green-600 h-3 w-3" />
+                          <span className="hidden sm:inline">Synced</span>
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleClearSchedule}
+                      className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      disabled={draftSchedule.length === 0}
+                    >
+                      <Trash2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                      <span className="hidden sm:inline">Clear</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Currently Selected Section - Right side */}
+            <div className="flex justify-center items-start">
+              <CurrentlySelected />
+            </div>
+          </div>
         </div>
       </div>
     </div>

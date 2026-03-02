@@ -15,7 +15,9 @@ export interface ClassSection {
   component: string; // e.g., 'LEC', 'LAB'
   instructor?: string;
   seats_available?: number; // Maps to availseats
-  credithours?: number;
+  minhours?: number; // Maps to minhours
+  maxhours?: number; // Maps to maxhours
+  credithours?: number; // Derived from maxhours/minhours for UI compatibility
   location?: string;
   room?: string;
   pinned?: boolean; // Whether this section is pinned (won't change during permutations)
@@ -67,7 +69,7 @@ export interface SelectedClass {
  * Represents a searched class result from the search API
  */
 export interface SearchedClass {
-  uuid: string;
+  uuid: string; // searchclasses.id stringified
   code?: string;
   title?: string;
   dept?: string;
@@ -93,7 +95,9 @@ export interface CalendarClassItem {
   component?: string; // e.g., 'LEC', 'LAB'
   starttime?: string; // Original time string
   endtime?: string; // Original time string
-  credithours?: number; // Maps to credithours
+  minhours?: number; // Maps to minhours
+  maxhours?: number; // Maps to maxhours
+  credithours?: number; // Derived from maxhours/minhours
   location?: string;
   room?: string;
 }

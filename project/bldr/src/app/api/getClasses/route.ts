@@ -2,26 +2,34 @@
  * API Route: /api/getClasses
  *
  * Retrieves all classes in a schedule, grouped by department and course code.
- * Returns class UUIDs and IDs organized by their dept+code combination.
+ * Course metadata is joined from `searchclasses`.
  *
  * @method POST
- * @body { scheduleid: string } - The UUID of the schedule to get classes from
+ * @body { scheduleid: string }
  * @returns Array of { deptcode: string, selClass: Array<{classid, uuid}> }
- *
- * @throws 400 - Missing scheduleid
- * @throws 404 - No classes found for the schedule
- * @throws 500 - Database error
  */
 import { supabase } from "../../lib/supabaseClient";
 
-/**
- * POST handler for getting all classes in a schedule.
- * Fetches class UUIDs from schedule_classes, then looks up
- * class details and groups them by department and code.
- *
- * @param {Request} req - The incoming request with scheduleid
- * @returns {Response} JSON array of grouped classes
- */
+type SearchClassMeta = {
+  dept: string;
+  code: string;
+};
+
+type ClassRow = {
+  uuid: string;
+  classid: number;
+  searchclass: SearchClassMeta | SearchClassMeta[] | null;
+};
+
+function pickSearchClassMeta(
+  value: SearchClassMeta | SearchClassMeta[] | null,
+): SearchClassMeta {
+  if (Array.isArray(value)) {
+    return value[0] ?? { dept: "", code: "" };
+  }
+  return value ?? { dept: "", code: "" };
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -31,41 +39,54 @@ export async function POST(req: Request) {
       return Response.json({ error: "Missing scheduleid" }, { status: 400 });
     }
 
-    // Step 1: Get all class UUIDs for this schedule
-    const { data: userSchedule, error: userScheduleErr } = await supabase
+    const { data: scheduleRows, error: scheduleErr } = await supabase
       .from("schedule_classes")
       .select("class_uuid")
       .eq("scheduleid", scheduleid);
 
-    if (userScheduleErr || !userSchedule || userSchedule.length === 0) {
+    if (scheduleErr) {
+      return Response.json(
+        { error: "Failed to fetch schedule classes" },
+        { status: 500 },
+      );
+    }
+
+    if (!scheduleRows || scheduleRows.length === 0) {
       return Response.json(
         { error: "No classes found for this scheduleid" },
         { status: 404 },
       );
     }
 
-    // Step 2: Look up class details (dept, code, classid) from allclasses
-    const classUuids = userSchedule.map((item) => item.class_uuid);
-    const { data: classInfo, error: classInfoErr } = await supabase
+    const classUuids = scheduleRows.map((item) => item.class_uuid);
+    const { data: classRows, error: classErr } = await supabase
       .from("allclasses")
-      .select("uuid, classid, dept, code")
+      .select(
+        "uuid,classid,searchclass:searchclasses!allclasses_searchclass_fkey(dept,code)",
+      )
       .in("uuid", classUuids);
 
-    if (classInfoErr || !classInfo) {
+    if (classErr || !classRows) {
       return Response.json(
         { error: "Class info fetch failed" },
         { status: 500 },
       );
     }
 
-    // Step 3: Group classes by dept+code
+    const classRowMap = new Map<string, ClassRow>();
+    for (const classRow of classRows as ClassRow[]) {
+      classRowMap.set(classRow.uuid, classRow);
+    }
+
     const deptCodeMap: { [key: string]: { classid: string; uuid: string }[] } =
       {};
 
-    for (const { class_uuid } of userSchedule) {
-      const classRow = classInfo.find((ci) => ci.uuid === class_uuid);
+    for (const { class_uuid } of scheduleRows) {
+      const classRow = classRowMap.get(class_uuid);
       if (!classRow) continue;
-      const deptcode = `${classRow.dept} ${classRow.code}`;
+
+      const course = pickSearchClassMeta(classRow.searchclass);
+      const deptcode = `${course.dept} ${course.code}`.trim();
 
       if (!deptCodeMap[deptcode]) deptCodeMap[deptcode] = [];
       deptCodeMap[deptcode].push({
@@ -74,16 +95,17 @@ export async function POST(req: Request) {
       });
     }
 
-    // Step 4: Format output as array of objects
     const output = Object.entries(deptCodeMap).map(([deptcode, selClass]) => ({
       deptcode,
       selClass,
     }));
+
     return Response.json(output, { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error("Server error:", err);
     return Response.json(
-      { error: "Server error", details: err.message },
+      { error: "Server error", details: errorMessage },
       { status: 500 },
     );
   }
