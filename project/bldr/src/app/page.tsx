@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CheckCircle2, XCircle, AlertTriangle, UserCircle } from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
 import { motion } from "framer-motion";
+import MaintenanceBanner from "@/components/MaintenanceBanner";
 
 export default function Login() {
   const router = useRouter();
@@ -24,12 +25,10 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        // During maintenance, don't auto-redirect logged-in users to builder
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        if (user) {
-          router.push("/builder");
-        }
       } catch (error) {
         console.error("Error checking authentication:", error);
       } finally {
@@ -135,6 +134,7 @@ export default function Login() {
 
   return (
     <div className="landing-page ">
+      <MaintenanceBanner />
       <div className="flex flex-col justify-start items-center h-screen py-10">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
@@ -219,8 +219,8 @@ export default function Login() {
               <Button
                 type="submit"
                 variant={"secondary"}
-                className={`w-full cursor-pointer font-dmsans text-md my-3`}
-                disabled={isLoading || isGuestLoading}
+                className={`w-full cursor-pointer font-dmsans text-md my-3 opacity-50`}
+                disabled={true}
               >
                 {isLoading ? (
                   <>
@@ -242,9 +242,8 @@ export default function Login() {
               <Button
                 type="button"
                 variant={"outline"}
-                className={`w-full cursor-pointer font-dmsans text-md border-[#404040]`}
-                disabled={isLoading || isGuestLoading}
-                onClick={handleGuestLogin}
+                className={`w-full cursor-pointer font-dmsans text-md border-[#404040] opacity-50`}
+                disabled={true}
               >
                 {isGuestLoading ? (
                   <>
@@ -267,12 +266,9 @@ export default function Login() {
             className="text-[#a8a8a8] text-xs mt-3 font-inter"
           >
             Don't have an account with us?{" "}
-            <Link
-              href={"/signup"}
-              className="font-medium text-white font-inter"
-            >
+            <span className="font-medium text-white/40 font-inter cursor-not-allowed">
               Sign up
-            </Link>
+            </span>
           </motion.div>
         </motion.div>
       </div>

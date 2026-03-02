@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
 import { motion } from "framer-motion";
+import MaintenanceBanner from "@/components/MaintenanceBanner";
 
 export default function Signup() {
   const router = useRouter();
@@ -114,6 +115,7 @@ export default function Signup() {
 
   return (
     <div className="signup">
+      <MaintenanceBanner />
       <div className="flex flex-col justify-start items-center h-screen py-10">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
@@ -220,10 +222,10 @@ export default function Signup() {
               <Button
                 type="submit"
                 variant={"secondary"}
-                className={`w-full transition cursor-pointer font-dmsans text-md my-3`}
-                disabled={isLoading}
+                className={`w-full transition cursor-pointer font-dmsans text-md my-3 opacity-50`}
+                disabled={true}
               >
-                {isLoading ? "Creating account..." : "Sign Up"}
+                {"Sign Up"}
               </Button>
             </motion.div>
           </form>
