@@ -1,31 +1,28 @@
 /**
- * API Route: /api/renameSchedule
+ * API Route: /api/deactivateSchedule
  * 
- * Renames an existing schedule by updating its schedulename field.
- * Verifies user ownership before allowing the rename operation.
+ * Deactivates a user's schedule by setting its isactive flag to false.
+ * This removes the schedule from the user's active view without deleting it.
  * 
  * @method POST
  * @requires Authorization header with Bearer token
- * @body {
- *   scheduleId: string, // UUID of the schedule to rename
- *   newName: string     // The new name for the schedule
- * }
- * @returns { message: string, schedule: object }
+ * @body { scheduleId: string } - The UUID of the schedule to deactivate
+ * @returns { message: string, schedule: object } - Success message with updated schedule data
  * 
  * @throws 401 - Unauthorized (missing/invalid auth header)
- * @throws 400 - Missing scheduleId or newName
+ * @throws 400 - Missing scheduleId in request body
  * @throws 404 - Schedule not found or user doesn't own it
- * @throws 500 - Database error during update
+ * @throws 500 - Database error or unexpected server error
  */
 import { supabase } from "../../lib/supabaseClient";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * POST handler for renaming a schedule.
- * Authenticates user, verifies ownership, and updates the schedule name.
+ * POST handler for deactivating a schedule.
+ * Verifies user ownership before updating the schedule status.
  * 
- * @param {NextRequest} req - The incoming request with scheduleId and newName
- * @returns {NextResponse} JSON response with updated schedule or error
+ * @param {NextRequest} req - The incoming request with scheduleId in body
+ * @returns {NextResponse} JSON response with result or error
  */
 export async function POST(req: NextRequest) {
   try {
@@ -48,19 +45,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse request body
+    // Parse request body for scheduleId
     const body = await req.json();
-    const { scheduleId, newName } = body;
+    const { scheduleId } = body;
 
-    // Validate required fields
-    if (!scheduleId || !newName) {
+    if (!scheduleId) {
       return NextResponse.json(
-        { error: "Missing scheduleId or newName" },
+        { error: "Missing scheduleId" },
         { status: 400 }
       );
     }
 
-    // Verify user owns this schedule before renaming
+    // Verify user owns this schedule before deactivating
     const { data: ownership, error: ownershipError } = await supabase
       .from("userschedule")
       .select("scheduleid")
@@ -70,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     if (ownershipError || !ownership) {
       console.error(
-        "[renameSchedule] ownership lookup failed:",
+        "[deactivateSchedule] ownership lookup failed:",
         ownershipError
       );
       return NextResponse.json(
@@ -79,24 +75,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Update the schedule name in allschedules table
+    // Update isactive flag to false
     const { data, error } = await supabase
-      .from("allschedules")
-      .update({ schedulename: newName })
+      .from("userschedule")
+      .update({ isactive: false })
       .eq("scheduleid", scheduleId)
+      .eq("auth_user_id", user.id)
       .select()
       .single();
 
     if (error) {
-      console.error("Error renaming schedule:", error);
+      console.error("Error deactivating schedule:", error);
       return NextResponse.json(
-        { error: "Failed to rename schedule" },
+        { error: "Failed to deactivate schedule" },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
-      message: "Schedule renamed successfully",
+      message: "Schedule deactivated successfully",
       schedule: data,
     });
   } catch (error) {

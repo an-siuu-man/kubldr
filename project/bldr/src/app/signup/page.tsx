@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import toastStyle from "@/components/ui/toastStyle";
+import { motion } from "framer-motion";
 
 export default function Signup() {
   const router = useRouter();
@@ -114,7 +115,12 @@ export default function Signup() {
   return (
     <div className="signup">
       <div className="flex flex-col justify-start items-center h-screen py-10">
-        <div className="header w-full flex flex-col justify-start items-center mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+          className="header w-full flex flex-col justify-start items-center mb-10"
+        >
           <h1 className="text-5xl font-figtree font-semibold mb-3">
             Welcome to
             <span className="font-dmsans font-bold">
@@ -127,8 +133,13 @@ export default function Signup() {
           <h2 className="text-3xl font-dmsans text-[#A8A8A8] ">
             Flagship Schedule Builder
           </h2>
-        </div>
-        <div className="login-form flex flex-col justify-center items-center w-fit border border-[#404040] p-10 rounded-lg">
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          className="login-form flex flex-col justify-center items-center w-fit border border-[#404040] p-10 rounded-lg"
+        >
           <div className="form-header w-full flex flex-col justify-start items-start mb-2">
             <h1 className="text-3xl font-bold font-dmsans mb-2 ">Sign up</h1>
             <h2 className="text-[#A8A8A8] text-xs font-inter mb-4">
@@ -136,66 +147,98 @@ export default function Signup() {
             </h2>
           </div>
           <form className="flex flex-col gap-4 w-96" onSubmit={handleClick}>
-            <Label htmlFor="email" className="text-sm font-inter -mb-1">
-              Email
-            </Label>
-            <Input
-              type="email"
-              id="email"
-              placeholder="your.email@example.com"
-              className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
-
-            <Label htmlFor="password" className="text-sm font-inter -mb-1">
-              Password
-            </Label>
-            <Input
-              type="password"
-              id="password"
-              placeholder="At least 6 characters"
-              className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-
-            <Label
-              htmlFor="confirm-password"
-              className="text-sm font-inter -mb-1"
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
             >
-              Confirm Password
-            </Label>
-            <Input
-              type="password"
-              id="confirm-password"
-              placeholder="Re-enter password"
-              className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={isLoading}
-            />
-            <Button
-              type="submit"
-              variant={"secondary"}
-              className={`transition cursor-pointer font-dmsans text-md my-3`}
-              disabled={isLoading}
+              <Label htmlFor="email" className="text-sm font-inter mb-2 block">
+                Email
+              </Label>
+              <Input
+                type="email"
+                id="email"
+                placeholder="your.email@example.com"
+                className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
             >
-              {isLoading ? "Creating account..." : "Sign Up"}
-            </Button>
+              <Label
+                htmlFor="password"
+                className="text-sm font-inter mb-2 block"
+              >
+                Password
+              </Label>
+              <Input
+                type="password"
+                id="password"
+                placeholder="At least 6 characters"
+                className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.6 }}
+            >
+              <Label
+                htmlFor="confirm-password"
+                className="text-sm font-inter mb-2 block"
+              >
+                Confirm Password
+              </Label>
+              <Input
+                type="password"
+                id="confirm-password"
+                placeholder="Re-enter password"
+                className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.7 }}
+            >
+              <Button
+                type="submit"
+                variant={"secondary"}
+                className={`w-full transition cursor-pointer font-dmsans text-md my-3`}
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating account..." : "Sign Up"}
+              </Button>
+            </motion.div>
           </form>
-          <div className="text-[#a8a8a8] text-xs mt-3 font-inter">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
+            className="text-[#a8a8a8] text-xs mt-3 font-inter"
+          >
             Already have an account with us?{" "}
             <Link href={"/"} className="font-medium text-white font-inter">
               Log in
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

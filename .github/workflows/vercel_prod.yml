@@ -1,0 +1,37 @@
+name: Vercel Production Deployment
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_GIT_COMMIT_AUTHOR_LOGIN: ${{ secrets.VERCEL_GIT_AUTHOR_LOGIN }}
+  VERCEL_GIT_COMMIT_AUTHOR_NAME: ${{ secrets.VERCEL_GIT_AUTHOR_NAME }}
+  VERCEL_GIT_COMMIT_AUTHOR_EMAIL: ${{ secrets.VERCEL_GIT_AUTHOR_EMAIL }}
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Deploy-Production:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Override Git Author
+        run: |
+          git config user.email "${{ secrets.VERCEL_GIT_AUTHOR_EMAIL }}"
+          git config user.name "${{ secrets.VERCEL_GIT_AUTHOR_NAME }}"
+          git commit --amend --no-edit --reset-author
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

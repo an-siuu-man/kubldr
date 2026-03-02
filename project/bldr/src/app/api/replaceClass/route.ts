@@ -1,13 +1,44 @@
+/**
+ * API Route: /api/replaceClass
+ * 
+ * Replaces one class with another in a user's schedule.
+ * Adds the new class and removes the old class in a single operation.
+ * Useful for swapping between different sections of the same course.
+ * 
+ * @method POST
+ * @body {
+ *   scheduleid: string,   // UUID of the schedule
+ *   fromUuid?: string,    // UUID of class to remove
+ *   toUuid?: string,      // UUID of class to add
+ *   fromClassId?: number, // Alternative: integer classid to remove
+ *   toClassId?: number    // Alternative: integer classid to add
+ * }
+ * @returns { success: true, message: string, details: object }
+ * 
+ * @throws 400 - Missing required fields or same source/target
+ * @throws 404 - Source or target class not found
+ * @throws 500 - Database error during operation
+ */
 import { supabase } from "../../lib/supabaseClient";
 
+/**
+ * Request body type supporting both UUID and classid lookups
+ */
 type BodyUUID = {
-  scheduleid: string; // uuid of schedule
-  fromUuid?: string; // uuid in allclasses
-  toUuid?: string; // uuid in allclasses
-  fromClassId?: number; // int classid (alternative)
-  toClassId?: number; // int classid (alternative)
+  scheduleid: string;    // UUID of schedule
+  fromUuid?: string;     // UUID of class to remove
+  toUuid?: string;       // UUID of class to add
+  fromClassId?: number;  // Integer classid alternative
+  toClassId?: number;    // Integer classid alternative
 };
 
+/**
+ * POST handler for replacing a class in a schedule.
+ * Performs a two-step operation: add new class, then remove old class.
+ * 
+ * @param {Request} req - The incoming request with class identifiers
+ * @returns {Response} JSON response with result or error
+ */
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as BodyUUID;

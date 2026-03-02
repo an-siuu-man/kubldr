@@ -1,3 +1,23 @@
+/**
+ * ClassSearch.tsx
+ *
+ * A comprehensive class search component that allows users to search for courses,
+ * view search results, and manage their selected classes. This is the primary
+ * interface for building a schedule.
+ *
+ * Features:
+ * - Real-time search with debounced API calls (400ms delay)
+ * - Floating dropdown with search results using Floating UI
+ * - Keyboard navigation (Arrow keys, Enter, Escape)
+ * - Two accordion sections:
+ *   1. Searched: Shows detailed info for classes the user has explored
+ *   2. Currently Selected: Shows classes added to the draft schedule
+ * - Ability to remove classes from both sections
+ * - Grouped display of class sections by course
+ * - Accessible with ARIA roles and keyboard support
+ *
+ * @component
+ */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -26,25 +46,53 @@ import {
 } from "@/components/ui/tooltip";
 import { SearchedClass } from "@/types";
 import { Trash2, Search } from "lucide-react";
-// import { useAuth } from "@/context/AuthContext";
 import Class from "./Class";
-import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-export default function ClassSearch() {
-  // Get schedule builder context
-  const { draftSchedule, removeClassFromDraft } = useScheduleBuilder();
+import Loader from "./Loader";
 
-  // Fallback local state (was previously coming from a context like useAuth)
+/**
+ * ClassSearch Component
+ *
+ * Provides the main interface for searching and selecting classes.
+ * Manages both the search functionality and the display of selected classes.
+ *
+ * @returns {JSX.Element} The class search panel with search input and accordion sections
+ */
+export default function ClassSearch() {
+  // Classes that the user has selected from search results to view details
   const [selectedClasses, setSelectedClasses] = useState<SearchedClass[]>([]);
 
+  // Search results from the API
   const [classes, setClasses] = useState<SearchedClass[]>([]);
+
+  // Loading state for search
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Current search input value
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Controls visibility of the search results dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Currently highlighted item index for keyboard navigation
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+
+  // Refs for DOM elements used by Floating UI
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLUListElement | null>(null);
-  const [dropdownPosStyle, setDropdownPosStyle] = useState<React.CSSProperties | undefined>(undefined);
 
-  // Floating UI setup
+  // Dynamic positioning styles for the dropdown
+  const [dropdownPosStyle, setDropdownPosStyle] = useState<
+    React.CSSProperties | undefined
+  >(undefined);
+
+  /**
+   * Floating UI configuration for the search results dropdown.
+   * - offset: 6px gap between input and dropdown
+   * - flip: Automatically flips to top if no room below
+   * - shift: Keeps dropdown within viewport bounds
+   * - size: Matches dropdown width to input and limits max height
+   * - autoUpdate: Repositions on scroll/resize
+   */
   const { x, y, strategy, refs, update, middlewareData } = useFloating({
     placement: "bottom-start",
     middleware: [
@@ -53,7 +101,7 @@ export default function ClassSearch() {
       shift({ padding: 8 }),
       size({
         apply({ rects, availableWidth, availableHeight, elements }) {
-          // match the reference width and clamp to availableWidth
+          // Match the input width and respect available space
           const width = Math.min(rects.reference.width, availableWidth - 8);
           Object.assign(elements.floating.style, {
             width: `${width}px`,
@@ -66,12 +114,19 @@ export default function ClassSearch() {
     whileElementsMounted: autoUpdate,
   });
 
+  /**
+   * Debounced search effect.
+   * Waits 400ms after the user stops typing before making an API call.
+   * This prevents excessive API requests while typing.
+   */
   useEffect(() => {
     const delay = setTimeout(() => {
       if (!searchQuery.trim()) {
         setClasses([]);
+        setIsLoading(false);
         return;
       }
+      setIsLoading(true);
       fetch("/api/searchclass", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,43 +135,55 @@ export default function ClassSearch() {
         .then((r) => r.json())
         .then((d) => {
           setClasses(d || []);
-          setHighlightedIndex(0); // Reset highlight when new results come in
+          setHighlightedIndex(0); // Reset highlight on new results
+          setIsLoading(false);
         })
-        .catch(() => setClasses([]));
+        .catch(() => {
+          setClasses([]);
+          setIsLoading(false);
+        });
     }, 400);
     return () => clearTimeout(delay);
   }, [searchQuery]);
 
-  // Attach floating refs when wrapper is available and update position when open
+  // Initialize Floating UI reference element
   useEffect(() => {
     refs.setReference(wrapperRef.current);
   }, [refs]);
 
+  // Update dropdown position when it opens or results change
   useEffect(() => {
-    // update floating position when dropdown opens or class list changes
     if (dropdownOpen) update?.();
   }, [dropdownOpen, classes.length, update]);
 
-  // Scroll highlighted item into view
+  // Ensure the highlighted item is visible in the dropdown (keyboard navigation)
   useEffect(() => {
     if (!dropdownRef.current || !dropdownOpen) return;
-    const listItems = dropdownRef.current.querySelectorAll('li');
+    const listItems = dropdownRef.current.querySelectorAll("li");
     const highlightedItem = listItems[highlightedIndex];
     if (highlightedItem) {
-      highlightedItem.scrollIntoView({ block: 'nearest' });
+      highlightedItem.scrollIntoView({ block: "nearest" });
     }
   }, [highlightedIndex, dropdownOpen]);
 
-  
-
+  /**
+   * Handles selection of a class from the search dropdown.
+   * Toggles the class in the selectedClasses list:
+   * - If already selected, removes it
+   * - If not selected, adds it to the beginning of the list
+   *
+   * @param {string} uuid - The unique identifier of the selected class
+   */
   function handleDropdownSelect(uuid: string) {
     const isAlreadyPresent = selectedClasses.some((cls) => cls.uuid === uuid);
     if (isAlreadyPresent) {
+      // Remove class if already in the list (toggle behavior)
       setSelectedClasses((prevClasses) =>
-        prevClasses.filter((item) => item.uuid !== uuid)
+        prevClasses.filter((item) => item.uuid !== uuid),
       );
       console.log(selectedClasses);
     } else {
+      // Add new class to the beginning of the list
       const newClass = classes.find((c) => c.uuid === uuid);
       if (newClass) {
         setSelectedClasses((prevClasses) => [
@@ -137,15 +204,15 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col justify-start items-center my-5 min-w-[420px] max-w-[500px] max-h-[600px] overflow-y-scroll scrollbar-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
-      <div className="flex flex-col justify-start items-center w-full h-full p-5">
-        <h1 className="text-xl self-start font-figtree font-bold text-[#fafafa]">
+    <div className="flex flex-col justify-start items-center w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] h-[450px] lg:h-[520px] xl:h-[560px] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
+      <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4 overflow-hidden">
+        <h1 className="text-sm lg:text-base xl:text-lg self-start font-figtree font-bold text-[#fafafa]">
           Search for classes
         </h1>
         <div className="flex-col justify-start items-center w-full">
           <div
             ref={wrapperRef}
-            className="class-search-form flex flex-row justify-start items-center gap-2 w-full mt-5"
+            className="class-search-form flex flex-row justify-start items-center gap-2 w-full mt-3 lg:mt-4"
             tabIndex={-1}
             onFocus={() => setDropdownOpen(true)}
             onBlur={(e) => {
@@ -173,7 +240,7 @@ export default function ClassSearch() {
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
                   setHighlightedIndex((prev) =>
-                    prev < classes.length - 1 ? prev + 1 : prev
+                    prev < classes.length - 1 ? prev + 1 : prev,
                   );
                 } else if (e.key === "ArrowUp") {
                   e.preventDefault();
@@ -204,7 +271,7 @@ export default function ClassSearch() {
           </div>
 
           <FloatingPortal>
-            {classes.length > 0 && dropdownOpen && (
+            {dropdownOpen && searchQuery.trim() && (
               <ul
                 ref={(el) => {
                   refs.setFloating(el);
@@ -217,48 +284,62 @@ export default function ClassSearch() {
                 role="listbox"
                 aria-label="Search results"
               >
-                <AnimatePresence mode="popLayout">
-                  {classes.map((c, index) => (
-                    <motion.li
-                      key={c.uuid}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      onMouseDown={async (e) => {
-                        e.preventDefault();
-                        await handleDropdownSelect(c.uuid);
-                        setDropdownOpen(false);
-                      }}
-                      onMouseEnter={() => setHighlightedIndex(index)}
-                      role="option"
-                      aria-selected={index === highlightedIndex}
-                      className={`p-2 text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
-                        index === highlightedIndex
-                          ? "bg-[#181818]"
-                          : "hover:bg-[#181818]"
-                      }`}
-                    >
-                      <strong>
-                        {c.dept} {c.code}
-                      </strong>{" "}
-                      - {c.title}
-                    </motion.li>
-                  ))}
-                </AnimatePresence>
+                {isLoading ? (
+                  <li className="p-4 flex items-center justify-center">
+                    <Loader />
+                  </li>
+                ) : classes.length === 0 ? (
+                  <li className="p-4 text-sm text-[#888888] text-center font-inter">
+                    No results found
+                  </li>
+                ) : (
+                  <AnimatePresence mode="popLayout">
+                    {classes.map((c, index) => (
+                      <motion.li
+                        key={c.uuid}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        onMouseDown={async (e) => {
+                          e.preventDefault();
+                          await handleDropdownSelect(c.uuid);
+                          setDropdownOpen(false);
+                        }}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        role="option"
+                        aria-selected={index === highlightedIndex}
+                        className={`p-2 text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
+                          index === highlightedIndex
+                            ? "bg-[#181818]"
+                            : "hover:bg-[#181818]"
+                        }`}
+                      >
+                        <strong>
+                          {c.dept} {c.code}
+                        </strong>{" "}
+                        - {c.title}
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                )}
               </ul>
             )}
           </FloatingPortal>
         </div>
 
-        <div className="w-full max-w-full mt-4">
+        {/* Searched Section */}
+        <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
           <Accordion
-            type="multiple"
-            defaultValue={["item-1", "item-2"]}
-            className="font-figtree"
+            type="single"
+            defaultValue="item-1"
+            collapsible
+            className="font-figtree w-full h-full flex flex-col"
           >
-            {/* Searched Section */}
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-lg text-green-400 font-bold hover:no-underline hover:cursor-pointer">
+            <AccordionItem
+              value="item-1"
+              className="border-b-0 flex flex-col h-full"
+            >
+              <AccordionTrigger className="text-sm lg:text-base text-green-400 font-bold hover:no-underline hover:cursor-pointer py-2 shrink-0">
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span>Searched</span>
                   {selectedClasses.length > 0 && (
@@ -268,16 +349,16 @@ export default function ClassSearch() {
                         setSelectedClasses([]);
                         setSearchQuery("");
                       }}
-                      className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
+                      className="text-[10px] lg:text-xs px-1.5 lg:px-2 py-0.5 lg:py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
                     >
-                      Clear all searched
+                      Clear all
                     </span>
                   )}
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[300px] overflow-y-scroll scrollbar-hidden">
+              <AccordionContent className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden">
                 {selectedClasses.length === 0 ? (
-                  <div className="text-sm text-[#888888] font-figtree">
+                  <div className="text-xs lg:text-sm text-[#888888] font-figtree">
                     No classes searched
                   </div>
                 ) : (
@@ -291,7 +372,7 @@ export default function ClassSearch() {
                       <button
                         onClick={() =>
                           setSelectedClasses((prev) =>
-                            prev.filter((cls) => cls.uuid !== c.uuid)
+                            prev.filter((cls) => cls.uuid !== c.uuid),
                           )
                         }
                         className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
@@ -301,89 +382,6 @@ export default function ClassSearch() {
                       </button>
                     </div>
                   ))
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Currently Added Section */}
-            <AccordionItem value="item-2">
-              <AccordionTrigger className="text-lg text-purple-400 font-bold hover:no-underline hover:cursor-pointer">
-                Currently Selected
-              </AccordionTrigger>
-              <AccordionContent className="font-inter max-h-[300px] overflow-y-scroll scrollbar-hidden">
-                {draftSchedule.length === 0 ? (
-                  <div className="text-sm text-[#888888] font-figtree">
-                    No classes added
-                  </div>
-                ) : (
-                  (() => {
-                    // Group sections by class (dept + code)
-                    const groupedClasses = draftSchedule.reduce(
-                      (acc: any, section: any, index: number) => {
-                        const key = `${section.dept}-${section.code}`;
-                        if (!acc[key]) {
-                          acc[key] = {
-                            dept: section.dept,
-                            code: section.code,
-                            title: section.title,
-                            sections: [],
-                          };
-                        }
-                        acc[key].sections.push({
-                          ...section,
-                          originalIndex: index,
-                        });
-                        return acc;
-                      },
-                      {}
-                    );
-
-                    return Object.values(groupedClasses).map(
-                      (classGroup: any) => (
-                        <div
-                          key={`${classGroup.dept}-${classGroup.code}`}
-                          className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
-                        >
-                          <div className="font-bold text-white mb-4">
-                            {classGroup.dept} {classGroup.code}:{" "}
-                            {classGroup.title}
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {classGroup.sections.map((section: any) => (
-                              <div
-                                key={section.originalIndex}
-                                className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
-                              >
-                                <div className="flex flex-col gap-1">
-                                  <div className="text-sm font-semibold text-purple-400">
-                                    {section.component} ({section.classID})
-                                  </div>
-                                  <div className="text-xs text-[#888888]">
-                                    {section.days} • {section.starttime} -{" "}
-                                    {section.endtime}
-                                  </div>
-                                  {section.instructor && (
-                                    <div className="text-xs text-[#888888]">
-                                      {section.instructor}
-                                    </div>
-                                  )}
-                                </div>
-                                <button
-                                  onClick={() =>
-                                    removeClassFromDraft(section.originalIndex)
-                                  }
-                                  className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                                  title="Remove section"
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    );
-                  })()
                 )}
               </AccordionContent>
             </AccordionItem>

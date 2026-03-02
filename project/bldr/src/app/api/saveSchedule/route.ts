@@ -1,9 +1,39 @@
+/**
+ * API Route: /api/saveSchedule
+ * 
+ * Saves or updates a user's schedule with its class sections.
+ * Handles both creating new schedules and updating existing ones.
+ * For updates, clears existing classes and replaces with new ones.
+ * 
+ * @method POST
+ * @requires Authorization header with Bearer token
+ * @body {
+ *   scheduleId?: string, // If provided, updates existing schedule
+ *   name: string,        // Schedule name
+ *   semester: string,    // Semester (e.g., "Spring 2026")
+ *   year: number,        // Academic year
+ *   classes: Array<{uuid: string}> // Classes to add to schedule
+ * }
+ * @returns { success: true, scheduleId: string, message: string }
+ * 
+ * @throws 401 - Unauthorized
+ * @throws 400 - Missing required fields
+ * @throws 404 - Schedule not found (for updates)
+ * @throws 500 - Database error
+ */
 import { supabase } from "../../lib/supabaseClient";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * POST handler for saving a schedule.
+ * Creates new schedule or updates existing one, then populates classes.
+ * 
+ * @param {NextRequest} req - The incoming request with schedule data
+ * @returns {NextResponse} JSON response with result or error
+ */
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authenticate user
+    // Step 1: Authenticate user
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return NextResponse.json(
@@ -21,10 +51,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Parse request body
+    // Step 2: Parse request body
     const body = await req.json();
     const { scheduleId, name, semester, year, classes } = body;
 
+    // Validate required fields
     if (!name || !semester || !year) {
       return NextResponse.json(
         { error: "Missing required fields (name, semester, year)" },
@@ -34,11 +65,11 @@ export async function POST(req: NextRequest) {
 
     let targetScheduleId = scheduleId;
 
-    // 3. Handle Update or Create
+    // Step 3: Handle Update or Create
     if (targetScheduleId) {
       // --- UPDATE EXISTING SCHEDULE ---
 
-      // Verify ownership
+      // Verify user owns this schedule
       const { data: ownership, error: ownershipError } = await supabase
         .from("userschedule")
         .select("scheduleid")
@@ -53,7 +84,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Update metadata in allschedules
+      // Update schedule metadata
       const { error: updateError } = await supabase
         .from("allschedules")
         .update({
@@ -68,7 +99,7 @@ export async function POST(req: NextRequest) {
         throw new Error(`Failed to update schedule: ${updateError.message}`);
       }
 
-      // Clear existing classes
+      // Clear existing classes before adding new ones
       const { error: deleteError } = await supabase
         .from("schedule_classes")
         .delete()
@@ -80,7 +111,7 @@ export async function POST(req: NextRequest) {
     } else {
       // --- CREATE NEW SCHEDULE ---
 
-      // Insert into allschedules
+      // Create schedule record
       const { data: newSchedule, error: createError } = await supabase
         .from("allschedules")
         .insert({
@@ -97,7 +128,7 @@ export async function POST(req: NextRequest) {
 
       targetScheduleId = newSchedule.scheduleid;
 
-      // Link to user in userschedule
+      // Link new schedule to user
       const { error: linkError } = await supabase.from("userschedule").insert({
         auth_user_id: user.id,
         scheduleid: targetScheduleId,
@@ -111,11 +142,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. Insert classes into schedule_classes
+    // Step 4: Insert classes into schedule_classes
     if (classes && classes.length > 0) {
       const classRows = classes.map((cls: any) => ({
         scheduleid: targetScheduleId,
-        class_uuid: cls.uuid, // Assuming the class object has a uuid field
+        class_uuid: cls.uuid,
       }));
 
       const { error: insertClassesError } = await supabase

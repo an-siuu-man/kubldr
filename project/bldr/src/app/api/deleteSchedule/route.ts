@@ -1,8 +1,34 @@
+/**
+ * API Route: /api/deleteSchedule
+ * 
+ * Permanently deletes a user's schedule from the database.
+ * Uses cascading foreign keys to automatically remove related
+ * schedule_classes and userschedule entries.
+ * 
+ * @method POST
+ * @requires Authorization header with Bearer token
+ * @body { scheduleId: string } - The UUID of the schedule to delete
+ * @returns { success: true, scheduleId: string } - Confirmation of deletion
+ * 
+ * @throws 401 - Unauthorized (missing/invalid auth header)
+ * @throws 400 - Missing scheduleId in request body
+ * @throws 404 - Schedule not found or user doesn't own it
+ * @throws 500 - Database error during deletion
+ */
 import { supabase } from "../../lib/supabaseClient";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * POST handler for deleting a schedule.
+ * Verifies user ownership before performing the deletion.
+ * The delete operation cascades to remove all related records.
+ * 
+ * @param {NextRequest} req - The incoming request with scheduleId in body
+ * @returns {NextResponse} JSON response with result or error
+ */
 export async function POST(req: NextRequest) {
   try {
+    // Extract and validate authorization header
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return NextResponse.json(
@@ -11,6 +37,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verify user authentication with Supabase
     const {
       data: { user },
       error: authError,
@@ -20,6 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Parse request body for scheduleId
     const body = await req.json();
     const { scheduleId } = body;
 
@@ -30,8 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify ownership in userschedule table
-    // Check ownership by selecting the scheduleid column (exists in all deployments)
+    // Verify user owns this schedule before deleting
     const { data: ownership, error: ownershipError } = await supabase
       .from("userschedule")
       .select("scheduleid")
@@ -50,7 +77,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Delete the schedule. Cascading foreign keys will remove schedule_classes and userschedule entries.
+    // Delete the schedule (cascading FKs handle related records)
     const { error: deleteError } = await supabase
       .from("allschedules")
       .delete()

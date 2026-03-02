@@ -1,16 +1,47 @@
+/**
+ * API Route: /api/addClass
+ * 
+ * Adds a class section to a user's schedule with conflict detection.
+ * Performs validation for seat availability and time conflicts before adding.
+ * 
+ * @method POST
+ * @body {
+ *   scheduleid: string,     // UUID of the target schedule
+ *   classId?: number,       // Integer class ID from allclasses table
+ *   classUuid?: string,     // UUID of the class (alternative to classId)
+ *   allowConflict?: boolean // If true, adds class even with time conflicts
+ * }
+ * 
+ * @returns On success: { success: true, added: object, warnings?: object }
+ * @returns On conflict: { error: string, conflicts: array, target: object }
+ * 
+ * @throws 400 - Missing required fields
+ * @throws 404 - Class not found
+ * @throws 409 - Class already in schedule, no seats, or time conflict
+ * @throws 500 - Database error
+ */
 // api/addClass/route.ts
 import { supabase } from "../../lib/supabaseClient";
 
+/**
+ * Request body type for adding a class to a schedule
+ */
 type AddBody = {
-  scheduleid: string; // schedule UUID
-  classId?: number; // integer classid in allclasses
-  classUuid?: string; // uuid in allclasses
-  // Optional: allow adding even if conflict, but return conflicts in response
-  allowConflict?: boolean;
+  scheduleid: string;      // Schedule UUID
+  classId?: number;        // Integer classid in allclasses
+  classUuid?: string;      // UUID in allclasses
+  allowConflict?: boolean; // Allow adding even if conflict exists
 };
 
-const DAY_CHARS = new Set(["M", "T", "W", "R", "F", "S", "U"]); // R = Thursday
+/** Valid day characters for parsing schedule days */
+const DAY_CHARS = new Set(["M", "T", "W", "R", "F", "S", "U"]); // R = Thursday, U = Sunday
 
+/**
+ * Parses a days string (e.g., "MWF") into a Set of individual day characters.
+ * 
+ * @param {string | null} days - The days string to parse
+ * @returns {Set<string>} Set of day characters found
+ */
 function parseDays(days: string | null): Set<string> {
   const set = new Set<string>();
   if (!days) return set;
@@ -20,9 +51,14 @@ function parseDays(days: string | null): Set<string> {
   return set;
 }
 
+/**
+ * Converts a time string ("HH:MM") to minutes since midnight.
+ * 
+ * @param {string | null} hhmm - Time string in "HH:MM" format
+ * @returns {number | null} Minutes since midnight, or null if invalid
+ */
 function toMinutes(hhmm: string | null): number | null {
   if (!hhmm) return null;
-  // expects 'HH:MM'
   const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
   if (!m) return null;
   const h = Number(m[1]);
@@ -31,16 +67,36 @@ function toMinutes(hhmm: string | null): number | null {
   return h * 60 + mi;
 }
 
+/**
+ * Checks if two time intervals overlap.
+ * 
+ * @param {number} aStart - Start time of interval A (in minutes)
+ * @param {number} aEnd - End time of interval A
+ * @param {number} bStart - Start time of interval B
+ * @param {number} bEnd - End time of interval B
+ * @returns {boolean} True if intervals overlap
+ */
 function timesOverlap(
   aStart: number,
   aEnd: number,
   bStart: number,
   bEnd: number
 ): boolean {
-  // strict overlap if intervals intersect with positive duration
   return aStart < bEnd && bStart < aEnd;
 }
 
+/**
+ * POST handler for adding a class to a schedule.
+ * Performs multiple validation steps:
+ * 1. Resolves class by ID or UUID
+ * 2. Checks if already in schedule
+ * 3. Validates seat availability
+ * 4. Detects time conflicts with existing classes
+ * 5. Inserts the class-schedule mapping
+ * 
+ * @param {Request} req - The incoming request
+ * @returns {Response} JSON response with result or error
+ */
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as AddBody;
