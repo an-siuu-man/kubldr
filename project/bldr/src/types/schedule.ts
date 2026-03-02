@@ -1,6 +1,6 @@
 // Schedule related types
 // Matches the 'allschedules', 'schedule_classes', and 'userschedule' tables
-import { CalendarClassItem, ClassSection } from "./class";
+import type { ClassSection } from "./class";
 
 /**
  * Represents a schedule record from the allschedules table
@@ -25,13 +25,11 @@ export interface ScheduleClassesRecord {
 
 /**
  * Represents a user-schedule relationship from the userschedule table
- * Updated to use Supabase auth UUID
  */
 export interface UserScheduleRecord {
-  userscheduleid: string; // uuid (PK)
   auth_user_id: string; // uuid (FK to auth.users) - Supabase user ID
-  scheduleid: string; // uuid (FK to allschedules)
-  isactive: boolean; // boolean (default true)
+  scheduleid: string; // uuid (PK, FK to allschedules)
+  isactive: boolean; // boolean (default false)
 }
 
 /**
@@ -52,7 +50,6 @@ export interface Schedule {
  * Legacy UserSchedule interface (keeping for backward compatibility)
  */
 export interface UserSchedule {
-  userscheduleid?: string;
   onlineid: string;
   scheduleid: string;
   isactive: boolean;

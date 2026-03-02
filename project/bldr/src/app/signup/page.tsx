@@ -1,22 +1,21 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Lock,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-import {
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Lock,
-  AlertCircle,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import toastStyle from "@/components/ui/toastStyle";
-import { motion } from "framer-motion";
-import MaintenanceBanner from "@/components/MaintenanceBanner";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Signup() {
   const router = useRouter();
@@ -115,7 +114,6 @@ export default function Signup() {
 
   return (
     <div className="signup">
-      <MaintenanceBanner />
       <div className="flex flex-col justify-start items-center h-screen py-10">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
@@ -222,10 +220,10 @@ export default function Signup() {
               <Button
                 type="submit"
                 variant={"secondary"}
-                className={`w-full transition cursor-pointer font-dmsans text-md my-3 opacity-50`}
-                disabled={true}
+                className={`w-full transition cursor-pointer font-dmsans text-md my-3`}
+                disabled={isLoading}
               >
-                {"Sign Up"}
+                {isLoading ? "Creating account..." : "Sign Up"}
               </Button>
             </motion.div>
           </form>

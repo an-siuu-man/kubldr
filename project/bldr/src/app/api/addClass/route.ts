@@ -1,47 +1,58 @@
 /**
  * API Route: /api/addClass
- * 
+ *
  * Adds a class section to a user's schedule with conflict detection.
- * Performs validation for seat availability and time conflicts before adding.
- * 
+ * Course metadata (dept/code/title) is joined from `searchclasses`.
+ *
  * @method POST
  * @body {
- *   scheduleid: string,     // UUID of the target schedule
- *   classId?: number,       // Integer class ID from allclasses table
- *   classUuid?: string,     // UUID of the class (alternative to classId)
- *   allowConflict?: boolean // If true, adds class even with time conflicts
+ *   scheduleid: string,
+ *   classId?: number,
+ *   classUuid?: string,
+ *   allowConflict?: boolean
  * }
- * 
+ *
  * @returns On success: { success: true, added: object, warnings?: object }
  * @returns On conflict: { error: string, conflicts: array, target: object }
- * 
+ *
  * @throws 400 - Missing required fields
  * @throws 404 - Class not found
  * @throws 409 - Class already in schedule, no seats, or time conflict
  * @throws 500 - Database error
  */
-// api/addClass/route.ts
 import { supabase } from "../../lib/supabaseClient";
 
-/**
- * Request body type for adding a class to a schedule
- */
 type AddBody = {
-  scheduleid: string;      // Schedule UUID
-  classId?: number;        // Integer classid in allclasses
-  classUuid?: string;      // UUID in allclasses
-  allowConflict?: boolean; // Allow adding even if conflict exists
+  scheduleid: string;
+  classId?: number;
+  classUuid?: string;
+  allowConflict?: boolean;
 };
 
-/** Valid day characters for parsing schedule days */
-const DAY_CHARS = new Set(["M", "T", "W", "R", "F", "S", "U"]); // R = Thursday, U = Sunday
+type SearchClassMeta = {
+  dept: string;
+  code: string;
+  title: string | null;
+};
 
-/**
- * Parses a days string (e.g., "MWF") into a Set of individual day characters.
- * 
- * @param {string | null} days - The days string to parse
- * @returns {Set<string>} Set of day characters found
- */
+type SectionWithCourse = {
+  uuid: string;
+  classid: number;
+  starttime: string | null;
+  endtime: string | null;
+  days: string | null;
+  availseats: number | null;
+  minhours: number | null;
+  maxhours: number | null;
+  component: string | null;
+  location: string | null;
+  room: string | null;
+  instructor: string | null;
+  searchclass: SearchClassMeta | SearchClassMeta[] | null;
+};
+
+const DAY_CHARS = new Set(["M", "T", "W", "R", "F", "S", "U"]);
+
 function parseDays(days: string | null): Set<string> {
   const set = new Set<string>();
   if (!days) return set;
@@ -51,12 +62,6 @@ function parseDays(days: string | null): Set<string> {
   return set;
 }
 
-/**
- * Converts a time string ("HH:MM") to minutes since midnight.
- * 
- * @param {string | null} hhmm - Time string in "HH:MM" format
- * @returns {number | null} Minutes since midnight, or null if invalid
- */
 function toMinutes(hhmm: string | null): number | null {
   if (!hhmm) return null;
   const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
@@ -67,36 +72,30 @@ function toMinutes(hhmm: string | null): number | null {
   return h * 60 + mi;
 }
 
-/**
- * Checks if two time intervals overlap.
- * 
- * @param {number} aStart - Start time of interval A (in minutes)
- * @param {number} aEnd - End time of interval A
- * @param {number} bStart - Start time of interval B
- * @param {number} bEnd - End time of interval B
- * @returns {boolean} True if intervals overlap
- */
 function timesOverlap(
   aStart: number,
   aEnd: number,
   bStart: number,
-  bEnd: number
+  bEnd: number,
 ): boolean {
   return aStart < bEnd && bStart < aEnd;
 }
 
-/**
- * POST handler for adding a class to a schedule.
- * Performs multiple validation steps:
- * 1. Resolves class by ID or UUID
- * 2. Checks if already in schedule
- * 3. Validates seat availability
- * 4. Detects time conflicts with existing classes
- * 5. Inserts the class-schedule mapping
- * 
- * @param {Request} req - The incoming request
- * @returns {Response} JSON response with result or error
- */
+function pickSearchClassMeta(
+  value: SearchClassMeta | SearchClassMeta[] | null,
+): SearchClassMeta {
+  if (Array.isArray(value)) {
+    return value[0] ?? { dept: "", code: "", title: "" };
+  }
+  return value ?? { dept: "", code: "", title: "" };
+}
+
+function deriveCreditHours(minhours: number | null, maxhours: number | null) {
+  if (typeof maxhours === "number") return maxhours;
+  if (typeof minhours === "number") return minhours;
+  return undefined;
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as AddBody;
@@ -108,17 +107,18 @@ export async function POST(req: Request) {
     if (classId == null && !classUuid) {
       return Response.json(
         { error: "Provide classId or classUuid" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // 1) Resolve target class by id or uuid
+    const targetMatch =
+      classId != null ? { classid: classId } : { uuid: classUuid ?? "" };
     const { data: target, error: targetErr } = await supabase
       .from("allclasses")
       .select(
-        "uuid, classid, dept, code, title, starttime, endtime, days, availseats, credithours, component, location, room, instructor"
+        "uuid,classid,starttime,endtime,days,availseats,minhours,maxhours,component,location,room,instructor,searchclass:searchclasses!allclasses_searchclass_fkey(dept,code,title)",
       )
-      .match(classId != null ? { classid: classId } : { uuid: classUuid! })
+      .match(targetMatch)
       .maybeSingle();
 
     if (targetErr) {
@@ -129,39 +129,42 @@ export async function POST(req: Request) {
       return Response.json({ error: "Class not found" }, { status: 404 });
     }
 
-    // 2) Check if already in schedule (fast path)
+    const typedTarget = target as SectionWithCourse;
+    const targetCourse = pickSearchClassMeta(typedTarget.searchclass);
+
     {
       const { data: exists, error: existsErr } = await supabase
         .from("schedule_classes")
         .select("scheduleid, class_uuid")
         .eq("scheduleid", scheduleid)
-        .eq("class_uuid", target.uuid)
+        .eq("class_uuid", typedTarget.uuid)
         .limit(1);
 
       if (existsErr) {
         console.error("[addClass] exists check error:", existsErr);
         return Response.json(
           { error: "Failed to check schedule" },
-          { status: 500 }
+          { status: 500 },
         );
       }
       if (exists && exists.length > 0) {
         return Response.json(
           { error: "Class already in schedule" },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }
 
-    // 3) Optional: seat availability check
-    if (typeof target.availseats === "number" && target.availseats <= 0) {
+    if (
+      typeof typedTarget.availseats === "number" &&
+      typedTarget.availseats <= 0
+    ) {
       return Response.json(
         { error: "No available seats for this class" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    // 4) Time conflict check against existing classes in the schedule
     const { data: existingRows, error: existingErr } = await supabase
       .from("schedule_classes")
       .select("class_uuid")
@@ -171,11 +174,11 @@ export async function POST(req: Request) {
       console.error("[addClass] fetch existing error:", existingErr);
       return Response.json(
         { error: "Failed to fetch schedule contents" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    let conflicts: Array<{
+    const conflicts: Array<{
       withClassId: number;
       withTitle?: string;
       withDept?: string;
@@ -190,20 +193,22 @@ export async function POST(req: Request) {
 
       const { data: existingClasses, error: ecErr } = await supabase
         .from("allclasses")
-        .select("uuid, classid, dept, code, title, starttime, endtime, days")
+        .select(
+          "uuid,classid,starttime,endtime,days,searchclass:searchclasses!allclasses_searchclass_fkey(dept,code,title)",
+        )
         .in("uuid", existingUuids);
 
       if (ecErr) {
         console.error("[addClass] fetch existing class meta error:", ecErr);
         return Response.json(
           { error: "Failed to fetch existing class details" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
-      const tgtDays = parseDays(target.days);
-      const tgtStart = toMinutes(target.starttime);
-      const tgtEnd = toMinutes(target.endtime);
+      const tgtDays = parseDays(typedTarget.days);
+      const tgtStart = toMinutes(typedTarget.starttime);
+      const tgtEnd = toMinutes(typedTarget.endtime);
 
       if (
         tgtStart != null &&
@@ -211,24 +216,28 @@ export async function POST(req: Request) {
         tgtEnd > tgtStart &&
         tgtDays.size > 0
       ) {
-        for (const ec of existingClasses ?? []) {
-          const ecDays = parseDays(ec.days);
+        for (const row of existingClasses ?? []) {
+          const existingClass = row as SectionWithCourse;
+          const ecDays = parseDays(existingClass.days);
           const dayOverlap = [...tgtDays].some((d) => ecDays.has(d));
           if (!dayOverlap) continue;
 
-          const ecStart = toMinutes(ec.starttime);
-          const ecEnd = toMinutes(ec.endtime);
+          const ecStart = toMinutes(existingClass.starttime);
+          const ecEnd = toMinutes(existingClass.endtime);
           if (ecStart == null || ecEnd == null || ecEnd <= ecStart) continue;
 
           if (timesOverlap(tgtStart, tgtEnd, ecStart, ecEnd)) {
+            const existingCourse = pickSearchClassMeta(
+              existingClass.searchclass,
+            );
             conflicts.push({
-              withClassId: ec.classid,
-              withTitle: ec.title ?? undefined,
-              withDept: ec.dept ?? undefined,
-              withCode: ec.code ?? undefined,
-              withDays: ec.days ?? null,
-              withStart: ec.starttime ?? null,
-              withEnd: ec.endtime ?? null,
+              withClassId: existingClass.classid,
+              withTitle: existingCourse.title ?? undefined,
+              withDept: existingCourse.dept || undefined,
+              withCode: existingCourse.code || undefined,
+              withDays: existingClass.days ?? null,
+              withStart: existingClass.starttime ?? null,
+              withEnd: existingClass.endtime ?? null,
             });
           }
         }
@@ -241,23 +250,22 @@ export async function POST(req: Request) {
           error: "Time conflict detected",
           conflicts,
           target: {
-            classid: target.classid,
-            title: target.title,
-            dept: target.dept,
-            code: target.code,
-            days: target.days,
-            starttime: target.starttime,
-            endtime: target.endtime,
+            classid: typedTarget.classid,
+            title: targetCourse.title,
+            dept: targetCourse.dept,
+            code: targetCourse.code,
+            days: typedTarget.days,
+            starttime: typedTarget.starttime,
+            endtime: typedTarget.endtime,
           },
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    // 5) Insert mapping (upsert ensures idempotency if raced)
     const { error: insErr } = await supabase
       .from("schedule_classes")
-      .upsert([{ scheduleid, class_uuid: target.uuid }], {
+      .upsert([{ scheduleid, class_uuid: typedTarget.uuid }], {
         onConflict: "scheduleid,class_uuid",
         ignoreDuplicates: false,
       });
@@ -266,7 +274,7 @@ export async function POST(req: Request) {
       console.error("[addClass] insert error:", insErr);
       return Response.json(
         { error: "Failed to add class to schedule" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -275,24 +283,29 @@ export async function POST(req: Request) {
         success: true,
         added: {
           scheduleid,
-          classid: target.classid,
-          title: target.title,
-          dept: target.dept,
-          code: target.code,
-          days: target.days,
-          starttime: target.starttime,
-          endtime: target.endtime,
+          classid: typedTarget.classid,
+          title: targetCourse.title,
+          dept: targetCourse.dept,
+          code: targetCourse.code,
+          days: typedTarget.days,
+          starttime: typedTarget.starttime,
+          endtime: typedTarget.endtime,
+          credithours: deriveCreditHours(
+            typedTarget.minhours,
+            typedTarget.maxhours,
+          ),
         },
         warnings:
           conflicts.length > 0 ? { timeConflicts: conflicts } : undefined,
       },
-      { status: 200 }
+      { status: 200 },
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[addClass] server error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     return Response.json(
-      { error: "Internal server error", details: err?.message },
-      { status: 500 }
+      { error: "Internal server error", details: errorMessage },
+      { status: 500 },
     );
   }
 }

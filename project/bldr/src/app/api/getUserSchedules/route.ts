@@ -1,47 +1,73 @@
 /**
  * API Route: /api/getUserSchedules
- * 
+ *
  * Fetches all schedules belonging to the authenticated user.
- * For each schedule, also retrieves the associated class sections
- * with full details including times, instructor, and room info.
- * 
+ * Course metadata (dept/code/title) is joined from `searchclasses`.
+ *
  * @method GET
  * @requires Authorization header with Bearer token
  * @returns { schedules: Array<ScheduleWithClasses> }
- * 
- * Each schedule includes:
- * - id, name, semester, year
- * - createdAt, updatedAt timestamps
- * - classes: Array of ClassSection objects
- * 
- * @throws 401 - Unauthorized (missing/invalid auth header)
- * @throws 500 - Database error
  */
-import { supabase } from "../../lib/supabaseClient";
-import { NextRequest } from "next/server";
 
-/**
- * GET handler for fetching all user schedules with their classes.
- * Performs a multi-step query:
- * 1. Get schedule IDs linked to user
- * 2. Fetch schedule metadata
- * 3. For each schedule, fetch its class sections
- * 
- * @param {NextRequest} req - The incoming request
- * @returns {Response} JSON with array of schedules
- */
+import type { NextRequest } from "next/server";
+import { supabase } from "../../lib/supabaseClient";
+
+type SearchClassMeta = {
+  dept: string;
+  code: string;
+  title: string | null;
+};
+
+type ClassDetailRow = {
+  uuid: string;
+  classid: number;
+  days: string | null;
+  starttime: string | null;
+  endtime: string | null;
+  component: string | null;
+  instructor: string | null;
+  location: string | null;
+  room: string | null;
+  availseats: number | null;
+  minhours: number | null;
+  maxhours: number | null;
+  searchclass: SearchClassMeta | SearchClassMeta[] | null;
+};
+
+type ScheduleRow = {
+  scheduleid: string;
+  schedulename: string;
+  semester: string;
+  year: number;
+  createdat: Date | string | null;
+  lastedited: Date | string | null;
+};
+
+function pickSearchClassMeta(
+  value: SearchClassMeta | SearchClassMeta[] | null,
+): SearchClassMeta {
+  if (Array.isArray(value)) {
+    return value[0] ?? { dept: "", code: "", title: "" };
+  }
+  return value ?? { dept: "", code: "", title: "" };
+}
+
+function deriveCreditHours(minhours: number | null, maxhours: number | null) {
+  if (typeof maxhours === "number") return maxhours;
+  if (typeof minhours === "number") return minhours;
+  return undefined;
+}
+
 export async function GET(req: NextRequest) {
   try {
-    // Extract and validate authorization header
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return Response.json(
         { error: "No authorization header" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Verify user authentication with Supabase
     const {
       data: { user },
       error: authError,
@@ -51,31 +77,31 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Step 1: Get schedule IDs linked to this user (active only)
-    const { data: userScheduleData, error: userScheduleError } = await supabase
+    const { data: userScheduleRows, error: userScheduleError } = await supabase
       .from("userschedule")
-      .select("scheduleid")
-      .eq("auth_user_id", user.id)
-      .eq("isactive", true);
+      .select("scheduleid, isactive")
+      .eq("auth_user_id", user.id);
 
     if (userScheduleError) {
       console.error(
         "[getUserSchedules] Error fetching user schedules:",
-        userScheduleError
+        userScheduleError,
       );
       return Response.json(
         { error: "Failed to fetch user schedules" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    // Return empty array if user has no schedules
-    if (!userScheduleData || userScheduleData.length === 0) {
+    if (!userScheduleRows || userScheduleRows.length === 0) {
       return Response.json({ schedules: [] });
     }
 
-    // Step 2: Fetch schedule metadata from allschedules
-    const scheduleIds = userScheduleData.map((us: any) => us.scheduleid);
+    const scheduleIds = userScheduleRows.map((row) => row.scheduleid);
+    const activeByScheduleId = new Map<string, boolean>(
+      userScheduleRows.map((row) => [row.scheduleid, Boolean(row.isactive)]),
+    );
+
     const { data: schedules, error: schedulesError } = await supabase
       .from("allschedules")
       .select("scheduleid, schedulename, semester, year, createdat, lastedited")
@@ -85,90 +111,102 @@ export async function GET(req: NextRequest) {
     if (schedulesError) {
       return Response.json(
         { error: "Failed to fetch schedule details" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    // Step 3: For each schedule, fetch its class sections
-    const schedulesWithClasses = await Promise.all(
-      (schedules || []).map(async (schedule: any) => {
-        // Get class UUIDs for this schedule
-        const { data: scheduleClasses, error: classesError } = await supabase
-          .from("schedule_classes")
-          .select("class_uuid")
-          .eq("scheduleid", schedule.scheduleid);
+    if (!schedules || schedules.length === 0) {
+      return Response.json({ schedules: [] });
+    }
 
-        if (classesError) {
-          console.error(
-            `[getUserSchedules] Error fetching classes for schedule ${schedule.scheduleid}:`,
-            classesError
-          );
-          return {
-            id: schedule.scheduleid,
-            name: schedule.schedulename,
-            semester: schedule.semester,
-            year: schedule.year,
-            classes: [],
-            createdAt: schedule.createdat,
-            updatedAt: schedule.lastedited,
-          };
-        }
+    const { data: scheduleClasses, error: scheduleClassesError } =
+      await supabase
+        .from("schedule_classes")
+        .select("scheduleid, class_uuid, added_at")
+        .in("scheduleid", scheduleIds)
+        .order("added_at", { ascending: true });
 
-        // Return schedule with empty classes if none found
-        if (!scheduleClasses || scheduleClasses.length === 0) {
-          return {
-            id: schedule.scheduleid,
-            name: schedule.schedulename,
-            semester: schedule.semester,
-            year: schedule.year,
-            classes: [],
-            createdAt: schedule.createdat,
-            updatedAt: schedule.lastedited,
-          };
-        }
+    if (scheduleClassesError) {
+      console.error(
+        "[getUserSchedules] Error fetching schedule classes:",
+        scheduleClassesError,
+      );
+      return Response.json(
+        { error: "Failed to fetch schedule classes" },
+        { status: 500 },
+      );
+    }
 
-        // Fetch full class details from allclasses
-        const classUuids = scheduleClasses.map((sc: any) => sc.class_uuid);
-        const { data: classDetails, error: detailsError } = await supabase
-          .from("allclasses")
-          .select(
-            "uuid, classid, dept, code, title, days, starttime, endtime, component, instructor, credithours, location, room, availseats"
-          )
-          .in("uuid", classUuids);
+    const classUuids = Array.from(
+      new Set((scheduleClasses ?? []).map((row) => row.class_uuid)),
+    );
 
-        if (detailsError) {
-          console.error(
-            `[getUserSchedules] Error fetching class details:`,
-            detailsError
-          );
-          return {
-            id: schedule.scheduleid,
-            name: schedule.schedulename,
-            semester: schedule.semester,
-            year: schedule.year,
-            classes: [],
-            createdAt: schedule.createdat,
-            updatedAt: schedule.lastedited,
-          };
-        }
+    let classDetails: ClassDetailRow[] = [];
+    if (classUuids.length > 0) {
+      const { data: classRows, error: classDetailsError } = await supabase
+        .from("allclasses")
+        .select(
+          "uuid,classid,days,starttime,endtime,component,instructor,location,room,availseats,minhours,maxhours,searchclass:searchclasses!allclasses_searchclass_fkey(dept,code,title)",
+        )
+        .in("uuid", classUuids);
 
-        // Format classes to match ClassSection type expected by frontend
-        const formattedClasses = (classDetails || []).map((cls: any) => ({
-          uuid: cls.uuid,
-          classID: cls.classid?.toString() || "",
-          dept: cls.dept,
-          code: cls.code,
-          title: cls.title,
-          days: cls.days || "",
-          starttime: cls.starttime || "",
-          endtime: cls.endtime || "",
-          component: cls.component || "",
-          instructor: cls.instructor,
-          seats_available: cls.availseats,
-          credithours: cls.credithours,
-          location: cls.location,
-          room: cls.room,
-        }));
+      if (classDetailsError) {
+        console.error(
+          "[getUserSchedules] Error fetching class details:",
+          classDetailsError,
+        );
+        return Response.json(
+          { error: "Failed to fetch class details" },
+          { status: 500 },
+        );
+      }
+
+      classDetails = (classRows ?? []) as ClassDetailRow[];
+    }
+
+    const classByUuid = new Map<string, ClassDetailRow>();
+    for (const cls of classDetails) {
+      classByUuid.set(cls.uuid, cls);
+    }
+
+    const classesByScheduleId = new Map<string, string[]>();
+    for (const row of scheduleClasses ?? []) {
+      const existing = classesByScheduleId.get(row.scheduleid) ?? [];
+      existing.push(row.class_uuid);
+      classesByScheduleId.set(row.scheduleid, existing);
+    }
+
+    const schedulesWithClasses = (schedules as ScheduleRow[]).map(
+      (schedule) => {
+        const classIds = classesByScheduleId.get(schedule.scheduleid) ?? [];
+        const formattedClasses = classIds
+          .map((uuid) => classByUuid.get(uuid))
+          .filter(Boolean)
+          .map((cls) => {
+            const section = cls as ClassDetailRow;
+            const course = pickSearchClassMeta(section.searchclass);
+            return {
+              uuid: section.uuid,
+              classID: section.classid?.toString() || "",
+              dept: course.dept,
+              code: course.code,
+              title: course.title ?? `${course.dept} ${course.code}`,
+              days: section.days || "",
+              starttime: section.starttime || "",
+              endtime: section.endtime || "",
+              component: section.component || "",
+              instructor: section.instructor || undefined,
+              seats_available: section.availseats ?? 0,
+              minhours: section.minhours ?? undefined,
+              maxhours: section.maxhours ?? undefined,
+              credithours: deriveCreditHours(
+                section.minhours,
+                section.maxhours,
+              ),
+              location: section.location || undefined,
+              room: section.room || undefined,
+            };
+          });
 
         return {
           id: schedule.scheduleid,
@@ -176,10 +214,11 @@ export async function GET(req: NextRequest) {
           semester: schedule.semester,
           year: schedule.year,
           classes: formattedClasses,
+          isActive: activeByScheduleId.get(schedule.scheduleid) ?? false,
           createdAt: schedule.createdat,
           updatedAt: schedule.lastedited,
         };
-      })
+      },
     );
 
     return Response.json({ schedules: schedulesWithClasses });
