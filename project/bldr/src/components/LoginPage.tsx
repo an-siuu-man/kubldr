@@ -1,10 +1,11 @@
 "use client";
+
 import { motion } from "framer-motion";
 import {
-  AlertCircle,
   AlertTriangle,
+  ArrowLeft,
   CheckCircle2,
-  Lock,
+  UserCircle,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -14,65 +15,31 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import toastStyle from "@/components/ui/toastStyle";
 import { createClient } from "@/lib/supabase/client";
 
-const signupHighlights = [
-  "Search KU classes in real time without juggling multiple tabs.",
-  "See your schedule visually before enrollment gets crowded.",
-  "Save multiple semester versions and compare the best option later.",
-];
-
-const signupSignals = [
-  "Seat availability indicators",
-  "Section and instructor details",
-  "Responsive dark interface",
-];
-
-export default function Signup() {
+export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const supabase = createClient();
 
-  const handleClick = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (password !== confirmPassword) {
-      toast("Passwords do not match", {
-        style: { ...toastStyle, backgroundColor: "#404040" },
-        description: "Please ensure both password fields match.",
-        duration: 3000,
-        icon: <XCircle className="h-5 w-5" />,
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long", {
-        style: { ...toastStyle, backgroundColor: "#404040" },
-        duration: 3000,
-        icon: <Lock className="h-5 w-5" />,
-      });
-      return;
-    }
-
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
-        },
       });
 
       if (error) {
-        toast.error("Signup Failed", {
-          style: { ...toastStyle, backgroundColor: "#404040" },
+        toast.error("Login Failed", {
+          style: toastStyle,
           description: error.message,
           duration: 3000,
           icon: <XCircle className="h-5 w-5" />,
@@ -81,46 +48,64 @@ export default function Signup() {
       }
 
       if (data.user) {
-        // Check if email confirmation is required
-        if (data.user.identities && data.user.identities.length === 0) {
-          toast.error("User already exists", {
-            style: { ...toastStyle, backgroundColor: "#404040" },
-            duration: 3000,
-            icon: <AlertCircle className="h-5 w-5" />,
-          });
-          return;
-        }
-
-        toast.success("Account Created", {
-          style: { ...toastStyle, backgroundColor: "#404040" },
-          description: data.session
-            ? "Redirecting to builder..."
-            : "Please check your email to confirm your account.",
-          duration: 3000,
+        toast.success("Login Successful", {
+          style: toastStyle,
+          description: "Redirecting to builder...",
+          duration: 2000,
           icon: <CheckCircle2 className="h-5 w-5" />,
         });
-
-        // If session exists (email confirmation disabled), redirect to builder
-        if (data.session) {
-          router.push("/builder");
-          router.refresh();
-        } else {
-          // Otherwise redirect to login page
-          setTimeout(() => {
-            router.push("/login");
-          }, 2000);
-        }
+        router.push("/builder");
+        router.refresh();
       }
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("Login error:", error);
       toast.error("Error", {
-        style: { ...toastStyle, backgroundColor: "#404040" },
+        style: toastStyle,
         description: "An unexpected error occurred",
         duration: 3000,
         icon: <AlertTriangle className="h-5 w-5" />,
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setIsGuestLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+
+      if (error) {
+        toast.error("Guest Login Failed", {
+          style: toastStyle,
+          description: error.message,
+          duration: 3000,
+          icon: <XCircle className="h-5 w-5" />,
+        });
+        return;
+      }
+
+      if (data.user) {
+        toast.success("Welcome, Guest!", {
+          style: toastStyle,
+          description: "Redirecting to builder...",
+          duration: 2000,
+          icon: <UserCircle className="h-5 w-5" />,
+        });
+        router.push("/builder");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Guest login error:", error);
+      toast.error("Error", {
+        style: toastStyle,
+        description: "An unexpected error occurred",
+        duration: 3000,
+        icon: <AlertTriangle className="h-5 w-5" />,
+      });
+    } finally {
+      setIsGuestLoading(false);
     }
   };
 
@@ -155,55 +140,33 @@ export default function Signup() {
             variant="ghost"
             className="border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10"
           >
-            <Link href="/login">Already have an account?</Link>
+            <Link href="/">
+              <ArrowLeft className="h-4 w-4" />
+              Back home
+            </Link>
           </Button>
         </div>
 
         <div className="flex flex-1 items-center py-10">
-          <div className="grid w-full gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <div className="mx-auto flex w-full max-w-xl flex-col items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-xl"
+              className="w-full text-center"
             >
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-[#D6D6D6]">
-                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                New here? Start with the parts that matter most.
+                <UserCircle className="h-4 w-4 text-blue-300" />
+                Pick up where your schedule left off
               </div>
               <h1 className="font-figtree text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Create your account and plan your semester with fewer surprises.
+                Log back in and open your saved schedules.
               </h1>
-              <p className="mt-5 font-inter text-base leading-7 text-[#B8B8B8]">
-                bldr helps first-time users understand how courses fit together,
-                compare alternate sections, and keep the best version of a KU
-                schedule ready for registration.
+              <p className="mx-auto mt-5 max-w-lg font-inter text-base leading-7 text-[#B8B8B8]">
+                Returning users can jump straight back into the builder, and
+                anyone who just wants a quick look can still continue as a
+                guest.
               </p>
-
-              <div className="mt-8 space-y-3">
-                {signupHighlights.map((highlight) => (
-                  <div
-                    key={highlight}
-                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-                  >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
-                    <p className="font-inter text-sm text-[#D5D5D5]">
-                      {highlight}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                {signupSignals.map((signal) => (
-                  <div
-                    key={signal}
-                    className="rounded-full border border-[#404040] bg-white/5 px-3 py-2 font-inter text-sm text-[#D6D6D6]"
-                  >
-                    {signal}
-                  </div>
-                ))}
-              </div>
             </motion.div>
 
             <motion.div
@@ -219,16 +182,16 @@ export default function Signup() {
               <div className="w-full max-w-[28rem] rounded-[28px] border border-white/10 bg-[#111111]/90 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
                 <div className="mb-2 flex flex-col items-start">
                   <h2 className="font-dmsans text-3xl font-bold text-white">
-                    Sign up
+                    Log in
                   </h2>
                   <p className="mt-2 font-inter text-sm text-[#A8A8A8]">
-                    Enter your email and password to start building schedules.
+                    Enter your email and password to continue to the builder.
                   </p>
                 </div>
 
                 <form
                   className="mt-6 flex flex-col gap-4"
-                  onSubmit={handleClick}
+                  onSubmit={handleSubmit}
                 >
                   <motion.div
                     initial={{ opacity: 0, x: -16 }}
@@ -243,13 +206,13 @@ export default function Signup() {
                     </Label>
                     <Input
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       id="email"
                       placeholder="your.email@example.com"
                       className="border-2 border-[#404040] font-inter selection:bg-blue-400"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isLoading || isGuestLoading}
                     />
                   </motion.div>
 
@@ -266,51 +229,64 @@ export default function Signup() {
                     </Label>
                     <Input
                       type="password"
-                      id="password"
-                      placeholder="At least 6 characters"
-                      className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.34 }}
-                  >
-                    <Label
-                      htmlFor="confirm-password"
-                      className="mb-2 block text-sm font-inter"
-                    >
-                      Confirm Password
-                    </Label>
-                    <Input
-                      type="password"
-                      id="confirm-password"
-                      placeholder="Re-enter password"
+                      id="password"
+                      placeholder="********"
                       className="border-2 border-[#404040] font-inter selection:bg-blue-400"
                       required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isLoading || isGuestLoading}
                     />
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.42 }}
+                    transition={{ duration: 0.3, delay: 0.34 }}
                   >
                     <Button
                       type="submit"
                       variant="secondary"
                       className="my-3 w-full font-dmsans text-md"
-                      disabled={isLoading}
+                      disabled={isLoading || isGuestLoading}
                     >
-                      {isLoading ? "Creating account..." : "Sign Up"}
+                      {isLoading ? (
+                        <>
+                          <Spinner />
+                          Logging in...
+                        </>
+                      ) : (
+                        "Login"
+                      )}
+                    </Button>
+
+                    <div className="relative my-3 flex w-full items-center justify-center">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-[#404040]" />
+                      </div>
+                      <span className="relative bg-[#111111] px-3 font-inter text-xs text-[#a8a8a8]">
+                        or
+                      </span>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-[#404040] font-dmsans text-md text-white hover:bg-white/10 hover:text-white"
+                      disabled={isLoading || isGuestLoading}
+                      onClick={handleGuestLogin}
+                    >
+                      {isGuestLoading ? (
+                        <>
+                          <Spinner />
+                          Signing in...
+                        </>
+                      ) : (
+                        <>
+                          <UserCircle className="mr-2 h-4 w-4" />
+                          Continue as Guest
+                        </>
+                      )}
                     </Button>
                   </motion.div>
                 </form>
@@ -318,15 +294,12 @@ export default function Signup() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.5 }}
+                  transition={{ duration: 0.3, delay: 0.42 }}
                   className="mt-5 font-inter text-xs text-[#a8a8a8]"
                 >
-                  Already have an account with us?{" "}
-                  <Link
-                    href="/login"
-                    className="font-medium text-white font-inter"
-                  >
-                    Log in
+                  Don&apos;t have an account with us?{" "}
+                  <Link href="/signup" className="font-medium text-white">
+                    Sign up
                   </Link>
                 </motion.div>
               </div>

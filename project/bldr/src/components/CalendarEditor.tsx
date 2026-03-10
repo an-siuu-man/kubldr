@@ -16,24 +16,23 @@
  * @component
  */
 "use client";
-import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-import { ClassSection } from "@/types";
-import { timeToDecimal, calculateDuration, parseDays } from "@/lib/timeUtils";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
+import { AlertTriangle, Pin, PinOff, Trash2 } from "lucide-react";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Trash2, AlertTriangle, Pin, PinIcon, PinOff } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { calculateDuration, parseDays, timeToDecimal } from "@/lib/timeUtils";
+import type { ClassSection } from "@/types";
 
 /**
  * CalendarEditor Component
@@ -137,7 +136,7 @@ const CalendarEditor = () => {
                                 startTime < hour + 1
                               );
                             })
-                            .map((cls: ClassSection, idx: number) => {
+                            .map((cls: ClassSection) => {
                               // Use CSS calc to make row height responsive
                               const startTime = timeToDecimal(
                                 cls.starttime || "",
@@ -175,9 +174,13 @@ const CalendarEditor = () => {
                                 i++;
                               }
                               const colorIndex = Math.abs(hash) % colors.length;
+                              const noOpenSeats =
+                                (cls.seats_available ?? 0) <= 0;
+                              const displayLocation =
+                                cls.room || cls.location || "TBA";
 
                               return (
-                                <ContextMenu key={idx}>
+                                <ContextMenu key={cls.uuid}>
                                   <ContextMenuTrigger>
                                     <TooltipProvider>
                                       <Tooltip delayDuration={200}>
@@ -211,85 +214,100 @@ const CalendarEditor = () => {
                                                   {cls.component})
                                                 </span>
                                               </span>
-                                              {(cls.seats_available ?? 0) <=
-                                                0 && (
+                                              {noOpenSeats && (
                                                 <AlertTriangle className="inline-block h-3 lg:h-4 text-red-600 shrink-0" />
                                               )}
                                             </div>
                                           </motion.div>
                                         </TooltipTrigger>
                                         <TooltipContent
-                                          className="font-figtree select-text"
+                                          className="font-figtree select-text p-0"
                                           side="top"
                                           style={{
                                             borderTopWidth: "2px",
                                             borderColor: colors[colorIndex],
                                           }}
                                         >
-                                          <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                              {/* <p className="text-sm font-bold text-slate-100 truncate">
-                                                {cls.dept} {cls.code} <span className="font-normal text-slate-300">({cls.component})</span>
-                                              </p> */}
-                                            </div>
-
-                                            <p className="text-xs text-slate-300">
-                                              <span className="font-semibold text-slate-200">
-                                                Instructor:{" "}
-                                              </span>
-                                              <span className="text-slate-100">
-                                                {cls.instructor || "Staff"}
-                                              </span>
-                                            </p>
-
-                                            <p className="text-xs text-slate-300">
-                                              <span className="font-semibold text-slate-200">
-                                                Room:{" "}
-                                              </span>
-                                              <span className="text-slate-100">
-                                                {cls.room || "TBA"}
-                                              </span>
-                                            </p>
-
-                                            <div className="flex items-center text-xs text-slate-300">
-                                              <p className="mr-4">
-                                                <span className="font-semibold text-slate-200">
-                                                  ID{" "}
-                                                </span>
-                                                <span className="text-slate-100">
-                                                  #{cls.classID}
-                                                </span>
+                                          <div className="w-80 max-w-[calc(100vw-2rem)]">
+                                            <div className="border-b border-white/10 px-3 py-2">
+                                              <p className="text-sm font-bold text-slate-50">
+                                                {cls.dept} {cls.code} (
+                                                {cls.component})
                                               </p>
-                                              <p>
-                                                <span className="font-semibold text-slate-200">
-                                                  Days{" "}
-                                                </span>
-                                                <span className="text-slate-100">
-                                                  {cls.days}
-                                                </span>
+                                              <p className="truncate text-xs text-slate-400">
+                                                {cls.title}
                                               </p>
                                             </div>
-                                            {cls.pinned && (
-                                              <p>
-                                                <span className="font-semibold text-amber-400">
-                                                  Pinned - won't change during
-                                                  permutations
-                                                </span>
-                                              </p>
-                                            )}
-                                            {(cls.seats_available ?? 0) <=
-                                              0 && (
-                                              <p>
-                                                <span className="font-semibold text-red-400">
-                                                  Warning: No open seats!
-                                                </span>
-                                              </p>
-                                            )}
-                                            <p className="text-slate-400">
-                                              Double-click to{" "}
-                                              {cls.pinned ? "unpin" : "pin"} •
-                                              Right-click for options
-                                            </p>
+
+                                            <div className="space-y-2.5 px-3 pt-2.5 pb-4 text-xs">
+                                              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                                                <p className="min-w-0 leading-5">
+                                                  <span className="font-semibold text-slate-300">
+                                                    Section:
+                                                  </span>{" "}
+                                                  <span className="text-slate-100">
+                                                    #{cls.classID}
+                                                  </span>
+                                                </p>
+                                                <p className="min-w-0 leading-5">
+                                                  <span className="font-semibold text-slate-300">
+                                                    Room:
+                                                  </span>{" "}
+                                                  <span className="text-slate-100">
+                                                    {displayLocation}
+                                                  </span>
+                                                </p>
+                                                <p className="col-span-2 min-w-0 leading-5">
+                                                  <span className="font-semibold text-slate-300">
+                                                    Meeting:
+                                                  </span>{" "}
+                                                  <span className="text-slate-100">
+                                                    {cls.days || "TBA"} •{" "}
+                                                    {cls.starttime || "TBA"} -{" "}
+                                                    {cls.endtime || "TBA"}
+                                                  </span>
+                                                </p>
+                                                <p className="col-span-2 min-w-0 leading-5">
+                                                  <span className="font-semibold text-slate-300">
+                                                    Instructor:
+                                                  </span>{" "}
+                                                  <span className="text-slate-100">
+                                                    {cls.instructor || "Staff"}
+                                                  </span>
+                                                </p>
+                                              </div>
+
+                                              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-white/10 pt-2.5 text-[11px] leading-5">
+                                                {cls.pinned && (
+                                                  <p className="min-w-0">
+                                                    <span className="font-semibold text-slate-300">
+                                                      Status:
+                                                    </span>{" "}
+                                                    <span className="font-semibold text-amber-400">
+                                                      Pinned
+                                                    </span>
+                                                  </p>
+                                                )}
+                                                {noOpenSeats && (
+                                                  <p className="min-w-0">
+                                                    <span className="font-semibold text-slate-300">
+                                                      Seats:
+                                                    </span>{" "}
+                                                    <span className="font-semibold text-red-400">
+                                                      Closed
+                                                    </span>
+                                                  </p>
+                                                )}
+                                                <p className="col-span-2 min-w-0 text-slate-400">
+                                                  <span className="font-semibold text-slate-300">
+                                                    Actions:
+                                                  </span>{" "}
+                                                  Double-click to{" "}
+                                                  {cls.pinned ? "unpin" : "pin"}
+                                                  {"; right-click for options"}
+                                                </p>
+                                              </div>
+                                            </div>
                                           </div>
                                         </TooltipContent>
                                       </Tooltip>

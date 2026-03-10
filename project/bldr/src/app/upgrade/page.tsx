@@ -1,23 +1,23 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
-import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Lock,
+  Sparkles,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-import {
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Lock,
-  ArrowLeft,
-  Sparkles,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import toastStyle from "@/components/ui/toastStyle";
-import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
 
 export default function UpgradeAccount() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function UpgradeAccount() {
 
         if (!user) {
           // Not logged in, redirect to login
-          router.push("/");
+          router.push("/login");
           return;
         }
 
@@ -55,7 +55,7 @@ export default function UpgradeAccount() {
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
-        router.push("/");
+        router.push("/login");
       } finally {
         setIsCheckingAuth(false);
       }
@@ -116,7 +116,7 @@ export default function UpgradeAccount() {
 
         // Sign out the anonymous session and redirect to login
         await supabase.auth.signOut();
-        router.push("/");
+        router.push("/login");
         router.refresh();
       }
     } catch (error) {

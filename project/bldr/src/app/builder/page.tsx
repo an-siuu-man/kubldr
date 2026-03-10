@@ -89,7 +89,7 @@ export default function Builder() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/");
+      router.push("/login");
     }
   }, [user, loading, router]);
 
@@ -124,7 +124,7 @@ export default function Builder() {
         duration: 2000,
         icon: <LogOut className="h-5 w-5" />,
       });
-      router.push("/");
+      router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Logout error:", error);

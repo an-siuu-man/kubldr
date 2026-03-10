@@ -20,15 +20,24 @@
  */
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import type { Variants } from "framer-motion";
 import { AnimatePresence, motion } from "framer-motion";
-import { Variants } from "framer-motion";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AlertCircle,
+  Check,
+  ChevronDown,
+  Edit2,
+  Menu,
+  MoreHorizontal,
+  Sidebar as SidebarIcon,
+  Trash2,
+  User,
+  UserPlus,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Accordion,
   AccordionContent,
@@ -45,34 +54,80 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import toastStyle from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { toast } from "sonner";
-import {
-  Sidebar as SidebarIcon,
-  Trash2,
-  AlertCircle,
-  MoreHorizontal,
-  Edit2,
-  Check,
-  X,
-  User,
-  Sparkles,
-  UserPlus,
-  Menu,
-  ChevronDown,
-} from "lucide-react";
-import toastStyle from "@/components/ui/toastStyle";
-import { set } from "date-fns";
-import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
-import { se } from "date-fns/locale";
+import type { Schedule } from "@/types";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Spinner } from "./ui/spinner";
-import Link from "next/link";
+
+const sidebarEnterEase = [0.22, 1, 0.36, 1] as const;
+const sidebarExitEase = [0.4, 0, 1, 1] as const;
+
+const sidebarContentVariants: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.22,
+      ease: sidebarEnterEase,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 6,
+    transition: {
+      duration: 0.16,
+      ease: sidebarExitEase,
+    },
+  },
+};
+
+const mobileDropdownVariants: Variants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.22,
+      ease: sidebarEnterEase,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -6,
+    transition: {
+      duration: 0.16,
+      ease: sidebarExitEase,
+    },
+  },
+};
+
+const scheduleItemVariants: Variants = {
+  hidden: { opacity: 0, y: 6 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.18,
+      ease: sidebarEnterEase,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 4,
+    transition: {
+      duration: 0.14,
+      ease: sidebarExitEase,
+    },
+  },
+};
 
 /**
  * Sidebar Component
@@ -105,7 +160,7 @@ export function Sidebar() {
   } = useActiveSchedule();
 
   // Schedule builder context for draft schedule management
-  const { clearDraft, draftSchedule, draftScheduleName, setDraftScheduleName } =
+  const { clearDraft, draftScheduleName, setDraftScheduleName } =
     useScheduleBuilder();
 
   // Sidebar open/closed state (desktop) and mobile menu open state
@@ -142,6 +197,11 @@ export function Sidebar() {
 
   // Check if the schedule list has overflow using ResizeObserver
   useEffect(() => {
+    if (isMobile || !open) {
+      setHasScheduleListOverflow(false);
+      return;
+    }
+
     const listElement = scheduleListRef.current;
     if (!listElement) return;
 
@@ -165,7 +225,7 @@ export function Sidebar() {
       resizeObserver.disconnect();
       window.removeEventListener("resize", checkOverflow);
     };
-  }, [userSchedules, activeSemester, isLoadingSchedules]);
+  }, [isMobile, open]);
 
   /**
    * Toggles the sidebar between open and closed states.
@@ -219,7 +279,6 @@ export function Sidebar() {
       };
       addScheduleToList(newSchedule);
       setNewScheduleName("");
-      setLoading(false);
     } catch (error) {
       console.error("Error creating schedule:", error);
       toast.error("Failed to create schedule", {
@@ -227,6 +286,8 @@ export function Sidebar() {
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -271,9 +332,7 @@ export function Sidebar() {
 
       setDraftScheduleName(newName.trim());
       // Update the local schedule list with the new name
-      const scheduleToUpdate = userSchedules.find(
-        (s: any) => s.id === scheduleId,
-      );
+      const scheduleToUpdate = userSchedules.find((s) => s.id === scheduleId);
       if (scheduleToUpdate) {
         updateScheduleInList(scheduleId, {
           ...scheduleToUpdate,
@@ -285,11 +344,14 @@ export function Sidebar() {
         style: toastStyle,
         duration: 2000,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error renaming schedule:", err);
-      toast.error(err?.message || "Failed to rename schedule", {
-        style: toastStyle,
-      });
+      toast.error(
+        err instanceof Error ? err.message : "Failed to rename schedule",
+        {
+          style: toastStyle,
+        },
+      );
     } finally {
       setRenamingScheduleId(null);
       setRenameValue("");
@@ -300,9 +362,9 @@ export function Sidebar() {
    * Initiates the rename mode for a schedule.
    * Sets the current name as the initial input value.
    *
-   * @param {any} schedule - The schedule object to rename
+   * @param schedule - The schedule object to rename
    */
-  const startRenaming = (schedule: any) => {
+  const startRenaming = (schedule: Schedule) => {
     setRenamingScheduleId(schedule.id);
     setRenameValue(schedule.name);
   };
@@ -365,15 +427,22 @@ export function Sidebar() {
         duration: 2000,
         style: toastStyle,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting schedule:", err);
-      toast.error(err?.message || "Failed to delete schedule", {
-        style: toastStyle,
-      });
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete schedule",
+        {
+          style: toastStyle,
+        },
+      );
     } finally {
       setDeletingScheduleId(null);
     }
   };
+
+  const visibleSchedules = userSchedules.filter(
+    (schedule) => schedule.semester === activeSemester || activeSemester === "",
+  );
 
   return (
     <>
@@ -384,6 +453,7 @@ export function Sidebar() {
           <div className="bg-[#1a1a1a] border-b border-[#2a2a2a] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={toggleMobileMenu}
                 className="p-1.5 rounded-md hover:bg-[#333] transition cursor-pointer"
               >
@@ -421,7 +491,7 @@ export function Sidebar() {
           </div>
 
           {/* Mobile Dropdown Menu */}
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {mobileMenuOpen && (
               <>
                 {/* Backdrop */}
@@ -429,16 +499,16 @@ export function Sidebar() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.16, ease: sidebarExitEase }}
                   className="fixed inset-0 bg-black/50 z-40 top-[52px]"
                   onClick={toggleMobileMenu}
                 />
                 {/* Dropdown Panel */}
                 <motion.div
-                  initial={{ opacity: 0, y: -20, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -20, height: 0 }}
-                  transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={mobileDropdownVariants}
                   className="relative bg-[#1a1a1a] border-b border-[#333] shadow-2xl z-50 overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -506,15 +576,15 @@ export function Sidebar() {
                               No schedules found.
                             </p>
                           ) : (
-                            userSchedules
-                              .filter(
-                                (schedule: any) =>
-                                  schedule.semester === activeSemester ||
-                                  activeSemester === "",
-                              )
-                              .map((schedule: any) => (
-                                <div
+                            <AnimatePresence initial={false}>
+                              {visibleSchedules.map((schedule) => (
+                                <motion.div
                                   key={schedule.id}
+                                  layout="position"
+                                  initial="hidden"
+                                  animate="visible"
+                                  exit="exit"
+                                  variants={scheduleItemVariants}
                                   className={`flex items-center justify-between rounded-lg text-sm font-inter ${
                                     activeSchedule?.id === schedule.id
                                       ? "bg-[#444] font-semibold"
@@ -543,6 +613,7 @@ export function Sidebar() {
                                         className="h-8 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
                                       />
                                       <button
+                                        type="button"
                                         onClick={() =>
                                           handleRenameSchedule(
                                             schedule.id,
@@ -554,6 +625,7 @@ export function Sidebar() {
                                         <Check className="h-4 w-4 text-green-500" />
                                       </button>
                                       <button
+                                        type="button"
                                         onClick={cancelRenaming}
                                         className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
                                       >
@@ -563,6 +635,7 @@ export function Sidebar() {
                                   ) : (
                                     <>
                                       <button
+                                        type="button"
                                         className="py-3 px-3 cursor-pointer flex-1 text-left truncate"
                                         onClick={() => {
                                           loadSchedule(schedule.id);
@@ -574,6 +647,7 @@ export function Sidebar() {
                                       </button>
                                       <div className="flex items-center gap-1 pr-2">
                                         <button
+                                          type="button"
                                           onClick={() =>
                                             startRenaming(schedule)
                                           }
@@ -582,6 +656,7 @@ export function Sidebar() {
                                           <Edit2 className="h-4 w-4 text-gray-400" />
                                         </button>
                                         <button
+                                          type="button"
                                           onClick={() =>
                                             handleDeleteSchedule(schedule.id)
                                           }
@@ -592,8 +667,9 @@ export function Sidebar() {
                                       </div>
                                     </>
                                   )}
-                                </div>
-                              ))
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
                           )}
                         </div>
                       </div>
@@ -626,7 +702,8 @@ export function Sidebar() {
             {/* Top section */}
             <div>
               <div className="buttons-container flex items-center justify-between mb-4 lg:mb-5">
-                <div
+                <button
+                  type="button"
                   className={`p-2 rounded-xl transition-all duration-300 cursor-pointer ${
                     open ? "hover:bg-white/5" : "hover:bg-white/10"
                   }`}
@@ -638,18 +715,19 @@ export function Sidebar() {
                       open ? "" : "rotate-180"
                     }`}
                   />
-                </div>
+                </button>
               </div>
             </div>
 
             <div className="main-content grow flex flex-col justify-between overflow-hidden">
               {/* Main Sidebar Content */}
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {open && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0 }}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={sidebarContentVariants}
                     className="flex flex-col h-full overflow-hidden"
                   >
                     <h1 className="text-lg lg:text-xl font-semibold text-gray-200 mb-3 lg:mb-4 font-figtree tracking-tight">
@@ -725,126 +803,126 @@ export function Sidebar() {
                                 </p>
                               ) : (
                                 <AnimatePresence initial={false}>
-                                  {userSchedules
-                                    .filter(
-                                      (schedule: any) =>
-                                        schedule.semester === activeSemester ||
-                                        activeSemester === "",
-                                    )
-                                    .map((schedule: any) => (
-                                      <motion.li
-                                        key={schedule.id}
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        transition={{
-                                          duration: 0.15,
-                                          ease: [0.4, 0, 0.2, 1],
-                                        }}
-                                        onMouseEnter={() =>
-                                          setHoveredScheduleId(schedule.id)
-                                        }
-                                        onMouseLeave={() =>
-                                          setHoveredScheduleId(null)
-                                        }
-                                        className={`flex justify-between items-center text-xs text-gray-200 font-inter my-1 rounded-lg transition-all duration-150 ${
-                                          activeSchedule?.id === schedule.id
-                                            ? "bg-white/10 font-medium shadow-sm"
-                                            : "hover:bg-white/5"
-                                        }`}
-                                      >
-                                        {renamingScheduleId === schedule.id ? (
-                                          <div className="flex items-center gap-1 lg:gap-2 w-full px-1.5 lg:px-2 py-0.5 lg:py-1">
-                                            <Input
-                                              type="text"
-                                              value={renameValue}
-                                              onChange={(e) =>
-                                                setRenameValue(e.target.value)
-                                              }
-                                              onKeyDown={(e) => {
-                                                if (e.key === "Enter") {
-                                                  handleRenameSchedule(
-                                                    schedule.id,
-                                                    renameValue,
-                                                  );
-                                                } else if (e.key === "Escape") {
-                                                  cancelRenaming();
-                                                }
-                                              }}
-                                              autoFocus
-                                              className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
-                                            />
-                                            <button
-                                              onClick={() =>
+                                  {visibleSchedules.map((schedule) => (
+                                    <motion.li
+                                      key={schedule.id}
+                                      layout="position"
+                                      initial="hidden"
+                                      animate="visible"
+                                      exit="exit"
+                                      variants={scheduleItemVariants}
+                                      onMouseEnter={() =>
+                                        setHoveredScheduleId(schedule.id)
+                                      }
+                                      onMouseLeave={() =>
+                                        setHoveredScheduleId(null)
+                                      }
+                                      className={`flex justify-between items-center text-xs text-gray-200 font-inter my-1 rounded-lg transition-all duration-150 ${
+                                        activeSchedule?.id === schedule.id
+                                          ? "bg-white/10 font-medium shadow-sm"
+                                          : "hover:bg-white/5"
+                                      }`}
+                                    >
+                                      {renamingScheduleId === schedule.id ? (
+                                        <div className="flex items-center gap-1 lg:gap-2 w-full px-1.5 lg:px-2 py-0.5 lg:py-1">
+                                          <Input
+                                            type="text"
+                                            value={renameValue}
+                                            onChange={(e) =>
+                                              setRenameValue(e.target.value)
+                                            }
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter") {
                                                 handleRenameSchedule(
                                                   schedule.id,
                                                   renameValue,
-                                                )
-                                              }
-                                              className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
-                                            >
-                                              <Check className="h-4 w-4 text-green-500" />
-                                            </button>
-                                            <button
-                                              onClick={cancelRenaming}
-                                              className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
-                                            >
-                                              <X className="h-4 w-4 text-red-500" />
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <>
-                                            <button
-                                              className="py-2 px-3 cursor-pointer w-full text-left truncate"
-                                              onClick={() => {
-                                                loadSchedule(schedule.id);
-                                                setActiveSemester(
-                                                  schedule.semester,
                                                 );
-                                                console.log(activeSchedule);
-                                              }}
-                                            >
-                                              {schedule.name}
-                                            </button>
-                                            {hoveredScheduleId ===
-                                              schedule.id && (
-                                              <Popover>
-                                                <PopoverTrigger asChild>
-                                                  <button className="flex items-center z-50 cursor-pointer">
-                                                    <MoreHorizontal className="h-4 w-4 mr-2" />
+                                              } else if (e.key === "Escape") {
+                                                cancelRenaming();
+                                              }
+                                            }}
+                                            autoFocus
+                                            className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleRenameSchedule(
+                                                schedule.id,
+                                                renameValue,
+                                              )
+                                            }
+                                            className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                          >
+                                            <Check className="h-4 w-4 text-green-500" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelRenaming}
+                                            className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                          >
+                                            <X className="h-4 w-4 text-red-500" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <button
+                                            type="button"
+                                            className="py-2 px-3 cursor-pointer w-full text-left truncate"
+                                            onClick={() => {
+                                              loadSchedule(schedule.id);
+                                              setActiveSemester(
+                                                schedule.semester,
+                                              );
+                                              console.log(activeSchedule);
+                                            }}
+                                          >
+                                            {schedule.name}
+                                          </button>
+                                          {hoveredScheduleId ===
+                                            schedule.id && (
+                                            <Popover>
+                                              <PopoverTrigger asChild>
+                                                <button
+                                                  type="button"
+                                                  className="flex items-center z-50 cursor-pointer"
+                                                >
+                                                  <MoreHorizontal className="h-4 w-4 mr-2" />
+                                                </button>
+                                              </PopoverTrigger>
+                                              <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
+                                                <div className="flex flex-col items-start justify-between gap-1 text-sm">
+                                                  <button
+                                                    type="button"
+                                                    className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition"
+                                                    onClick={() =>
+                                                      startRenaming(schedule)
+                                                    }
+                                                  >
+                                                    <Edit2 className="h-4 w-4" />
+                                                    Rename
                                                   </button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
-                                                  <div className="flex flex-col items-start justify-between gap-1 text-sm">
-                                                    <span
-                                                      className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition"
-                                                      onClick={() =>
-                                                        startRenaming(schedule)
-                                                      }
-                                                    >
-                                                      <Edit2 className="h-4 w-4" />
-                                                      Rename
-                                                    </span>
-                                                    <hr className="w-full border-t border-[#606060]" />
-                                                    <span
-                                                      className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-red-500"
-                                                      onClick={() =>
-                                                        handleDeleteSchedule(
-                                                          schedule.id,
-                                                        )
-                                                      }
-                                                    >
-                                                      <Trash2 className="h-4 w-4 " />
-                                                      Delete
-                                                    </span>
-                                                  </div>
-                                                </PopoverContent>
-                                              </Popover>
-                                            )}
-                                          </>
-                                        )}
-                                      </motion.li>
-                                    ))}
+                                                  <hr className="w-full border-t border-[#606060]" />
+                                                  <button
+                                                    type="button"
+                                                    className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-red-500"
+                                                    onClick={() =>
+                                                      handleDeleteSchedule(
+                                                        schedule.id,
+                                                      )
+                                                    }
+                                                  >
+                                                    <Trash2 className="h-4 w-4 " />
+                                                    Delete
+                                                  </button>
+                                                </div>
+                                              </PopoverContent>
+                                            </Popover>
+                                          )}
+                                        </>
+                                      )}
+                                    </motion.li>
+                                  ))}
                                 </AnimatePresence>
                               )}
                             </ul>
@@ -864,12 +942,13 @@ export function Sidebar() {
             {/* Bottom Section */}
             <div className="flex flex-col w-full gap-3 shrink-0 mt-4 pt-4 border-t border-white/15">
               {/* Upgrade button for guest users */}
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {open && user?.is_anonymous && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={sidebarContentVariants}
                   >
                     <Link href="/upgrade">
                       <Button
@@ -887,12 +966,13 @@ export function Sidebar() {
               {/* User info */}
               <div className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2">
                 <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
-                <AnimatePresence>
+                <AnimatePresence initial={false}>
                   {open && (
                     <motion.div
-                      initial={{ opacity: 0, translateY: 40 }}
-                      animate={{ opacity: 1, translateY: 0 }}
-                      exit={{ opacity: 0, translateY: -40 }}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      variants={sidebarContentVariants}
                       key={user?.email || "guest"}
                       className="font-figtree text-xs lg:text-sm truncate"
                     >
