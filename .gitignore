@@ -42,3 +42,6 @@ coverage/
 .idea/
 *.swp
 *.swo
+
+.claude/
+CLAUDE.md

@@ -70,10 +70,9 @@ const sidebarEnterEase = [0.22, 1, 0.36, 1] as const;
 const sidebarExitEase = [0.4, 0, 1, 1] as const;
 
 const sidebarContentVariants: Variants = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
       duration: 0.22,
       ease: sidebarEnterEase,
@@ -81,7 +80,6 @@ const sidebarContentVariants: Variants = {
   },
   exit: {
     opacity: 0,
-    y: 6,
     transition: {
       duration: 0.16,
       ease: sidebarExitEase,
@@ -734,7 +732,7 @@ export function Sidebar() {
                     animate="visible"
                     exit="exit"
                     variants={sidebarContentVariants}
-                    className="flex flex-col h-full overflow-hidden"
+                    className="flex flex-col h-full overflow-hidden w-[calc(min(280px,25vw)-2rem)] lg:w-[calc(min(280px,25vw)-2.5rem)] shrink-0"
                   >
                     <h1 className="text-lg lg:text-xl font-semibold text-gray-200 mb-3 lg:mb-4 font-figtree tracking-tight">
                       Your Schedules
@@ -955,6 +953,7 @@ export function Sidebar() {
                     animate="visible"
                     exit="exit"
                     variants={sidebarContentVariants}
+                    className="min-w-[min(280px,25vw)]"
                   >
                     <Link href="/upgrade">
                       <Button
@@ -980,7 +979,7 @@ export function Sidebar() {
                       exit="exit"
                       variants={sidebarContentVariants}
                       key={user?.email || "guest"}
-                      className="font-figtree text-xs lg:text-sm truncate"
+                      className="font-figtree text-xs lg:text-sm truncate min-w-[min(280px,25vw)]"
                     >
                       {user?.is_anonymous ? "Guest" : user?.email}
                     </motion.div>
