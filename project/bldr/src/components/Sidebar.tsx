@@ -311,6 +311,7 @@ export function Sidebar() {
     if (!session?.access_token) {
       toast.error("You must be logged in to rename schedules", {
         style: toastStyle,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
     }
@@ -343,6 +344,7 @@ export function Sidebar() {
       toast.success("Schedule renamed successfully", {
         style: toastStyle,
         duration: 2000,
+        icon: <Check className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
       console.error("Error renaming schedule:", err);
@@ -350,6 +352,7 @@ export function Sidebar() {
         err instanceof Error ? err.message : "Failed to rename schedule",
         {
           style: toastStyle,
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
     } finally {
@@ -388,6 +391,7 @@ export function Sidebar() {
     if (!session?.access_token) {
       toast.error("You must be logged in to delete schedules", {
         style: toastStyle,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
     }
@@ -426,6 +430,7 @@ export function Sidebar() {
       toast.success("Schedule deleted", {
         duration: 2000,
         style: toastStyle,
+        icon: <Trash2 className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
       console.error("Error deleting schedule:", err);
@@ -433,6 +438,7 @@ export function Sidebar() {
         err instanceof Error ? err.message : "Failed to delete schedule",
         {
           style: toastStyle,
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
     } finally {
@@ -894,7 +900,7 @@ export function Sidebar() {
                                                 <div className="flex flex-col items-start justify-between gap-1 text-sm">
                                                   <button
                                                     type="button"
-                                                    className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition"
+                                                    className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-white"
                                                     onClick={() =>
                                                       startRenaming(schedule)
                                                     }
@@ -1002,7 +1008,7 @@ export function Sidebar() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="font-dmsans border-[#404040] hover:bg-[#2a2a2a]">
+            <AlertDialogCancel className="font-dmsans bg-[#2a2a2a] border-[#404040] text-white hover:bg-[#333333] hover:text-white">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
-  ArrowLeft,
   CheckCircle2,
   UserCircle,
   XCircle,
@@ -42,7 +41,7 @@ export default function LoginPage() {
           style: toastStyle,
           description: error.message,
           duration: 3000,
-          icon: <XCircle className="h-5 w-5" />,
+          icon: <XCircle className="h-5 w-5 text-red-500" />,
         });
         return;
       }
@@ -52,7 +51,7 @@ export default function LoginPage() {
           style: toastStyle,
           description: "Redirecting to builder...",
           duration: 2000,
-          icon: <CheckCircle2 className="h-5 w-5" />,
+          icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
         });
         router.push("/builder");
         router.refresh();
@@ -63,7 +62,7 @@ export default function LoginPage() {
         style: toastStyle,
         description: "An unexpected error occurred",
         duration: 3000,
-        icon: <AlertTriangle className="h-5 w-5" />,
+        icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsLoading(false);
@@ -81,7 +80,7 @@ export default function LoginPage() {
           style: toastStyle,
           description: error.message,
           duration: 3000,
-          icon: <XCircle className="h-5 w-5" />,
+          icon: <XCircle className="h-5 w-5 text-red-500" />,
         });
         return;
       }
@@ -91,7 +90,7 @@ export default function LoginPage() {
           style: toastStyle,
           description: "Redirecting to builder...",
           duration: 2000,
-          icon: <UserCircle className="h-5 w-5" />,
+          icon: <UserCircle className="h-5 w-5 text-green-500" />,
         });
         router.push("/builder");
         router.refresh();
@@ -102,7 +101,7 @@ export default function LoginPage() {
         style: toastStyle,
         description: "An unexpected error occurred",
         duration: 3000,
-        icon: <AlertTriangle className="h-5 w-5" />,
+        icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsGuestLoading(false);
@@ -114,198 +113,178 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(250,204,21,0.12),_transparent_26%),radial-gradient(circle_at_bottom_left,_rgba(239,68,68,0.1),_transparent_28%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-20" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-6 sm:px-8 lg:px-10">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
-              <span className="font-dmsans text-lg font-bold tracking-tight">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex w-full max-w-[28rem] flex-col items-center"
+        >
+          {/* Brand */}
+          <Link href="/" className="mb-8 flex flex-col items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
+              <span className="font-dmsans text-2xl font-bold tracking-tight">
                 <span className="text-white">b</span>
                 <span className="text-red-500">l</span>
                 <span className="text-blue-500">d</span>
                 <span className="text-yellow-300">r</span>
               </span>
             </div>
-            <div>
-              <p className="font-figtree text-lg font-semibold tracking-tight">
+            <div className="text-center">
+              <p className="font-figtree text-xl font-semibold tracking-tight">
                 Flagship Schedule Builder
               </p>
-              <p className="font-inter text-xs text-[#A8A8A8]">
+              <p className="font-inter text-sm text-[#A8A8A8]">
                 University of Kansas schedule planning
               </p>
             </div>
           </Link>
 
-          <Button
-            asChild
-            variant="ghost"
-            className="border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10"
+          {/* Form card */}
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.55,
+              delay: 0.08,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="w-full"
           >
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4" />
-              Back home
-            </Link>
-          </Button>
-        </div>
-
-        <div className="flex flex-1 items-center py-10">
-          <div className="mx-auto flex w-full max-w-xl flex-col items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full text-center"
-            >
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-[#D6D6D6]">
-                <UserCircle className="h-4 w-4 text-blue-300" />
-                Pick up where your schedule left off
+            <div className="w-full rounded-[28px] border border-white/10 bg-[#111111]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur sm:p-8">
+              <div className="mb-2 flex flex-col items-start">
+                <h2 className="font-dmsans text-3xl font-bold text-white">
+                  Log in
+                </h2>
+                <p className="mt-2 font-inter text-sm text-[#A8A8A8]">
+                  Enter your email and password to continue to the builder.
+                </p>
               </div>
-              <h1 className="font-figtree text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Log back in and open your saved schedules.
-              </h1>
-              <p className="mx-auto mt-5 max-w-lg font-inter text-base leading-7 text-[#B8B8B8]">
-                Returning users can jump straight back into the builder, and
-                anyone who just wants a quick look can still continue as a
-                guest.
-              </p>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.55,
-                delay: 0.08,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="justify-self-end"
-            >
-              <div className="w-full max-w-[28rem] rounded-[28px] border border-white/10 bg-[#111111]/90 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
-                <div className="mb-2 flex flex-col items-start">
-                  <h2 className="font-dmsans text-3xl font-bold text-white">
-                    Log in
-                  </h2>
-                  <p className="mt-2 font-inter text-sm text-[#A8A8A8]">
-                    Enter your email and password to continue to the builder.
-                  </p>
-                </div>
-
-                <form
-                  className="mt-6 flex flex-col gap-4"
-                  onSubmit={handleSubmit}
+              <form
+                className="mt-6 flex flex-col gap-4"
+                onSubmit={handleSubmit}
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.18 }}
                 >
-                  <motion.div
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.18 }}
+                  <Label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-inter"
                   >
-                    <Label
-                      htmlFor="email"
-                      className="mb-2 block text-sm font-inter"
-                    >
-                      Email
-                    </Label>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      id="email"
-                      placeholder="your.email@example.com"
-                      className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                      required
-                      disabled={isLoading || isGuestLoading}
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.26 }}
-                  >
-                    <Label
-                      htmlFor="password"
-                      className="mb-2 block text-sm font-inter"
-                    >
-                      Password
-                    </Label>
-                    <Input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      id="password"
-                      placeholder="********"
-                      className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                      required
-                      disabled={isLoading || isGuestLoading}
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.34 }}
-                  >
-                    <Button
-                      type="submit"
-                      variant="secondary"
-                      className="my-3 w-full font-dmsans text-md"
-                      disabled={isLoading || isGuestLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Spinner />
-                          Logging in...
-                        </>
-                      ) : (
-                        "Login"
-                      )}
-                    </Button>
-
-                    <div className="relative my-3 flex w-full items-center justify-center">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-[#404040]" />
-                      </div>
-                      <span className="relative bg-[#111111] px-3 font-inter text-xs text-[#a8a8a8]">
-                        or
-                      </span>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-[#404040] font-dmsans text-md text-white hover:bg-white/10 hover:text-white"
-                      disabled={isLoading || isGuestLoading}
-                      onClick={handleGuestLogin}
-                    >
-                      {isGuestLoading ? (
-                        <>
-                          <Spinner />
-                          Signing in...
-                        </>
-                      ) : (
-                        <>
-                          <UserCircle className="mr-2 h-4 w-4" />
-                          Continue as Guest
-                        </>
-                      )}
-                    </Button>
-                  </motion.div>
-                </form>
+                    Email
+                  </Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    id="email"
+                    placeholder="your.email@example.com"
+                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
+                    required
+                    disabled={isLoading || isGuestLoading}
+                  />
+                </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.42 }}
-                  className="mt-5 font-inter text-xs text-[#a8a8a8]"
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.26 }}
                 >
-                  Don&apos;t have an account with us?{" "}
-                  <Link href="/signup" className="font-medium text-white">
-                    Sign up
-                  </Link>
+                  <Label
+                    htmlFor="password"
+                    className="mb-2 block text-sm font-inter"
+                  >
+                    Password
+                  </Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    id="password"
+                    placeholder="********"
+                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
+                    required
+                    disabled={isLoading || isGuestLoading}
+                  />
                 </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.34 }}
+                >
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans text-md"
+                    disabled={isLoading || isGuestLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Spinner />
+                        Logging in...
+                      </>
+                    ) : (
+                      "Login"
+                    )}
+                  </Button>
+
+                  <div className="relative my-3 flex w-full items-center justify-center">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-[#404040]" />
+                    </div>
+                    <span className="relative bg-[#111111] px-3 font-inter text-xs text-[#a8a8a8]">
+                      or
+                    </span>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full bg-[#1e1e1e] border border-[#404040] font-dmsans text-md text-white hover:bg-[#2a2a2a] hover:text-white"
+                    disabled={isLoading || isGuestLoading}
+                    onClick={handleGuestLogin}
+                  >
+                    {isGuestLoading ? (
+                      <>
+                        <Spinner />
+                        Signing in...
+                      </>
+                    ) : (
+                      <>
+                        <UserCircle className="mr-2 h-4 w-4" />
+                        Continue as Guest
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+              </form>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.42 }}
+                className="mt-5 font-inter text-xs text-[#a8a8a8]"
+              >
+                Don&apos;t have an account?{" "}
+                <Link href="/signup" className="font-medium text-white underline underline-offset-2">
+                  Sign up
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Back home link */}
+          <Link
+            href="/"
+            className="mt-5 font-inter text-xs text-[#606060] hover:text-[#A8A8A8] transition-colors"
+          >
+            ← Back to home
+          </Link>
+        </motion.div>
       </div>
     </div>
   );

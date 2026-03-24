@@ -122,7 +122,7 @@ export default function Builder() {
       toast.success("Logged out successfully", {
         style: { ...toastStyle },
         duration: 2000,
-        icon: <LogOut className="h-5 w-5" />,
+        icon: <LogOut className="h-5 w-5 text-green-500" />,
       });
       router.push("/login");
       router.refresh();
@@ -131,7 +131,7 @@ export default function Builder() {
       toast.error("Failed to logout", {
         style: { ...toastStyle },
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5" />,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     }
   };
@@ -141,7 +141,7 @@ export default function Builder() {
       toast.error("You must be logged in to save schedules", {
         style: { ...toastStyle },
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5" />,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
     }
@@ -150,7 +150,7 @@ export default function Builder() {
       toast.error("Please fill in schedule name, semester, and year", {
         style: { ...toastStyle },
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5" />,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
     }
@@ -256,7 +256,7 @@ export default function Builder() {
       toast.error(errorMessage, {
         style: { ...toastStyle },
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5" />,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsSaving(false);
@@ -279,7 +279,7 @@ export default function Builder() {
               toast.success("Schedule cleared", {
                 style: { ...toastStyle },
                 duration: 2000,
-                icon: <Trash2 className="h-5 w-5" />,
+                icon: <Trash2 className="h-5 w-5 text-green-500" />,
               });
             }}
             className="font-dmsans cursor-pointer text-xs px-3 py-1"
@@ -330,7 +330,7 @@ export default function Builder() {
       toast.info("Draft cleared", {
         style: { ...toastStyle },
         duration: 2000,
-        icon: <Undo2 className="h-5 w-5" />,
+        icon: <Undo2 className="h-5 w-5 text-blue-400" />,
       });
       return;
     }
@@ -343,7 +343,7 @@ export default function Builder() {
     toast.success("Reverted to last saved state", {
       style: { ...toastStyle },
       duration: 2000,
-      icon: <Undo2 className="h-5 w-5" />,
+      icon: <Undo2 className="h-5 w-5 text-green-500" />,
     });
   };
 

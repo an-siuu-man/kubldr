@@ -17,18 +17,6 @@ import { Label } from "@/components/ui/label";
 import toastStyle from "@/components/ui/toastStyle";
 import { createClient } from "@/lib/supabase/client";
 
-const signupHighlights = [
-  "Search KU classes in real time without juggling multiple tabs.",
-  "See your schedule visually before enrollment gets crowded.",
-  "Save multiple semester versions and compare the best option later.",
-];
-
-const signupSignals = [
-  "Seat availability indicators",
-  "Section and instructor details",
-  "Responsive dark interface",
-];
-
 export default function Signup() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -42,19 +30,19 @@ export default function Signup() {
 
     if (password !== confirmPassword) {
       toast("Passwords do not match", {
-        style: { ...toastStyle, backgroundColor: "#404040" },
+        style: toastStyle,
         description: "Please ensure both password fields match.",
         duration: 3000,
-        icon: <XCircle className="h-5 w-5" />,
+        icon: <XCircle className="h-5 w-5 text-yellow-500" />,
       });
       return;
     }
 
     if (password.length < 6) {
       toast.error("Password must be at least 6 characters long", {
-        style: { ...toastStyle, backgroundColor: "#404040" },
+        style: toastStyle,
         duration: 3000,
-        icon: <Lock className="h-5 w-5" />,
+        icon: <Lock className="h-5 w-5 text-red-500" />,
       });
       return;
     }
@@ -72,10 +60,10 @@ export default function Signup() {
 
       if (error) {
         toast.error("Signup Failed", {
-          style: { ...toastStyle, backgroundColor: "#404040" },
+          style: toastStyle,
           description: error.message,
           duration: 3000,
-          icon: <XCircle className="h-5 w-5" />,
+          icon: <XCircle className="h-5 w-5 text-red-500" />,
         });
         return;
       }
@@ -84,20 +72,20 @@ export default function Signup() {
         // Check if email confirmation is required
         if (data.user.identities && data.user.identities.length === 0) {
           toast.error("User already exists", {
-            style: { ...toastStyle, backgroundColor: "#404040" },
+            style: toastStyle,
             duration: 3000,
-            icon: <AlertCircle className="h-5 w-5" />,
+            icon: <AlertCircle className="h-5 w-5 text-red-500" />,
           });
           return;
         }
 
         toast.success("Account Created", {
-          style: { ...toastStyle, backgroundColor: "#404040" },
+          style: toastStyle,
           description: data.session
             ? "Redirecting to builder..."
             : "Please check your email to confirm your account.",
           duration: 3000,
-          icon: <CheckCircle2 className="h-5 w-5" />,
+          icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
         });
 
         // If session exists (email confirmation disabled), redirect to builder
@@ -114,10 +102,10 @@ export default function Signup() {
     } catch (error) {
       console.error("Signup error:", error);
       toast.error("Error", {
-        style: { ...toastStyle, backgroundColor: "#404040" },
+        style: toastStyle,
         description: "An unexpected error occurred",
         duration: 3000,
-        icon: <AlertTriangle className="h-5 w-5" />,
+        icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsLoading(false);
@@ -129,210 +117,168 @@ export default function Signup() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(250,204,21,0.12),_transparent_26%),radial-gradient(circle_at_bottom_left,_rgba(239,68,68,0.1),_transparent_28%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-20" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-6 sm:px-8 lg:px-10">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
-              <span className="font-dmsans text-lg font-bold tracking-tight">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex w-full max-w-[28rem] flex-col items-center"
+        >
+          {/* Brand */}
+          <Link href="/" className="mb-8 flex flex-col items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
+              <span className="font-dmsans text-2xl font-bold tracking-tight">
                 <span className="text-white">b</span>
                 <span className="text-red-500">l</span>
                 <span className="text-blue-500">d</span>
                 <span className="text-yellow-300">r</span>
               </span>
             </div>
-            <div>
-              <p className="font-figtree text-lg font-semibold tracking-tight">
+            <div className="text-center">
+              <p className="font-figtree text-xl font-semibold tracking-tight">
                 Flagship Schedule Builder
               </p>
-              <p className="font-inter text-xs text-[#A8A8A8]">
+              <p className="font-inter text-sm text-[#A8A8A8]">
                 University of Kansas schedule planning
               </p>
             </div>
           </Link>
 
-          <Button
-            asChild
-            variant="ghost"
-            className="border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10"
+          {/* Form card */}
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.55,
+              delay: 0.08,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="w-full"
           >
-            <Link href="/login">Already have an account?</Link>
-          </Button>
-        </div>
-
-        <div className="flex flex-1 items-center py-10">
-          <div className="grid w-full gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-xl"
-            >
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-[#D6D6D6]">
-                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                New here? Start with the parts that matter most.
-              </div>
-              <h1 className="font-figtree text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Create your account and plan your semester with fewer surprises.
-              </h1>
-              <p className="mt-5 font-inter text-base leading-7 text-[#B8B8B8]">
-                bldr helps first-time users understand how courses fit together,
-                compare alternate sections, and keep the best version of a KU
-                schedule ready for registration.
-              </p>
-
-              <div className="mt-8 space-y-3">
-                {signupHighlights.map((highlight) => (
-                  <div
-                    key={highlight}
-                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-                  >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
-                    <p className="font-inter text-sm text-[#D5D5D5]">
-                      {highlight}
-                    </p>
-                  </div>
-                ))}
+            <div className="w-full rounded-[28px] border border-white/10 bg-[#111111]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur sm:p-8">
+              <div className="mb-2 flex flex-col items-start">
+                <h2 className="font-dmsans text-3xl font-bold text-white">
+                  Sign up
+                </h2>
+                <p className="mt-2 font-inter text-sm text-[#A8A8A8]">
+                  Enter your email and password to start building schedules.
+                </p>
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                {signupSignals.map((signal) => (
-                  <div
-                    key={signal}
-                    className="rounded-full border border-[#404040] bg-white/5 px-3 py-2 font-inter text-sm text-[#D6D6D6]"
-                  >
-                    {signal}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.55,
-                delay: 0.08,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="justify-self-end"
-            >
-              <div className="w-full max-w-[28rem] rounded-[28px] border border-white/10 bg-[#111111]/90 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
-                <div className="mb-2 flex flex-col items-start">
-                  <h2 className="font-dmsans text-3xl font-bold text-white">
-                    Sign up
-                  </h2>
-                  <p className="mt-2 font-inter text-sm text-[#A8A8A8]">
-                    Enter your email and password to start building schedules.
-                  </p>
-                </div>
-
-                <form
-                  className="mt-6 flex flex-col gap-4"
-                  onSubmit={handleClick}
+              <form
+                className="mt-6 flex flex-col gap-4"
+                onSubmit={handleClick}
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.18 }}
                 >
-                  <motion.div
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.18 }}
+                  <Label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-inter"
                   >
-                    <Label
-                      htmlFor="email"
-                      className="mb-2 block text-sm font-inter"
-                    >
-                      Email
-                    </Label>
-                    <Input
-                      type="email"
-                      id="email"
-                      placeholder="your.email@example.com"
-                      className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.26 }}
-                  >
-                    <Label
-                      htmlFor="password"
-                      className="mb-2 block text-sm font-inter"
-                    >
-                      Password
-                    </Label>
-                    <Input
-                      type="password"
-                      id="password"
-                      placeholder="At least 6 characters"
-                      className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.34 }}
-                  >
-                    <Label
-                      htmlFor="confirm-password"
-                      className="mb-2 block text-sm font-inter"
-                    >
-                      Confirm Password
-                    </Label>
-                    <Input
-                      type="password"
-                      id="confirm-password"
-                      placeholder="Re-enter password"
-                      className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.42 }}
-                  >
-                    <Button
-                      type="submit"
-                      variant="secondary"
-                      className="my-3 w-full font-dmsans text-md"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Creating account..." : "Sign Up"}
-                    </Button>
-                  </motion.div>
-                </form>
+                    Email
+                  </Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="your.email@example.com"
+                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </motion.div>
 
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.5 }}
-                  className="mt-5 font-inter text-xs text-[#a8a8a8]"
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.26 }}
                 >
-                  Already have an account with us?{" "}
-                  <Link
-                    href="/login"
-                    className="font-medium text-white font-inter"
+                  <Label
+                    htmlFor="password"
+                    className="mb-2 block text-sm font-inter"
                   >
-                    Log in
-                  </Link>
+                    Password
+                  </Label>
+                  <Input
+                    type="password"
+                    id="password"
+                    placeholder="At least 6 characters"
+                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
                 </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.34 }}
+                >
+                  <Label
+                    htmlFor="confirm-password"
+                    className="mb-2 block text-sm font-inter"
+                  >
+                    Confirm Password
+                  </Label>
+                  <Input
+                    type="password"
+                    id="confirm-password"
+                    placeholder="Re-enter password"
+                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.42 }}
+                >
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans text-md"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Creating account..." : "Sign Up"}
+                  </Button>
+                </motion.div>
+              </form>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
+                className="mt-5 font-inter text-xs text-[#a8a8a8]"
+              >
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="font-medium text-white underline underline-offset-2 font-inter"
+                >
+                  Log in
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Back home link */}
+          <Link
+            href="/"
+            className="mt-5 font-inter text-xs text-[#606060] hover:text-[#A8A8A8] transition-colors"
+          >
+            ← Back to home
+          </Link>
+        </motion.div>
       </div>
     </div>
   );

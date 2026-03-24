@@ -50,6 +50,7 @@ export default function UpgradeAccount() {
           toast.success("You already have an account!", {
             style: toastStyle,
             duration: 2000,
+            icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
           });
           router.push("/builder");
         }
@@ -72,7 +73,7 @@ export default function UpgradeAccount() {
         style: toastStyle,
         description: "Please ensure both password fields match.",
         duration: 3000,
-        icon: <XCircle className="h-5 w-5" />,
+        icon: <XCircle className="h-5 w-5 text-yellow-500" />,
       });
       return;
     }
@@ -81,7 +82,7 @@ export default function UpgradeAccount() {
       toast.error("Password must be at least 6 characters long", {
         style: toastStyle,
         duration: 3000,
-        icon: <Lock className="h-5 w-5" />,
+        icon: <Lock className="h-5 w-5 text-red-500" />,
       });
       return;
     }
@@ -100,7 +101,7 @@ export default function UpgradeAccount() {
           style: toastStyle,
           description: error.message,
           duration: 3000,
-          icon: <XCircle className="h-5 w-5" />,
+          icon: <XCircle className="h-5 w-5 text-red-500" />,
         });
         return;
       }
@@ -111,7 +112,7 @@ export default function UpgradeAccount() {
           description:
             "Please check your email to verify your account, then log in.",
           duration: 5000,
-          icon: <CheckCircle2 className="h-5 w-5" />,
+          icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
         });
 
         // Sign out the anonymous session and redirect to login
@@ -125,7 +126,7 @@ export default function UpgradeAccount() {
         style: toastStyle,
         description: "An unexpected error occurred",
         duration: 3000,
-        icon: <AlertTriangle className="h-5 w-5" />,
+        icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
       });
     } finally {
       setIsLoading(false);

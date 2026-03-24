@@ -98,21 +98,21 @@ export default function LandingPage() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-25" />
 
       <header className="relative z-10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 sm:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-8 lg:px-10">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
-              <span className="font-dmsans text-lg font-bold tracking-tight">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
+              <span className="font-dmsans text-xl font-bold tracking-tight">
                 <span className="text-white">b</span>
                 <span className="text-red-500">l</span>
                 <span className="text-blue-500">d</span>
                 <span className="text-yellow-300">r</span>
               </span>
             </div>
-            <div>
-              <p className="font-figtree text-lg font-semibold tracking-tight">
+            <div className="hidden sm:block">
+              <p className="font-figtree text-xl font-semibold tracking-tight">
                 Flagship Schedule Builder
               </p>
-              <p className="font-inter text-xs text-[#A8A8A8]">
+              <p className="font-inter text-sm text-[#A8A8A8]">
                 Built for University of Kansas students
               </p>
             </div>
@@ -122,13 +122,14 @@ export default function LandingPage() {
             <Button
               asChild
               variant="ghost"
-              className="hidden border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10 sm:inline-flex"
+              className="hidden bg-[#1e1e1e] border border-[#404040] font-dmsans text-white hover:bg-[#2a2a2a] hover:text-white sm:inline-flex"
             >
               <Link href="/login">Log in</Link>
             </Button>
             <Button
               asChild
-              className="font-dmsans text-[#101010] shadow-[0_12px_36px_rgba(255,255,255,0.15)]"
+              variant="ghost"
+              className="bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans shadow-[0_12px_36px_rgba(255,255,255,0.15)]"
             >
               <Link href="/signup">
                 Start building
@@ -139,33 +140,34 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto flex max-w-7xl flex-col gap-20 px-6 pb-20 sm:px-8 lg:px-10">
+      <main className="relative z-10 mx-auto flex max-w-7xl flex-col gap-20 px-4 pb-20 sm:px-8 lg:px-10">
         <section className="pt-8 lg:pt-14">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-4xl"
+            className="mx-auto max-w-4xl text-center"
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-4 py-2 text-sm text-blue-100">
               <Sparkles className="h-4 w-4 text-blue-300" />
               Designed to make class registration less chaotic
             </div>
 
-            <h1 className="font-figtree text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
+            <h1 className="font-figtree text-3xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
               Build a cleaner KU schedule before enrollment gets messy.
             </h1>
-            <p className="mt-6 max-w-xl font-inter text-base leading-7 text-[#B8B8B8] sm:text-lg">
+            <p className="mx-auto mt-6 max-w-xl font-inter text-base leading-7 text-[#B8B8B8] sm:text-lg">
               bldr combines live course search, a visual weekly calendar,
               schedule versioning, and section-level detail so you can plan
               faster with fewer tabs and fewer surprises.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button
                 asChild
                 size="lg"
-                className="font-dmsans text-[#101010] shadow-[0_16px_40px_rgba(255,255,255,0.12)]"
+                variant="ghost"
+                className="bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans shadow-[0_16px_40px_rgba(255,255,255,0.12)]"
               >
                 <Link href="/signup">
                   Create an account
@@ -175,20 +177,20 @@ export default function LandingPage() {
               <Button
                 asChild
                 size="lg"
-                variant="outline"
-                className="border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10 hover:text-white"
+                variant="ghost"
+                className="bg-[#1e1e1e] border border-[#404040] text-white hover:bg-[#2a2a2a] hover:text-white font-dmsans"
               >
                 <Link href="/login">Log in or continue as guest</Link>
               </Button>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-2">
               {builderSignals.map((signal) => (
                 <div
                   key={signal}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#404040] bg-white/5 px-3 py-2 font-inter text-sm text-[#D6D6D6]"
+                  className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 font-inter text-sm text-[#A8A8A8]"
                 >
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                   {signal}
                 </div>
               ))}
@@ -197,7 +199,7 @@ export default function LandingPage() {
         </section>
 
         <section>
-          <div className="mb-8 max-w-2xl">
+          <div className="mb-8 max-w-2xl mx-auto text-center">
             <p className="font-dmsans text-sm uppercase tracking-[0.28em] text-[#A8A8A8]">
               Core features
             </p>
@@ -239,8 +241,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-          <div className="max-w-xl">
+        <section className="flex flex-col gap-8">
+          <div className="mx-auto max-w-2xl text-center">
             <p className="font-dmsans text-sm uppercase tracking-[0.28em] text-[#A8A8A8]">
               How it works
             </p>
@@ -254,7 +256,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="mx-auto w-full max-w-2xl space-y-4">
             {workflowSteps.map((step, index) => (
               <motion.div
                 key={step.title}

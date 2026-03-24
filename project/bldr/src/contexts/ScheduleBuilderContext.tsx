@@ -505,7 +505,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         {
           style: toastStyle,
           duration: 2000,
-          icon: <AlertCircle className="h-5 w-5 text-blue-500" />,
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         }
       );
       return; // Don't add duplicate UUID
@@ -625,6 +625,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
             {
               style: toastStyle,
               duration: 2000,
+              icon: <Pin className="h-5 w-5 text-blue-400" />,
             }
           );
 
