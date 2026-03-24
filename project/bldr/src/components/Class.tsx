@@ -33,6 +33,11 @@ import {
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { timeToDecimal, calculateDuration } from "@/lib/timeUtils";
 
+const toKeyPart = (value: unknown, fallback: string) => {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  return normalized.length > 0 ? normalized : fallback;
+};
+
 /**
  * Class Component
  *
@@ -120,7 +125,10 @@ export default function Class(props: ClassProps) {
             transition: { delay: 0.3 },
           }}
           exit={{ scale: 0.6, opacity: 0 }}
-          key={props.uuid}
+          key={
+            props.uuid?.trim() ||
+            `${toKeyPart(props.dept, "dept")}-${toKeyPart(props.classcode, "code")}`
+          }
           className="flex flex-col p-1.5 lg:p-2 mt-1.5 lg:mt-2 mb-3 lg:mb-4 rounded-md text-[#fafafa] border-2 max-w-full border-[#404040] shadow-md justify-start items-center"
         >
           <h1 className="font-dmsans text-xs lg:text-sm font-bold self-start leading-tight">
@@ -130,14 +138,17 @@ export default function Class(props: ClassProps) {
           <p className="text-[10px] lg:text-xs text-[#b0b0b0] font-inter self-start line-clamp-2">
             {classInfo.data[0].description || "No description available."}
           </p>
-          {classInfo.data[0].sections.map((section: ClassSection) => (
+          {classInfo.data[0].sections.map((section: ClassSection, index) => (
             <button
               // disabled={(section.seats_available ?? 0) <= 0}
-              key={section.uuid}
+              key={
+                section.uuid?.trim() ||
+                `${toKeyPart(section.classID, "class")}-${toKeyPart(section.component, "comp")}-${toKeyPart(section.days, "days")}-${toKeyPart(section.starttime, "start")}-${toKeyPart(section.endtime, "end")}-${index}`
+              }
               onClick={() => handleSectionClick(section, classInfo.data[0])}
               className={`w-full font-inter rounded-md mt-1.5 lg:mt-2 bg-[#181818] hover:bg-[#232323] transition duration-100 px-1.5 lg:px-2 text-left cursor-pointer`}
             >
-              <div className="flex flex-row w-full justify-between gap-2 items-start my-1">
+              <div className="flex flex-row w-full justify-between gap-1 sm:gap-2 items-start my-1">
                 <div className="flex flex-row gap-2 items-start">
                   <div className="flex flex-col">
                     <span className="font-semibold text-xs lg:text-sm">
@@ -148,14 +159,14 @@ export default function Class(props: ClassProps) {
                     </span>
                   </div>
                   <div className="flex flex-col justify-start items-start font-inter">
-                    <span className="text-xs lg:text-sm text-[#fafafa]">
+                    <span className="text-xs lg:text-sm text-[#fafafa] break-words">
                       {section.days}{" "}
                       {section.starttime && section.endtime
                         ? `${section.starttime} - ${section.endtime}`
                         : section.starttime || section.endtime || ""}
                     </span>
                     {section.instructor ? (
-                      <span className="text-[10px] lg:text-xs text-[#a8a8a8] truncate max-w-[120px] lg:max-w-[150px]">
+                      <span className="text-[10px] lg:text-xs text-[#a8a8a8] truncate max-w-[90px] sm:max-w-[120px] lg:max-w-[150px]">
                         {section.instructor}
                       </span>
                     ) : (

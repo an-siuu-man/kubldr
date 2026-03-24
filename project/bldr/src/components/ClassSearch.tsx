@@ -9,9 +9,7 @@
  * - Real-time search with debounced API calls (400ms delay)
  * - Floating dropdown with search results using Floating UI
  * - Keyboard navigation (Arrow keys, Enter, Escape)
- * - Two accordion sections:
- *   1. Searched: Shows detailed info for classes the user has explored
- *   2. Currently Selected: Shows classes added to the draft schedule
+ * - Searched section: Shows detailed info for classes the user has explored
  * - Ability to remove classes from both sections
  * - Grouped display of class sections by course
  * - Accessible with ARIA roles and keyboard support
@@ -33,12 +31,6 @@ import {
 } from "@floating-ui/react";
 import { Input } from "./ui/input";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Tooltip,
   TooltipProvider,
   TooltipTrigger,
@@ -48,6 +40,11 @@ import { SearchedClass } from "@/types";
 import { Trash2, Search } from "lucide-react";
 import Class from "./Class";
 import Loader from "./Loader";
+
+const toKeyPart = (value: unknown, fallback: string) => {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  return normalized.length > 0 ? normalized : fallback;
+};
 
 /**
  * ClassSearch Component
@@ -204,7 +201,7 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col justify-start items-center w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] h-[450px] lg:h-[520px] xl:h-[560px] overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-[10px]">
+    <div className="flex flex-col justify-start items-center w-full h-full overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-b-[10px] rounded-t-none">
       <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4 overflow-hidden">
         <h1 className="text-sm lg:text-base xl:text-lg self-start font-figtree font-bold text-[#fafafa]">
           Search for classes
@@ -254,7 +251,7 @@ export default function ClassSearch() {
                 }
               }}
               placeholder="Class name"
-              className="font-inter border-[#404040] border placeholder:text-xs selection:bg-blue-400 text-xs"
+              className="font-inter border-[#404040] border placeholder:text-xs selection:bg-blue-400 text-xs text-[#fafafa]"
             />
             <TooltipProvider>
               <Tooltip delayDuration={300}>
@@ -296,7 +293,10 @@ export default function ClassSearch() {
                   <AnimatePresence mode="popLayout">
                     {classes.map((c, index) => (
                       <motion.li
-                        key={c.uuid}
+                        key={
+                          c.uuid?.trim() ||
+                          `${toKeyPart(c.dept, "dept")}-${toKeyPart(c.code, "code")}-${toKeyPart(c.title, "title")}-${index}`
+                        }
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
@@ -308,7 +308,7 @@ export default function ClassSearch() {
                         onMouseEnter={() => setHighlightedIndex(index)}
                         role="option"
                         aria-selected={index === highlightedIndex}
-                        className={`p-2 text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
+                        className={`p-2 text-xs sm:text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
                           index === highlightedIndex
                             ? "bg-[#181818]"
                             : "hover:bg-[#181818]"
@@ -329,63 +329,61 @@ export default function ClassSearch() {
 
         {/* Searched Section */}
         <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
-          <Accordion
-            type="single"
-            defaultValue="item-1"
-            collapsible
-            className="font-figtree w-full h-full flex flex-col"
+          <div className="flex items-center justify-between py-2 shrink-0">
+            <h2 className="text-sm lg:text-base text-green-400 font-bold font-figtree">
+              Searched
+            </h2>
+            {selectedClasses.length > 0 && (
+              <button
+                onClick={() => {
+                  setSelectedClasses([]);
+                  setSearchQuery("");
+                }}
+                className="text-[10px] lg:text-xs px-1.5 lg:px-2 py-0.5 lg:py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
+                aria-label="Clear all searched classes"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+          <div
+            className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden pb-4"
+            role="region"
+            aria-label="Searched classes list"
           >
-            <AccordionItem
-              value="item-1"
-              className="border-b-0 flex flex-col h-full"
-            >
-              <AccordionTrigger className="text-sm lg:text-base text-green-400 font-bold hover:no-underline hover:cursor-pointer py-2 shrink-0">
-                <div className="flex items-center justify-between gap-2 w-full">
-                  <span>Searched</span>
-                  {selectedClasses.length > 0 && (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedClasses([]);
-                        setSearchQuery("");
-                      }}
-                      className="text-[10px] lg:text-xs px-1.5 lg:px-2 py-0.5 lg:py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
-                    >
-                      Clear all
-                    </span>
-                  )}
+            {selectedClasses.length === 0 ? (
+              <div className="text-xs lg:text-sm text-[#888888] font-figtree">
+                No classes searched
+              </div>
+            ) : (
+              selectedClasses.map((c, index) => (
+                <div
+                  key={
+                    c.uuid?.trim() ||
+                    `${toKeyPart(c.dept, "dept")}-${toKeyPart(c.code, "code")}-${toKeyPart(c.title, "title")}-${index}`
+                  }
+                  className="relative group"
+                >
+                  <Class
+                    uuid={c.uuid}
+                    classcode={c.code || ""}
+                    dept={c.dept || ""}
+                  />
+                  <button
+                    onClick={() =>
+                      setSelectedClasses((prev) =>
+                        prev.filter((cls) => cls.uuid !== c.uuid),
+                      )
+                    }
+                    className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
+                    title="Remove from searched"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </button>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden">
-                {selectedClasses.length === 0 ? (
-                  <div className="text-xs lg:text-sm text-[#888888] font-figtree">
-                    No classes searched
-                  </div>
-                ) : (
-                  selectedClasses.map((c) => (
-                    <div key={c.uuid} className="relative group">
-                      <Class
-                        uuid={c.uuid}
-                        classcode={c.code || ""}
-                        dept={c.dept || ""}
-                      />
-                      <button
-                        onClick={() =>
-                          setSelectedClasses((prev) =>
-                            prev.filter((cls) => cls.uuid !== c.uuid),
-                          )
-                        }
-                        className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
-                        title="Remove from searched"
-                      >
-                        {<Trash2 className="h-4 w-4 text-red-500" />}
-                      </button>
-                    </div>
-                  ))
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

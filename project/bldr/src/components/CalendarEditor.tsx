@@ -34,6 +34,11 @@ import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { calculateDuration, parseDays, timeToDecimal } from "@/lib/timeUtils";
 import type { ClassSection } from "@/types";
 
+const toKeyPart = (value: unknown, fallback: string) => {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  return normalized.length > 0 ? normalized : fallback;
+};
+
 /**
  * CalendarEditor Component
  *
@@ -136,7 +141,7 @@ const CalendarEditor = () => {
                                 startTime < hour + 1
                               );
                             })
-                            .map((cls: ClassSection) => {
+                            .map((cls: ClassSection, clsIndex: number) => {
                               // Use CSS calc to make row height responsive
                               const startTime = timeToDecimal(
                                 cls.starttime || "",
@@ -180,7 +185,12 @@ const CalendarEditor = () => {
                                 cls.room || cls.location || "TBA";
 
                               return (
-                                <ContextMenu key={cls.uuid}>
+                                <ContextMenu
+                                  key={
+                                    cls.uuid?.trim() ||
+                                    `${toKeyPart(cls.dept, "dept")}-${toKeyPart(cls.code, "code")}-${toKeyPart(cls.classID, "class")}-${toKeyPart(cls.component, "comp")}-${toKeyPart(cls.days, "days")}-${toKeyPart(cls.starttime, "start")}-${clsIndex}`
+                                  }
+                                >
                                   <ContextMenuTrigger>
                                     <TooltipProvider>
                                       <Tooltip delayDuration={200}>
@@ -188,7 +198,7 @@ const CalendarEditor = () => {
                                           <motion.div
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer ${
+                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer select-none ${
                                               cls.pinned
                                                 ? "ring-2 ring-amber-500"
                                                 : ""

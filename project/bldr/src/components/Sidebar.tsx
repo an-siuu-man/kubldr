@@ -581,9 +581,12 @@ export function Sidebar() {
                             </p>
                           ) : (
                             <AnimatePresence initial={false}>
-                              {visibleSchedules.map((schedule) => (
+                              {visibleSchedules.map((schedule, index) => (
                                 <motion.div
-                                  key={schedule.id}
+                                  key={
+                                    schedule.id?.trim() ||
+                                    `mobile-schedule-${index}-${schedule.name?.trim() || "untitled"}`
+                                  }
                                   layout="position"
                                   initial="hidden"
                                   animate="visible"
@@ -807,9 +810,12 @@ export function Sidebar() {
                                 </p>
                               ) : (
                                 <AnimatePresence initial={false}>
-                                  {visibleSchedules.map((schedule) => (
+                                  {visibleSchedules.map((schedule, index) => (
                                     <motion.li
-                                      key={schedule.id}
+                                      key={
+                                        schedule.id?.trim() ||
+                                        `desktop-schedule-${index}-${schedule.name?.trim() || "untitled"}`
+                                      }
                                       layout="position"
                                       initial="hidden"
                                       animate="visible"

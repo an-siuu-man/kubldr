@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CalendarEditor from "@/components/CalendarEditor";
 import ClassSearch from "@/components/ClassSearch";
@@ -25,6 +25,7 @@ import PermutationBrowser from "@/components/PermutationBrowser";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import toastStyle from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +57,9 @@ export default function Builder() {
   const [creditHours, setCreditHours] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showGuestBanner, _setShowGuestBanner] = useState(true);
+  const calendarContainerRef = useRef<HTMLDivElement | null>(null);
+  const [calendarHeight, setCalendarHeight] = useState(500);
+  const [activeTab, setActiveTab] = useState<"search" | "selected">("search");
 
   // Check if user is a guest (anonymous)
   const isGuest = user?.is_anonymous === true;
@@ -85,6 +89,26 @@ export default function Builder() {
   // Hydration check - ensures localStorage data is loaded
   useEffect(() => {
     setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    const calendarContainer = calendarContainerRef.current;
+    if (!calendarContainer) return;
+
+    const updateHeight = () => {
+      const nextHeight = Math.round(
+        calendarContainer.getBoundingClientRect().height,
+      );
+      if (nextHeight > 0) {
+        setCalendarHeight(nextHeight);
+      }
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(calendarContainer);
+    return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
@@ -355,16 +379,6 @@ export default function Builder() {
       {/* Main Content */}
       <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto pt-[60px] md:pt-2 lg:pt-4 xl:pt-6">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-2 lg:mb-4 bg-orange-900/40 border border-orange-600/50 rounded-lg p-2 lg:p-3 flex items-start gap-2">
-            <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0 mt-0.5" />
-            <p className="text-orange-100 font-inter text-[10px] lg:text-xs">
-              We are facing some difficulties fetching accurate Instructor and
-              Room information for the classes. The data you see in the builder
-              may not be accurate.
-            </p>
-          </div>
-          {/* Guest Warning Banner */}
-
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
@@ -391,6 +405,7 @@ export default function Builder() {
           </div>
           <AnimatePresence>
             <motion.div
+              key="beta-note"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -410,8 +425,20 @@ export default function Builder() {
                 </div>
               </div>
             </motion.div>
+            <div
+              key="instructor-warning"
+              className="mb-2 lg:mb-4 bg-orange-900/40 border border-orange-600/50 rounded-lg p-2 lg:p-3 flex items-start gap-2"
+            >
+              <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0 mt-0.5" />
+              <p className="text-orange-100 font-inter text-[10px] lg:text-xs">
+                We are facing some difficulties fetching accurate Instructor and
+                Room information for the classes. The data you see in the
+                builder may not be accurate.
+              </p>
+            </div>
             {isGuest && showGuestBanner && (
               <motion.div
+                key="guest-mode-warning"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -438,15 +465,12 @@ export default function Builder() {
             )}
           </AnimatePresence>
           {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,350px)_1fr_minmax(200px,320px)] gap-2 lg:gap-4">
-            {/* Class Search Section */}
-            <div className="flex justify-center items-start">
-              <ClassSearch />
-            </div>
-
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(280px,380px)] gap-2 lg:gap-4">
             {/* Calendar Section */}
             <div className="flex flex-col items-center w-full">
-              <CalendarEditor />
+              <div ref={calendarContainerRef} className="w-full">
+                <CalendarEditor />
+              </div>
               {activeSchedule && (
                 <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
                   <div className="flex-1 basis-0 text-[10px] lg:text-xs flex flex-wrap gap-1.5 lg:gap-2 items-center text-[#A8A8A8] font-inter justify-start">
@@ -540,9 +564,80 @@ export default function Builder() {
               )}
             </div>
 
-            {/* Currently Selected Section - Right side */}
-            <div className="flex justify-center items-start">
-              <CurrentlySelected />
+            {/* Tabbed Side Panel: Search + Currently Selected */}
+            <div className="flex items-start justify-center xl:justify-end">
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => {
+                  if (value === "search" || value === "selected") {
+                    setActiveTab(value);
+                  }
+                }}
+                className="w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex flex-col gap-0 overflow-hidden"
+                style={{ height: `${calendarHeight}px` }}
+              >
+                <TabsList className="relative isolate w-full bg-[#181818] border border-[#303030] rounded-t-lg rounded-b-none mb-0">
+                  <TabsTrigger
+                    value="search"
+                    className="relative z-10 flex-1 bg-transparent border-transparent shadow-none text-xs lg:text-sm font-figtree text-[#A8A8A8] data-[state=active]:text-green-400 dark:data-[state=active]:text-green-400 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:border-transparent dark:data-[state=active]:border-transparent data-[state=active]:shadow-none"
+                  >
+                    {activeTab === "search" && (
+                      <motion.span
+                        layoutId="builder-active-tab-pill"
+                        transition={{
+                          type: "spring",
+                          stiffness: 420,
+                          damping: 34,
+                        }}
+                        className="absolute inset-0 rounded-md bg-[#2b2b2b]"
+                      />
+                    )}
+                    <span className="relative z-10">Search</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="selected"
+                    className="relative z-10 flex-1 bg-transparent border-transparent shadow-none text-xs lg:text-sm font-figtree text-[#A8A8A8] data-[state=active]:text-purple-400 dark:data-[state=active]:text-purple-400 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:border-transparent dark:data-[state=active]:border-transparent data-[state=active]:shadow-none"
+                  >
+                    {activeTab === "selected" && (
+                      <motion.span
+                        layoutId="builder-active-tab-pill"
+                        transition={{
+                          type: "spring",
+                          stiffness: 420,
+                          damping: 34,
+                        }}
+                        className="absolute inset-0 rounded-md bg-[#2b2b2b]"
+                      />
+                    )}
+                    <span className="relative z-10 inline-flex items-center gap-1.5">
+                      <span>Selected</span>
+                      {draftSchedule.length > 0 && (
+                        <span className="inline-flex h-4 min-w-4 items-center justify-center bg-purple-900/60 text-purple-300 border border-purple-700/50 rounded-full text-[10px] px-1.5 leading-none">
+                          {draftSchedule.length}
+                        </span>
+                      )}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value={activeTab} className="mt-0 min-h-0 overflow-hidden">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={activeTab}
+                      initial={{ y: 18, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -8, opacity: 0 }}
+                      transition={{ duration: 0.24, ease: "easeOut" }}
+                      className="h-full"
+                    >
+                      {activeTab === "search" ? (
+                        <ClassSearch />
+                      ) : (
+                        <CurrentlySelected />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
