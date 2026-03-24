@@ -286,7 +286,7 @@ export default function UpgradeAccount() {
           >
             <Link
               href="/builder"
-              className="font-medium text-white font-inter inline-flex items-center gap-1 hover:underline"
+              className="font-medium text-white font-inter inline-flex items-center gap-1 hover:bg-white/10 rounded-sm px-1"
             >
               <ArrowLeft className="h-3 w-3" />
               Back to builder

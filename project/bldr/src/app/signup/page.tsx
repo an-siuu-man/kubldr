@@ -246,7 +246,7 @@ export default function Signup() {
                   <Button
                     type="submit"
                     variant="ghost"
-                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans text-md"
+                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] font-dmsans text-md"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating account..." : "Sign Up"}
@@ -274,7 +274,7 @@ export default function Signup() {
           {/* Back home link */}
           <Link
             href="/"
-            className="mt-5 font-inter text-xs text-[#606060] hover:text-[#A8A8A8] transition-colors"
+            className="mt-5 font-inter text-xs text-[#606060] hover:bg-white/10 rounded-sm px-1 transition-colors"
           >
             ← Back to home
           </Link>

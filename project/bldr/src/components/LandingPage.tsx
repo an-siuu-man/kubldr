@@ -122,14 +122,14 @@ export default function LandingPage() {
             <Button
               asChild
               variant="ghost"
-              className="hidden bg-[#1e1e1e] border border-[#404040] font-dmsans text-white hover:bg-[#2a2a2a] hover:text-white sm:inline-flex"
+              className="hidden bg-[#1e1e1e] border border-[#404040] font-dmsans text-white hover:bg-[#2a2a2a] sm:inline-flex"
             >
               <Link href="/login">Log in</Link>
             </Button>
             <Button
               asChild
               variant="ghost"
-              className="bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans shadow-[0_12px_36px_rgba(255,255,255,0.15)]"
+              className="bg-white text-[#101010] hover:bg-[#e8e8e8] font-dmsans shadow-[0_12px_36px_rgba(255,255,255,0.15)]"
             >
               <Link href="/signup">
                 Start building
@@ -167,7 +167,7 @@ export default function LandingPage() {
                 asChild
                 size="lg"
                 variant="ghost"
-                className="bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans shadow-[0_16px_40px_rgba(255,255,255,0.12)]"
+                className="bg-white text-[#101010] hover:bg-[#e8e8e8] font-dmsans shadow-[0_16px_40px_rgba(255,255,255,0.12)]"
               >
                 <Link href="/signup">
                   Create an account
@@ -178,7 +178,7 @@ export default function LandingPage() {
                 asChild
                 size="lg"
                 variant="ghost"
-                className="bg-[#1e1e1e] border border-[#404040] text-white hover:bg-[#2a2a2a] hover:text-white font-dmsans"
+                className="bg-[#1e1e1e] border border-[#404040] text-white hover:bg-[#2a2a2a] font-dmsans"
               >
                 <Link href="/login">Log in or continue as guest</Link>
               </Button>

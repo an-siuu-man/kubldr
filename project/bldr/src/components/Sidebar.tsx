@@ -480,7 +480,7 @@ export function Sidebar() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 text-xs py-1 px-2 h-7"
+                    className="cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 text-xs py-1 px-2 h-7"
                   >
                     <UserPlus className="h-3 w-3 mr-1" />
                     Sign Up
@@ -560,7 +560,7 @@ export function Sidebar() {
                               handleCreateSchedule(newScheduleName);
                               setMobileMenuOpen(false);
                             }}
-                            className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#404040] hover:text-[#fafafa] cursor-pointer font-dmsans px-3 h-9"
+                            className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#e0e0e0] cursor-pointer font-dmsans px-3 h-9"
                           >
                             {loading ? (
                               <Spinner className="h-3 w-3" />
@@ -747,7 +747,7 @@ export function Sidebar() {
                       className="font-figtree flex-1 overflow-hidden"
                     >
                       <AccordionItem value="spring-2026" className="border-b-0">
-                        <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:text-emerald-300 hover:no-underline hover:cursor-pointer font-semibold py-2 transition-colors">
+                        <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:no-underline hover:cursor-pointer hover:bg-white/5 font-semibold py-2 transition-colors">
                           Spring 2026
                         </AccordionTrigger>
                         <AccordionContent className="font-inter">
@@ -959,7 +959,7 @@ export function Sidebar() {
                     <Link href="/upgrade">
                       <Button
                         variant="outline"
-                        className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300 text-xs lg:text-sm py-1.5 lg:py-2"
+                        className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 text-xs lg:text-sm py-1.5 lg:py-2"
                       >
                         <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
                         Create Account
@@ -1008,7 +1008,7 @@ export function Sidebar() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="font-dmsans bg-[#2a2a2a] border-[#404040] text-white hover:bg-[#333333] hover:text-white">
+            <AlertDialogCancel className="font-dmsans bg-[#2a2a2a] border-[#404040] text-white hover:bg-[#333333]">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

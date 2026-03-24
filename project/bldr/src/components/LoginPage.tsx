@@ -219,7 +219,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     variant="ghost"
-                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] hover:text-[#101010] font-dmsans text-md"
+                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] font-dmsans text-md"
                     disabled={isLoading || isGuestLoading}
                   >
                     {isLoading ? (
@@ -244,7 +244,7 @@ export default function LoginPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full bg-[#1e1e1e] border border-[#404040] font-dmsans text-md text-white hover:bg-[#2a2a2a] hover:text-white"
+                    className="w-full bg-[#1e1e1e] border border-[#404040] font-dmsans text-md text-white hover:bg-[#2a2a2a]"
                     disabled={isLoading || isGuestLoading}
                     onClick={handleGuestLogin}
                   >
@@ -280,7 +280,7 @@ export default function LoginPage() {
           {/* Back home link */}
           <Link
             href="/"
-            className="mt-5 font-inter text-xs text-[#606060] hover:text-[#A8A8A8] transition-colors"
+            className="mt-5 font-inter text-xs text-[#606060] hover:bg-white/10 rounded-sm px-1 transition-colors"
           >
             ← Back to home
           </Link>

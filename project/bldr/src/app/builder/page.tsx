@@ -426,7 +426,7 @@ export default function Builder() {
                       Schedules will be lost when you close this tab.{" "}
                       <Link
                         href="/upgrade"
-                        className="underline hover:text-yellow-100 font-medium"
+                        className="underline hover:bg-yellow-900/20 rounded-sm font-medium"
                       >
                         Create an account
                       </Link>{" "}
