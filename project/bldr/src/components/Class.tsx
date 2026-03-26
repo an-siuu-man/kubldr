@@ -118,13 +118,13 @@ export default function Class(props: ClassProps) {
     <AnimatePresence>
       {classInfo && classInfo.data.length > 0 ? (
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{
-            scale: 1,
-            opacity: 1,
-            transition: { delay: 0.3 },
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{
+            duration: 0.24,
+            ease: [0.22, 1, 0.36, 1],
           }}
-          exit={{ scale: 0.6, opacity: 0 }}
           key={
             props.uuid?.trim() ||
             `${toKeyPart(props.dept, "dept")}-${toKeyPart(props.classcode, "code")}`

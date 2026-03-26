@@ -675,6 +675,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         togglePinSection,
         clearDraft,
         loadExistingScheduleIntoDraft,
+        fetchAllSectionsForClass,
         // Permutation browsing
         permutations,
         permutationIndex,

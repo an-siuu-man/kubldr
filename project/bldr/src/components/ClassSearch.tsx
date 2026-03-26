@@ -76,6 +76,7 @@ export default function ClassSearch() {
   // Refs for DOM elements used by Floating UI
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLUListElement | null>(null);
+  const searchedListRef = useRef<HTMLDivElement | null>(null);
 
   // Dynamic positioning styles for the dropdown
   const [dropdownPosStyle, setDropdownPosStyle] = useState<
@@ -195,6 +196,9 @@ export default function ClassSearch() {
           },
           ...prevClasses,
         ]);
+        requestAnimationFrame(() => {
+          searchedListRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        });
         console.log(selectedClasses);
       }
     }
@@ -347,6 +351,7 @@ export default function ClassSearch() {
             )}
           </div>
           <div
+            ref={searchedListRef}
             className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden pb-4"
             role="region"
             aria-label="Searched classes list"
@@ -356,32 +361,52 @@ export default function ClassSearch() {
                 No classes searched
               </div>
             ) : (
-              selectedClasses.map((c, index) => (
-                <div
-                  key={
-                    c.uuid?.trim() ||
-                    `${toKeyPart(c.dept, "dept")}-${toKeyPart(c.code, "code")}-${toKeyPart(c.title, "title")}-${index}`
-                  }
-                  className="relative group"
-                >
-                  <Class
-                    uuid={c.uuid}
-                    classcode={c.code || ""}
-                    dept={c.dept || ""}
-                  />
-                  <button
-                    onClick={() =>
-                      setSelectedClasses((prev) =>
-                        prev.filter((cls) => cls.uuid !== c.uuid),
-                      )
+              <AnimatePresence mode="popLayout" initial={false}>
+                {selectedClasses.map((c, index) => (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{
+                      layout: {
+                        duration: 0.24,
+                        ease: "easeOut",
+                      },
+                      opacity: {
+                        duration: 0.22,
+                        ease: "easeOut",
+                      },
+                      y: {
+                        duration: 0.24,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                    }}
+                    key={
+                      c.uuid?.trim() ||
+                      `${toKeyPart(c.dept, "dept")}-${toKeyPart(c.code, "code")}-${toKeyPart(c.title, "title")}-${index}`
                     }
-                    className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
-                    title="Remove from searched"
+                    className="relative group"
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </button>
-                </div>
-              ))
+                    <Class
+                      uuid={c.uuid}
+                      classcode={c.code || ""}
+                      dept={c.dept || ""}
+                    />
+                    <button
+                      onClick={() =>
+                        setSelectedClasses((prev) =>
+                          prev.filter((cls) => cls.uuid !== c.uuid),
+                        )
+                      }
+                      className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
+                      title="Remove from searched"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
           </div>
         </div>
