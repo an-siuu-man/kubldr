@@ -198,7 +198,7 @@ export default function CurrentlySelected() {
           <motion.div
             layout
             transition={{ layout: layoutSpring }}
-            className="flex items-center justify-between py-2 shrink-0 w-full"
+            className="flex items-center justify-between pt-1 pb-1.5 shrink-0 w-full"
           >
             <h2 className="text-sm lg:text-base xl:text-lg text-purple-400 font-bold font-figtree">
               Currently Selected
@@ -281,7 +281,7 @@ export default function CurrentlySelected() {
           <motion.section
             layout
             transition={{ layout: layoutSpring }}
-            className="font-inter flex-1 min-h-0 w-full overflow-y-auto scrollbar-hidden pb-4"
+            className="font-inter flex-1 min-h-0 w-full overflow-y-auto scrollbar-hidden pt-1 pb-4"
             aria-label="Currently selected classes"
           >
             {typedDraftSchedule.length === 0 ? (
