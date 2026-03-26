@@ -46,6 +46,14 @@ const toKeyPart = (value: unknown, fallback: string) => {
   return normalized.length > 0 ? normalized : fallback;
 };
 
+const toSearchedClassKey = (searchedClass: SearchedClass) => {
+  const uuidKey = searchedClass.uuid?.trim();
+  if (uuidKey && uuidKey.length > 0) {
+    return uuidKey;
+  }
+  return `${toKeyPart(searchedClass.dept, "dept")}-${toKeyPart(searchedClass.code, "code")}-${toKeyPart(searchedClass.title, "title")}`;
+};
+
 /**
  * ClassSearch Component
  *
@@ -76,6 +84,7 @@ export default function ClassSearch() {
   // Refs for DOM elements used by Floating UI
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLUListElement | null>(null);
+  const searchedListRef = useRef<HTMLDivElement | null>(null);
 
   // Dynamic positioning styles for the dropdown
   const [dropdownPosStyle, setDropdownPosStyle] = useState<
@@ -178,7 +187,6 @@ export default function ClassSearch() {
       setSelectedClasses((prevClasses) =>
         prevClasses.filter((item) => item.uuid !== uuid),
       );
-      console.log(selectedClasses);
     } else {
       // Add new class to the beginning of the list
       const newClass = classes.find((c) => c.uuid === uuid);
@@ -195,7 +203,9 @@ export default function ClassSearch() {
           },
           ...prevClasses,
         ]);
-        console.log(selectedClasses);
+        requestAnimationFrame(() => {
+          searchedListRef.current?.scrollTo({ top: 0, behavior: "auto" });
+        });
       }
     }
   }
@@ -293,16 +303,13 @@ export default function ClassSearch() {
                   <AnimatePresence mode="popLayout">
                     {classes.map((c, index) => (
                       <motion.li
-                        key={
-                          c.uuid?.trim() ||
-                          `${toKeyPart(c.dept, "dept")}-${toKeyPart(c.code, "code")}-${toKeyPart(c.title, "title")}-${index}`
-                        }
+                        key={toSearchedClassKey(c)}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        onMouseDown={async (e) => {
+                        onMouseDown={(e) => {
                           e.preventDefault();
-                          await handleDropdownSelect(c.uuid);
+                          handleDropdownSelect(c.uuid);
                           setDropdownOpen(false);
                         }}
                         onMouseEnter={() => setHighlightedIndex(index)}
@@ -329,7 +336,7 @@ export default function ClassSearch() {
 
         {/* Searched Section */}
         <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
-          <div className="flex items-center justify-between py-2 shrink-0">
+          <div className="flex items-center justify-between pt-1 pb-1.5 shrink-0">
             <h2 className="text-sm lg:text-base text-green-400 font-bold font-figtree">
               Searched
             </h2>
@@ -347,32 +354,46 @@ export default function ClassSearch() {
             )}
           </div>
           <div
-            className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden pb-4"
+            ref={searchedListRef}
+            className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden pt-1 pb-4"
             role="region"
             aria-label="Searched classes list"
           >
-            {selectedClasses.length === 0 ? (
-              <div className="text-xs lg:text-sm text-[#888888] font-figtree">
-                No classes searched
-              </div>
-            ) : (
-              selectedClasses.map((c, index) => (
-                <div
-                  key={
-                    c.uuid?.trim() ||
-                    `${toKeyPart(c.dept, "dept")}-${toKeyPart(c.code, "code")}-${toKeyPart(c.title, "title")}-${index}`
-                  }
-                  className="relative group"
+            <AnimatePresence initial={false}>
+              {selectedClasses.map((c) => (
+                <motion.div
+                  key={toSearchedClassKey(c)}
+                  layout="position"
+                  initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.99 }}
+                  transition={{
+                    layout: {
+                      duration: 0.22,
+                      ease: [0.22, 1, 0.36, 1],
+                    },
+                    opacity: {
+                      duration: 0.18,
+                      ease: "easeOut",
+                    },
+                    y: {
+                      duration: 0.2,
+                      ease: [0.22, 1, 0.36, 1],
+                    },
+                    scale: {
+                      duration: 0.2,
+                      ease: "easeOut",
+                    },
+                  }}
+                  className="relative group origin-top"
                 >
-                  <Class
-                    uuid={c.uuid}
-                    classcode={c.code || ""}
-                    dept={c.dept || ""}
-                  />
+                  <Class uuid={c.uuid} classcode={c.code || ""} dept={c.dept || ""} />
                   <button
                     onClick={() =>
                       setSelectedClasses((prev) =>
-                        prev.filter((cls) => cls.uuid !== c.uuid),
+                        prev.filter(
+                          (cls) => toSearchedClassKey(cls) !== toSearchedClassKey(c),
+                        ),
                       )
                     }
                     className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
@@ -380,9 +401,21 @@ export default function ClassSearch() {
                   >
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </button>
-                </div>
-              ))
-            )}
+                </motion.div>
+              ))}
+              {selectedClasses.length === 0 && (
+                <motion.div
+                  key="searched-empty-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="text-xs lg:text-sm text-[#888888] font-figtree"
+                >
+                  No classes searched
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

@@ -115,21 +115,18 @@ export default function Class(props: ClassProps) {
   }, [classInfo]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false} mode="wait">
       {classInfo && classInfo.data.length > 0 ? (
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{
-            scale: 1,
-            opacity: 1,
-            transition: { delay: 0.3 },
+          key="class-content"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            duration: 0.18,
+            ease: "easeOut",
           }}
-          exit={{ scale: 0.6, opacity: 0 }}
-          key={
-            props.uuid?.trim() ||
-            `${toKeyPart(props.dept, "dept")}-${toKeyPart(props.classcode, "code")}`
-          }
-          className="flex flex-col p-1.5 lg:p-2 mt-1.5 lg:mt-2 mb-3 lg:mb-4 rounded-md text-[#fafafa] border-2 max-w-full border-[#404040] shadow-md justify-start items-center"
+          className="flex flex-col p-1.5 lg:p-2 mb-3 lg:mb-4 rounded-md text-[#fafafa] border-2 max-w-full border-[#404040] shadow-md justify-start items-center"
         >
           <h1 className="font-dmsans text-xs lg:text-sm font-bold self-start leading-tight">
             {classInfo.data[0].dept} {classInfo.data[0].code}:{" "}
@@ -195,10 +192,12 @@ export default function Class(props: ClassProps) {
         </motion.div>
       ) : (
         <motion.div
+          key="class-loading"
           className="flex w-full justify-center items-center mb-3 lg:mb-4"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.14, ease: "easeOut" }}
         >
           <Loader />
           <p className="mx-2 text-[10px] lg:text-xs font-inter text-[#b0b0b0]">
