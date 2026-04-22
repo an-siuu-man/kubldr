@@ -69,6 +69,9 @@ import { Spinner } from "./ui/spinner";
 const sidebarEnterEase = [0.22, 1, 0.36, 1] as const;
 const sidebarExitEase = [0.4, 0, 1, 1] as const;
 
+const SIDEBAR_WIDTH_MS = 300;
+const CONTENT_FADE_OUT_MS = 160;
+
 const sidebarContentVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -76,12 +79,13 @@ const sidebarContentVariants: Variants = {
     transition: {
       duration: 0.22,
       ease: sidebarEnterEase,
+      delay: SIDEBAR_WIDTH_MS / 1000,
     },
   },
   exit: {
     opacity: 0,
     transition: {
-      duration: 0.16,
+      duration: CONTENT_FADE_OUT_MS / 1000,
       ease: sidebarExitEase,
     },
   },
@@ -163,7 +167,9 @@ export function Sidebar() {
 
   // Sidebar open/closed state (desktop) and mobile menu open state
   const [open, setOpen] = useState(true);
+  const [isSidebarWide, setIsSidebarWide] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Loading state for async operations (e.g., creating schedules)
   const [loading, setLoading] = useState(false);
@@ -193,9 +199,16 @@ export function Sidebar() {
   const [hasScheduleListOverflow, setHasScheduleListOverflow] = useState(false);
   const scheduleListRef = useRef<HTMLUListElement>(null);
 
+  // Cleanup close timer on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
   // Check if the schedule list has overflow using ResizeObserver
   useEffect(() => {
-    if (isMobile || !open) {
+    if (isMobile || !isSidebarWide) {
       setHasScheduleListOverflow(false);
       return;
     }
@@ -223,13 +236,24 @@ export function Sidebar() {
       resizeObserver.disconnect();
       window.removeEventListener("resize", checkOverflow);
     };
-  }, [isMobile, open]);
+  }, [isMobile, isSidebarWide]);
 
   /**
    * Toggles the sidebar between open and closed states.
+   * Close: content fades out first, then width collapses.
+   * Open: width expands first, then content fades in (via variant delay).
    */
   const toggleSidebar = () => {
-    setOpen(!open);
+    if (open) {
+      setOpen(false);
+      closeTimerRef.current = setTimeout(() => {
+        setIsSidebarWide(false);
+      }, CONTENT_FADE_OUT_MS);
+    } else {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+      setIsSidebarWide(true);
+      setOpen(true);
+    }
   };
 
   /**
@@ -696,12 +720,12 @@ export function Sidebar() {
       {!isMobile && (
         <div
           className={`${
-            open ? "mr-[min(280px,25vw)]" : "mr-[70px]"
+            isSidebarWide ? "mr-[min(280px,25vw)]" : "mr-[70px]"
           } z-45 transition-all duration-300 ease-out`}
         >
           <div
             className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed top-0 left-0 h-screen transition-all duration-300 ease-out ${
-              open
+              isSidebarWide
                 ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-linear-to-b from-[#1a1a1a] to-[#141414] shadow-2xl shadow-black/50"
                 : "bg-transparent min-w-[70px] max-w-[70px]"
             } overflow-hidden p-4 lg:p-5`}
