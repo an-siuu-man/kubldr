@@ -10,53 +10,18 @@
  */
 
 import type { NextRequest } from "next/server";
+import { type ClassDetailRow, formatClassSection } from "@/lib/scheduleFormat";
 import { supabase } from "../../lib/supabaseClient";
-
-type SearchClassMeta = {
-  dept: string;
-  code: string;
-  title: string | null;
-};
-
-type ClassDetailRow = {
-  uuid: string;
-  classid: number;
-  days: string | null;
-  starttime: string | null;
-  endtime: string | null;
-  component: string | null;
-  instructor: string | null;
-  location: string | null;
-  room: string | null;
-  availseats: number | null;
-  minhours: number | null;
-  maxhours: number | null;
-  searchclass: SearchClassMeta | SearchClassMeta[] | null;
-};
 
 type ScheduleRow = {
   scheduleid: string;
   schedulename: string;
   semester: string;
   year: number;
+  is_public: boolean | null;
   createdat: Date | string | null;
   lastedited: Date | string | null;
 };
-
-function pickSearchClassMeta(
-  value: SearchClassMeta | SearchClassMeta[] | null,
-): SearchClassMeta {
-  if (Array.isArray(value)) {
-    return value[0] ?? { dept: "", code: "", title: "" };
-  }
-  return value ?? { dept: "", code: "", title: "" };
-}
-
-function deriveCreditHours(minhours: number | null, maxhours: number | null) {
-  if (typeof maxhours === "number") return maxhours;
-  if (typeof minhours === "number") return minhours;
-  return undefined;
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -104,7 +69,9 @@ export async function GET(req: NextRequest) {
 
     const { data: schedules, error: schedulesError } = await supabase
       .from("allschedules")
-      .select("scheduleid, schedulename, semester, year, createdat, lastedited")
+      .select(
+        "scheduleid, schedulename, semester, year, is_public, createdat, lastedited",
+      )
       .in("scheduleid", scheduleIds)
       .order("createdat", { ascending: false });
 
@@ -182,31 +149,7 @@ export async function GET(req: NextRequest) {
         const formattedClasses = classIds
           .map((uuid) => classByUuid.get(uuid))
           .filter(Boolean)
-          .map((cls) => {
-            const section = cls as ClassDetailRow;
-            const course = pickSearchClassMeta(section.searchclass);
-            return {
-              uuid: section.uuid,
-              classID: section.classid?.toString() || "",
-              dept: course.dept,
-              code: course.code,
-              title: course.title ?? `${course.dept} ${course.code}`,
-              days: section.days || "",
-              starttime: section.starttime || "",
-              endtime: section.endtime || "",
-              component: section.component || "",
-              instructor: section.instructor || undefined,
-              seats_available: section.availseats ?? 0,
-              minhours: section.minhours ?? undefined,
-              maxhours: section.maxhours ?? undefined,
-              credithours: deriveCreditHours(
-                section.minhours,
-                section.maxhours,
-              ),
-              location: section.location || undefined,
-              room: section.room || undefined,
-            };
-          });
+          .map((cls) => formatClassSection(cls as ClassDetailRow));
 
         return {
           id: schedule.scheduleid,
@@ -215,6 +158,7 @@ export async function GET(req: NextRequest) {
           year: schedule.year,
           classes: formattedClasses,
           isActive: activeByScheduleId.get(schedule.scheduleid) ?? false,
+          isPublic: Boolean(schedule.is_public),
           createdAt: schedule.createdat,
           updatedAt: schedule.lastedited,
         };

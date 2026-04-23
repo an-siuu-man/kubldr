@@ -10,6 +10,7 @@ export interface AllSchedulesRecord {
   schedulename: string; // text (NOT NULL)
   semester: string; // character varying (NOT NULL)
   year: number; // integer (NOT NULL, > 1900)
+  is_public: boolean; // boolean (default false)
   createdat?: Date | string; // timestamp (default CURRENT_TIMESTAMP)
   lastedited?: Date | string; // timestamp (default CURRENT_TIMESTAMP)
 }
@@ -42,6 +43,7 @@ export interface Schedule {
   year: number | string; // Can be number from DB or string in UI
   classes: ClassSection[]; // List of class sections in this schedule
   isActive?: boolean; // Maps to isactive from userschedule
+  isPublic?: boolean; // Maps to is_public from allschedules
   createdAt?: Date | string; // Maps to createdat
   updatedAt?: Date | string; // Maps to lastedited
 }

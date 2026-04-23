@@ -42,6 +42,7 @@
 - Create multiple schedules for different semester scenarios
 - Save, rename, and delete schedules
 - Sidebar navigation for quick schedule switching
+- Share schedules with a public read-only link
 - Real-time schedule updates and persistence
 
 ### 📊 Class Details

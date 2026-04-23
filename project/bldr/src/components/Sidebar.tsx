@@ -26,10 +26,13 @@ import {
   AlertCircle,
   Check,
   ChevronDown,
+  Copy,
   Edit2,
+  Link as LinkIcon,
   Loader2,
   Menu,
   MoreHorizontal,
+  Share2,
   Sidebar as SidebarIcon,
   Trash2,
   User,
@@ -66,6 +69,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Spinner } from "./ui/spinner";
+import { Switch } from "./ui/switch";
 
 const sidebarEnterEase = [0.22, 1, 0.36, 1] as const;
 const sidebarExitEase = [0.4, 0, 1, 1] as const;
@@ -193,6 +197,9 @@ export function Sidebar() {
 
   // True while the rename API call is in-flight
   const [isRenamingSaving, setIsRenamingSaving] = useState(false);
+  const [sharingScheduleId, setSharingScheduleId] = useState<string | null>(
+    null,
+  );
 
   // Track which schedule is being deleted (for AlertDialog)
   const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(
@@ -406,6 +413,83 @@ export function Sidebar() {
   const cancelRenaming = () => {
     setRenamingScheduleId(null);
     setRenameValue("");
+  };
+
+  const getPublicScheduleUrl = (scheduleId: string) => {
+    if (typeof window === "undefined") return `/s/${scheduleId}`;
+    return `${window.location.origin}/s/${scheduleId}`;
+  };
+
+  const copyPublicScheduleLink = async (schedule: Schedule) => {
+    try {
+      await navigator.clipboard.writeText(getPublicScheduleUrl(schedule.id));
+      toast.success("Share link copied", {
+        style: toastStyle,
+        duration: 2000,
+        icon: <Copy className="h-5 w-5 text-green-500" />,
+      });
+    } catch (error) {
+      console.error("Error copying share link:", error);
+      toast.error("Failed to copy share link", {
+        style: toastStyle,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      });
+    }
+  };
+
+  const handleToggleShare = async (schedule: Schedule, isPublic: boolean) => {
+    if (!session?.access_token) {
+      toast.error("You must be logged in to share schedules", {
+        style: toastStyle,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      });
+      return;
+    }
+
+    setSharingScheduleId(schedule.id);
+    try {
+      const res = await fetch("/api/shareSchedule", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ scheduleId: schedule.id, isPublic }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update sharing");
+      }
+
+      const updatedSchedule = {
+        ...schedule,
+        isPublic: data.isPublic,
+      };
+      updateScheduleInList(schedule.id, updatedSchedule);
+
+      toast.success(
+        data.isPublic
+          ? "Schedule sharing enabled"
+          : "Schedule sharing disabled",
+        {
+          style: toastStyle,
+          duration: 2000,
+          icon: <Share2 className="h-5 w-5 text-green-500" />,
+        },
+      );
+    } catch (err: unknown) {
+      console.error("Error updating schedule sharing:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update sharing",
+        {
+          style: toastStyle,
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        },
+      );
+    } finally {
+      setSharingScheduleId(null);
+    }
   };
 
   /**
@@ -687,9 +771,58 @@ export function Sidebar() {
                                           setMobileMenuOpen(false);
                                         }}
                                       >
-                                        {schedule.name}
+                                        <span className="flex min-w-0 items-center gap-1.5">
+                                          <span className="truncate">
+                                            {schedule.name}
+                                          </span>
+                                          {schedule.isPublic && (
+                                            <LinkIcon className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                                          )}
+                                        </span>
                                       </button>
                                       <div className="flex items-center gap-1 pr-2">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleToggleShare(
+                                              schedule,
+                                              !schedule.isPublic,
+                                            )
+                                          }
+                                          disabled={
+                                            sharingScheduleId === schedule.id
+                                          }
+                                          className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                          title={
+                                            schedule.isPublic
+                                              ? "Disable sharing"
+                                              : "Enable sharing"
+                                          }
+                                        >
+                                          {sharingScheduleId === schedule.id ? (
+                                            <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                                          ) : (
+                                            <Share2
+                                              className={`h-4 w-4 ${
+                                                schedule.isPublic
+                                                  ? "text-green-400"
+                                                  : "text-gray-400"
+                                              }`}
+                                            />
+                                          )}
+                                        </button>
+                                        {schedule.isPublic && (
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              copyPublicScheduleLink(schedule)
+                                            }
+                                            className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                            title="Copy share link"
+                                          >
+                                            <Copy className="h-4 w-4 text-gray-400" />
+                                          </button>
+                                        )}
                                         <button
                                           type="button"
                                           onClick={() =>
@@ -931,7 +1064,14 @@ export function Sidebar() {
                                               console.log(activeSchedule);
                                             }}
                                           >
-                                            {schedule.name}
+                                            <span className="flex min-w-0 items-center gap-1.5">
+                                              <span className="truncate">
+                                                {schedule.name}
+                                              </span>
+                                              {schedule.isPublic && (
+                                                <LinkIcon className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                                              )}
+                                            </span>
                                           </button>
                                           {hoveredScheduleId ===
                                             schedule.id && (
@@ -946,6 +1086,45 @@ export function Sidebar() {
                                               </PopoverTrigger>
                                               <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
                                                 <div className="flex flex-col items-start justify-between gap-1 text-sm">
+                                                  <div className="flex w-full items-center justify-between gap-4 rounded-md p-2 font-inter text-white">
+                                                    <span className="flex items-center gap-2">
+                                                      <Share2 className="h-4 w-4" />
+                                                      Share
+                                                    </span>
+                                                    {sharingScheduleId ===
+                                                    schedule.id ? (
+                                                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                                    ) : (
+                                                      <Switch
+                                                        checked={Boolean(
+                                                          schedule.isPublic,
+                                                        )}
+                                                        onCheckedChange={(
+                                                          checked,
+                                                        ) =>
+                                                          handleToggleShare(
+                                                            schedule,
+                                                            checked,
+                                                          )
+                                                        }
+                                                      />
+                                                    )}
+                                                  </div>
+                                                  {schedule.isPublic && (
+                                                    <button
+                                                      type="button"
+                                                      className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-white"
+                                                      onClick={() =>
+                                                        copyPublicScheduleLink(
+                                                          schedule,
+                                                        )
+                                                      }
+                                                    >
+                                                      <Copy className="h-4 w-4" />
+                                                      Copy link
+                                                    </button>
+                                                  )}
+                                                  <hr className="w-full border-t border-[#606060]" />
                                                   <button
                                                     type="button"
                                                     className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-white"

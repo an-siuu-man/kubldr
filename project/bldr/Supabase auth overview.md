@@ -34,6 +34,7 @@ This project uses Supabase to handle user authentication in a modern, secure, an
 ## 5. **Database Security (Row Level Security)**
 - All user data in the database is protected with Row Level Security (RLS).
 - Only the authenticated user can access or modify their own data.
+- Public schedule links expose only schedules that have been explicitly marked public.
 - RLS policies are enforced automatically by Supabase.
 
 ---

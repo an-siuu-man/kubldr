@@ -34,6 +34,13 @@ import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { calculateDuration, parseDays, timeToDecimal } from "@/lib/timeUtils";
 import type { ClassSection } from "@/types";
 
+type CalendarEditorProps = {
+  classes?: ClassSection[];
+  scheduleName?: string;
+  readOnly?: boolean;
+  emptyMessage?: string;
+};
+
 const toKeyPart = (value: unknown, fallback: string) => {
   const normalized = typeof value === "string" ? value.trim() : "";
   return normalized.length > 0 ? normalized : fallback;
@@ -48,7 +55,12 @@ const toKeyPart = (value: unknown, fallback: string) => {
  *
  * returns {JSX.Element} The calendar grid with positioned class blocks
  */
-const CalendarEditor = () => {
+const CalendarEditor = ({
+  classes,
+  scheduleName,
+  readOnly = false,
+  emptyMessage = "Add a class section to see it here!",
+}: CalendarEditorProps = {}) => {
   // Access the draft schedule data from the ScheduleBuilder context
   const {
     draftSchedule,
@@ -56,6 +68,11 @@ const CalendarEditor = () => {
     removeClassFromDraft,
     togglePinSection,
   } = useScheduleBuilder();
+  const calendarClasses = classes ?? draftSchedule;
+  const calendarName = scheduleName ?? draftScheduleName;
+  const shouldShowCalendar = readOnly
+    ? Boolean(calendarName)
+    : Boolean(calendarName && calendarClasses.length > 0);
 
   // Days of the week to display as column headers
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -68,6 +85,8 @@ const CalendarEditor = () => {
    * @param cls - The class section to remove
    */
   const handleRemoveSection = (cls: ClassSection) => {
+    if (readOnly) return;
+
     const index = draftSchedule.findIndex(
       (item: ClassSection) => item.uuid === cls.uuid,
     );
@@ -81,6 +100,8 @@ const CalendarEditor = () => {
    * @param cls - The class section to toggle pin
    */
   const handleTogglePin = (cls: ClassSection) => {
+    if (readOnly) return;
+
     togglePinSection(cls.uuid);
   };
 
@@ -88,7 +109,7 @@ const CalendarEditor = () => {
     <div className="relative grid grid-rows-1 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 py-2 w-full aspect-square md:aspect-auto md:h-full md:min-h-[500px]">
       <div className="w-full h-full overflow-hidden">
         <AnimatePresence mode="wait">
-          {draftScheduleName && draftSchedule.length > 0 ? (
+          {shouldShowCalendar ? (
             <motion.div
               key="calendar"
               initial={{ opacity: 0 }}
@@ -129,7 +150,7 @@ const CalendarEditor = () => {
                         <td key={day} className="relative align-top w-[18%]">
                           <div className="absolute top-[50%] translate-y-[-50%] w-full border-t border-dashed border-[#424242] z-0" />
 
-                          {draftSchedule
+                          {calendarClasses
                             .filter((cls: ClassSection) => {
                               const classDays = parseDays(cls.days || "");
                               const startTime = timeToDecimal(
@@ -210,13 +231,15 @@ const CalendarEditor = () => {
                                               backgroundColor:
                                                 colors[colorIndex],
                                             }}
-                                            onDoubleClick={() =>
-                                              handleTogglePin(cls)
+                                            onDoubleClick={
+                                              readOnly
+                                                ? undefined
+                                                : () => handleTogglePin(cls)
                                             }
                                           >
                                             <div className="flex items-center justify-between font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
                                               <span className="flex items-center gap-0.5 truncate">
-                                                {cls.pinned && (
+                                                {!readOnly && cls.pinned && (
                                                   <Pin className="h-2.5 w-2.5 lg:h-3 lg:w-3 text-amber-600 shrink-0" />
                                                 )}
                                                 <span className="truncate">
@@ -288,7 +311,7 @@ const CalendarEditor = () => {
                                               </div>
 
                                               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-white/10 pt-2.5 text-[11px] leading-5">
-                                                {cls.pinned && (
+                                                {!readOnly && cls.pinned && (
                                                   <p className="min-w-0">
                                                     <span className="font-semibold text-slate-300">
                                                       Status:
@@ -308,14 +331,20 @@ const CalendarEditor = () => {
                                                     </span>
                                                   </p>
                                                 )}
-                                                <p className="col-span-2 min-w-0 text-slate-400">
-                                                  <span className="font-semibold text-slate-300">
-                                                    Actions:
-                                                  </span>{" "}
-                                                  Double-click to{" "}
-                                                  {cls.pinned ? "unpin" : "pin"}
-                                                  {"; right-click for options"}
-                                                </p>
+                                                {!readOnly && (
+                                                  <p className="col-span-2 min-w-0 text-slate-400">
+                                                    <span className="font-semibold text-slate-300">
+                                                      Actions:
+                                                    </span>{" "}
+                                                    Double-click to{" "}
+                                                    {cls.pinned
+                                                      ? "unpin"
+                                                      : "pin"}
+                                                    {
+                                                      "; right-click for options"
+                                                    }
+                                                  </p>
+                                                )}
                                               </div>
                                             </div>
                                           </div>
@@ -323,28 +352,30 @@ const CalendarEditor = () => {
                                       </Tooltip>
                                     </TooltipProvider>
                                   </ContextMenuTrigger>
-                                  <ContextMenuContent className=" bg-[#2a2a2a] border-[#404040]">
-                                    <ContextMenuItem
-                                      className="text-amber-400 font-dmsans focus:bg-[#404040] focus:text-amber-400 cursor-pointer"
-                                      onClick={() => handleTogglePin(cls)}
-                                    >
-                                      {cls.pinned ? (
-                                        <PinOff className="mr-1 h-4 text-amber-400" />
-                                      ) : (
-                                        <Pin className="mr-1 h-4 text-amber-400" />
-                                      )}
-                                      {cls.pinned
-                                        ? "Unpin Section"
-                                        : "Pin Section"}
-                                    </ContextMenuItem>
-                                    <ContextMenuItem
-                                      className="text-destructive font-dmsans focus:bg-[#404040] focus:text-destructive cursor-pointer"
-                                      onClick={() => handleRemoveSection(cls)}
-                                    >
-                                      <Trash2 className="mr-1 h-4 text-destructive" />
-                                      Remove Section
-                                    </ContextMenuItem>
-                                  </ContextMenuContent>
+                                  {!readOnly && (
+                                    <ContextMenuContent className=" bg-[#2a2a2a] border-[#404040]">
+                                      <ContextMenuItem
+                                        className="text-amber-400 font-dmsans focus:bg-[#404040] focus:text-amber-400 cursor-pointer"
+                                        onClick={() => handleTogglePin(cls)}
+                                      >
+                                        {cls.pinned ? (
+                                          <PinOff className="mr-1 h-4 text-amber-400" />
+                                        ) : (
+                                          <Pin className="mr-1 h-4 text-amber-400" />
+                                        )}
+                                        {cls.pinned
+                                          ? "Unpin Section"
+                                          : "Pin Section"}
+                                      </ContextMenuItem>
+                                      <ContextMenuItem
+                                        className="text-destructive font-dmsans focus:bg-[#404040] focus:text-destructive cursor-pointer"
+                                        onClick={() => handleRemoveSection(cls)}
+                                      >
+                                        <Trash2 className="mr-1 h-4 text-destructive" />
+                                        Remove Section
+                                      </ContextMenuItem>
+                                    </ContextMenuContent>
+                                  )}
                                 </ContextMenu>
                               );
                             })}
@@ -357,7 +388,7 @@ const CalendarEditor = () => {
             </motion.div>
           ) : (
             <div className="font-inter flex h-full w-full justify-center items-center m-2 text-center text-xs md:text-sm">
-              Add a class section to see it here!
+              {emptyMessage}
             </div>
           )}
         </AnimatePresence>
