@@ -260,6 +260,9 @@ export function savePermutationsToStorage(
   if (typeof window === "undefined") return;
 
   try {
+    // Purge any stale full-array data left by older versions before writing,
+    // so a filled quota doesn't block writing the small index/hash values.
+    localStorage.removeItem(PERMUTATIONS_STORAGE_KEY);
     localStorage.setItem(PERMUTATION_INDEX_STORAGE_KEY, String(currentIndex));
     localStorage.setItem(PERMUTATION_DRAFT_HASH_KEY, draftHash);
   } catch (e) {
@@ -281,6 +284,8 @@ export function loadPermutationsFromStorage(): {
   if (typeof window === "undefined") return null;
 
   try {
+    // Eagerly purge stale full-array data on mount so it doesn't fill the quota.
+    localStorage.removeItem(PERMUTATIONS_STORAGE_KEY);
     const indexStr = localStorage.getItem(PERMUTATION_INDEX_STORAGE_KEY);
     const draftHash = localStorage.getItem(PERMUTATION_DRAFT_HASH_KEY);
 
