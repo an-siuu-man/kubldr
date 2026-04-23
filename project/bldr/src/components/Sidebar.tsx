@@ -27,6 +27,7 @@ import {
   Check,
   ChevronDown,
   Edit2,
+  Loader2,
   Menu,
   MoreHorizontal,
   Sidebar as SidebarIcon,
@@ -190,6 +191,9 @@ export function Sidebar() {
   // Input value for renaming a schedule
   const [renameValue, setRenameValue] = useState("");
 
+  // True while the rename API call is in-flight
+  const [isRenamingSaving, setIsRenamingSaving] = useState(false);
+
   // Track which schedule is being deleted (for AlertDialog)
   const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(
     null,
@@ -338,6 +342,7 @@ export function Sidebar() {
       return;
     }
 
+    setIsRenamingSaving(true);
     try {
       const res = await fetch("/api/renameSchedule", {
         method: "POST",
@@ -378,6 +383,7 @@ export function Sidebar() {
         },
       );
     } finally {
+      setIsRenamingSaving(false);
       setRenamingScheduleId(null);
       setRenameValue("");
     }
@@ -641,27 +647,34 @@ export function Sidebar() {
                                           }
                                         }}
                                         autoFocus
-                                        className="h-8 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
+                                        disabled={isRenamingSaving}
+                                        className="h-8 text-xs border-[#404040] bg-[#2a2a2a] flex-1 disabled:opacity-50"
                                       />
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          handleRenameSchedule(
-                                            schedule.id,
-                                            renameValue,
-                                          )
-                                        }
-                                        className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
-                                      >
-                                        <Check className="h-4 w-4 text-green-500" />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={cancelRenaming}
-                                        className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
-                                      >
-                                        <X className="h-4 w-4 text-red-500" />
-                                      </button>
+                                      {isRenamingSaving ? (
+                                        <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
+                                      ) : (
+                                        <>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleRenameSchedule(
+                                                schedule.id,
+                                                renameValue,
+                                              )
+                                            }
+                                            className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                          >
+                                            <Check className="h-4 w-4 text-green-500" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelRenaming}
+                                            className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                          >
+                                            <X className="h-4 w-4 text-red-500" />
+                                          </button>
+                                        </>
+                                      )}
                                     </div>
                                   ) : (
                                     <>
@@ -876,27 +889,34 @@ export function Sidebar() {
                                               }
                                             }}
                                             autoFocus
-                                            className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1"
+                                            disabled={isRenamingSaving}
+                                            className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1 disabled:opacity-50"
                                           />
-                                          <button
-                                            type="button"
-                                            onClick={() =>
-                                              handleRenameSchedule(
-                                                schedule.id,
-                                                renameValue,
-                                              )
-                                            }
-                                            className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
-                                          >
-                                            <Check className="h-4 w-4 text-green-500" />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={cancelRenaming}
-                                            className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
-                                          >
-                                            <X className="h-4 w-4 text-red-500" />
-                                          </button>
+                                          {isRenamingSaving ? (
+                                            <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
+                                          ) : (
+                                            <>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleRenameSchedule(
+                                                    schedule.id,
+                                                    renameValue,
+                                                  )
+                                                }
+                                                className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                              >
+                                                <Check className="h-4 w-4 text-green-500" />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={cancelRenaming}
+                                                className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                              >
+                                                <X className="h-4 w-4 text-red-500" />
+                                              </button>
+                                            </>
+                                          )}
                                         </div>
                                       ) : (
                                         <>
