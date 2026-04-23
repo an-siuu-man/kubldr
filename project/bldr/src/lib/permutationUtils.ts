@@ -245,33 +245,33 @@ export function createDraftHash(draftSchedule: ClassSection[]): string {
 }
 
 /**
- * Saves permutations to localStorage
- * @param permutations - Array of valid schedule permutations
+ * Saves permutation navigation state to localStorage.
+ * The permutations array itself is not persisted — it can exceed the browser's
+ * ~5 MB quota for large schedules and is always regenerable from the draft.
+ * @param permutations - Unused; kept in signature so call-sites need no changes
  * @param currentIndex - Current permutation index
  * @param draftHash - Hash of the draft that generated these permutations
  */
 export function savePermutationsToStorage(
-  permutations: ClassSection[][],
+  _permutations: ClassSection[][],
   currentIndex: number,
   draftHash: string
 ): void {
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(
-      PERMUTATIONS_STORAGE_KEY,
-      JSON.stringify(permutations)
-    );
     localStorage.setItem(PERMUTATION_INDEX_STORAGE_KEY, String(currentIndex));
     localStorage.setItem(PERMUTATION_DRAFT_HASH_KEY, draftHash);
   } catch (e) {
-    console.error("Failed to save permutations to localStorage:", e);
+    console.error("Failed to save permutation state to localStorage:", e);
   }
 }
 
 /**
- * Loads permutations from localStorage
- * @returns Object with permutations, currentIndex, and draftHash, or null if not found
+ * Loads permutation navigation state from localStorage.
+ * Returns an empty permutations array — permutations are regenerated on mount
+ * from the persisted draft schedule via generateSchedulePermutations.
+ * @returns Object with empty permutations, currentIndex, and draftHash, or null if not found
  */
 export function loadPermutationsFromStorage(): {
   permutations: ClassSection[][];
@@ -281,25 +281,25 @@ export function loadPermutationsFromStorage(): {
   if (typeof window === "undefined") return null;
 
   try {
-    const permutationsStr = localStorage.getItem(PERMUTATIONS_STORAGE_KEY);
     const indexStr = localStorage.getItem(PERMUTATION_INDEX_STORAGE_KEY);
     const draftHash = localStorage.getItem(PERMUTATION_DRAFT_HASH_KEY);
 
-    if (!permutationsStr || !draftHash) return null;
+    if (!draftHash) return null;
 
     return {
-      permutations: JSON.parse(permutationsStr),
+      permutations: [],
       currentIndex: indexStr ? parseInt(indexStr, 10) : 0,
       draftHash,
     };
   } catch (e) {
-    console.error("Failed to load permutations from localStorage:", e);
+    console.error("Failed to load permutation state from localStorage:", e);
     return null;
   }
 }
 
 /**
- * Clears permutations from localStorage
+ * Clears permutation state from localStorage.
+ * Also removes the legacy PERMUTATIONS_STORAGE_KEY in case stale data exists.
  */
 export function clearPermutationsFromStorage(): void {
   if (typeof window === "undefined") return;
