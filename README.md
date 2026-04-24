@@ -45,6 +45,11 @@
 - Share schedules with a public read-only link
 - Real-time schedule updates and persistence
 
+### 🔗 Schedule Sharing
+- Turn sharing on or off for any saved schedule from the sidebar
+- Copy a public URL to send your schedule to classmates, advisors, or friends
+- Shared links open a read-only calendar page so viewers can inspect classes without editing
+
 ### 📊 Class Details
 - View available sections for each course
 - Real-time seat availability with color indicators:
@@ -129,4 +134,3 @@ The application follows a modern full-stack architecture:
 **Built with ❤️ by KU students for all students**
 
 </div>
-
