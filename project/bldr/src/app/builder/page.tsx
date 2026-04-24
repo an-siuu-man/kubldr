@@ -220,6 +220,10 @@ export default function Builder() {
         year: draftYear,
         classes: draftSchedule,
         isActive: true,
+        isPublic:
+          existingScheduleId && activeSchedule?.id === existingScheduleId
+            ? (activeSchedule?.isPublic ?? false)
+            : false,
       };
 
       if (existingScheduleId) {
@@ -619,7 +623,10 @@ export default function Builder() {
                     </span>
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value={activeTab} className="mt-0 min-h-0 overflow-hidden">
+                <TabsContent
+                  value={activeTab}
+                  className="mt-0 min-h-0 overflow-hidden"
+                >
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={activeTab}

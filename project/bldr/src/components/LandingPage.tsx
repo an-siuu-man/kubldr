@@ -8,9 +8,9 @@ import {
   FolderKanban,
   Info,
   Search,
+  Share2,
   ShieldCheck,
   Sparkles,
-  TabletSmartphone,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -57,12 +57,12 @@ const featureCards = [
     surface: "from-cyan-500/15 to-cyan-500/5",
   },
   {
-    title: "Responsive, student-friendly UX",
+    title: "Shareable read-only schedules",
     description:
-      "A dark interface, smooth motion, toasts, and responsive layouts keep the builder usable across laptops, tablets, and smaller screens.",
-    icon: TabletSmartphone,
-    accent: "text-violet-300",
-    surface: "from-violet-500/15 to-violet-500/5",
+      "Enable sharing for any saved schedule and copy a public link that opens a read-only calendar view your friends or advisors can review.",
+    icon: Share2,
+    accent: "text-lime-300",
+    surface: "from-lime-500/15 to-lime-500/5",
   },
 ];
 
@@ -88,7 +88,7 @@ const builderSignals = [
   "Real-time course lookup",
   "Seat alerts",
   "Saved schedule variants",
-  "Guest mode",
+  "Shareable schedule links",
 ];
 
 export default function LandingPage() {
