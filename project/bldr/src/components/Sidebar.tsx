@@ -599,12 +599,15 @@ export function Sidebar() {
                   </Button>
                 </Link>
               )}
-              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+              <Link
+                href="/profile"
+                className="flex items-center gap-1.5 text-xs text-gray-400 rounded-md hover:bg-white/8 px-1.5 py-1 transition-colors"
+              >
                 <User className="h-4 w-4" />
                 <span className="font-figtree truncate max-w-20">
                   {user?.is_anonymous ? "Guest" : user?.email?.split("@")[0]}
                 </span>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -916,7 +919,10 @@ export function Sidebar() {
                       defaultValue={["spring-2026"]}
                       className="font-figtree flex-1 overflow-hidden flex flex-col"
                     >
-                      <AccordionItem value="spring-2026" className="border-b-0 flex flex-col flex-1 min-h-0">
+                      <AccordionItem
+                        value="spring-2026"
+                        className="border-b-0 flex flex-col flex-1 min-h-0"
+                      >
                         <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:no-underline hover:cursor-pointer hover:bg-white/5 font-semibold py-2 transition-colors shrink-0">
                           Spring 2026
                         </AccordionTrigger>
@@ -1215,8 +1221,11 @@ export function Sidebar() {
                 )}
               </AnimatePresence>
 
-              {/* User info */}
-              <div className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2">
+              {/* User info — links to profile page */}
+              <Link
+                href="/profile"
+                className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2 rounded-md hover:bg-white/8 px-1 py-1 transition-colors"
+              >
                 <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
                 <AnimatePresence initial={false}>
                   {open && (
@@ -1232,7 +1241,7 @@ export function Sidebar() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
