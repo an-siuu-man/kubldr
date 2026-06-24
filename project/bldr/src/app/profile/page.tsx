@@ -5,14 +5,18 @@ import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
+  Copy,
+  Link2Off,
+  Loader2,
   LogOut,
   Sparkles,
+  Trash2,
   User,
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,17 +25,27 @@ import { Spinner } from "@/components/ui/spinner";
 import toastStyle from "@/components/ui/toastStyle";
 import { useAuth } from "@/contexts/AuthContext";
 
+type ScheduleSummary = {
+  id: string;
+  name: string;
+  semester: string;
+  year: number;
+  isPublic: boolean;
+};
+
 /**
- * Profile page — account identity summary and session actions.
- *
- * Shows the signed-in user's email, account status (guest vs. full account),
- * and join date. Guest users see an upgrade prompt. All users can sign out.
- * This is sequence 1 of 3 profile-related pages; later siblings extend this
- * route with share settings and account management.
+ * Profile page — account identity summary, session actions, share settings,
+ * and multi-select schedule deletion. Sequence 1+2 of 3 profile features.
  */
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading, signOut } = useAuth();
+  const { user, session, loading, signOut } = useAuth();
+
+  const [schedules, setSchedules] = useState<ScheduleSummary[]>([]);
+  const [schedulesLoading, setSchedulesLoading] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   // Client-side guard — middleware already redirects unauthenticated requests,
   // but this prevents a content flash on client transitions.
@@ -40,6 +54,179 @@ export default function ProfilePage() {
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  // Fetch user's schedules once the session is available.
+  useEffect(() => {
+    if (!session?.access_token) return;
+
+    setSchedulesLoading(true);
+    fetch("/api/getUserSchedules", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setSchedules(
+          (data.schedules ?? []).map(
+            (s: {
+              id: string;
+              name: string;
+              semester: string;
+              year: number;
+              isPublic: boolean;
+            }) => ({
+              id: s.id,
+              name: s.name,
+              semester: s.semester,
+              year: s.year,
+              isPublic: Boolean(s.isPublic),
+            }),
+          ),
+        );
+      })
+      .catch(() => {
+        toast.error("Failed to load schedules", {
+          style: { ...toastStyle },
+          duration: 3000,
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        });
+      })
+      .finally(() => setSchedulesLoading(false));
+  }, [session?.access_token]);
+
+  const getShareUrl = (scheduleId: string) =>
+    `${window.location.origin}/s/${scheduleId}`;
+
+  const handleCopyLink = async (schedule: ScheduleSummary) => {
+    try {
+      await navigator.clipboard.writeText(getShareUrl(schedule.id));
+      toast.success("Share link copied", {
+        style: { ...toastStyle },
+        duration: 2000,
+        icon: <Copy className="h-5 w-5 text-green-500" />,
+      });
+    } catch {
+      toast.error("Failed to copy link", {
+        style: { ...toastStyle },
+        duration: 3000,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      });
+    }
+  };
+
+  const handleRevoke = async (schedule: ScheduleSummary) => {
+    if (!session?.access_token) return;
+    setRevokingId(schedule.id);
+    try {
+      const res = await fetch("/api/shareSchedule", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ scheduleId: schedule.id, isPublic: false }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to revoke link");
+
+      setSchedules((prev) =>
+        prev.map((s) => (s.id === schedule.id ? { ...s, isPublic: false } : s)),
+      );
+      toast.success("Public link revoked", {
+        style: { ...toastStyle },
+        duration: 2000,
+        icon: <Link2Off className="h-5 w-5 text-green-500" />,
+      });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to revoke link",
+        {
+          style: { ...toastStyle },
+          duration: 3000,
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        },
+      );
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === schedules.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(schedules.map((s) => s.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!session?.access_token || selected.size === 0) return;
+    setDeleting(true);
+    const ids = [...selected];
+    try {
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          fetch("/api/deleteSchedule", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ scheduleId: id }),
+          }).then((r) => r.json().then((d) => ({ ok: r.ok, data: d, id }))),
+        ),
+      );
+
+      const deleted: string[] = [];
+      const failed: string[] = [];
+      for (const r of results) {
+        if (r.status === "fulfilled" && r.value.ok) {
+          deleted.push(r.value.id);
+        } else {
+          const id =
+            r.status === "fulfilled" ? r.value.id : ids[results.indexOf(r)];
+          failed.push(id);
+        }
+      }
+
+      if (deleted.length > 0) {
+        setSchedules((prev) => prev.filter((s) => !deleted.includes(s.id)));
+        setSelected((prev) => {
+          const next = new Set(prev);
+          for (const id of deleted) next.delete(id);
+          return next;
+        });
+        toast.success(
+          `Deleted ${deleted.length} schedule${deleted.length > 1 ? "s" : ""}`,
+          {
+            style: { ...toastStyle },
+            duration: 2000,
+            icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+          },
+        );
+      }
+      if (failed.length > 0) {
+        toast.error(
+          `Failed to delete ${failed.length} schedule${failed.length > 1 ? "s" : ""}`,
+          {
+            style: { ...toastStyle },
+            duration: 3000,
+            icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          },
+        );
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -82,13 +269,18 @@ export default function ProfilePage() {
       })
     : null;
 
+  const allSelected =
+    schedules.length > 0 && selected.size === schedules.length;
+  const someSelected = selected.size > 0;
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#080808] px-4 py-10">
+    <div className="flex min-h-screen flex-col items-center bg-[#080808] px-4 py-10">
+      {/* Page heading */}
       <motion.div
-        initial={{ opacity: 0, y: -24 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-        className="mb-8 text-center"
+        className="mb-8 w-full max-w-md text-center"
       >
         <h1 className="font-figtree text-4xl font-semibold text-white">
           Your Account
@@ -105,94 +297,221 @@ export default function ProfilePage() {
         </p>
       </motion.div>
 
+      {/* ── Unified profile card ── */}
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full max-w-md rounded-xl border border-[#404040] bg-[#111111] p-8"
+        className="w-full max-w-md rounded-xl border border-[#404040] bg-[#111111] overflow-hidden"
       >
-        {/* Identity row */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
-            <User className="h-5 w-5 text-white/60" />
+        {/* ── Identity section ── */}
+        <div className="p-8 pb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
+              <User className="h-5 w-5 text-white/60" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-dmsans text-base font-semibold text-white">
+                {isGuest ? "Guest session" : user.email}
+              </p>
+              {isGuest ? (
+                <Badge className="mt-1 border border-yellow-600/50 bg-yellow-900/20 font-dmsans text-xs text-yellow-400 hover:bg-yellow-900/20">
+                  Guest
+                </Badge>
+              ) : (
+                <Badge className="mt-1 border border-emerald-600/50 bg-emerald-900/20 font-dmsans text-xs text-emerald-400 hover:bg-emerald-900/20">
+                  Permanent User
+                </Badge>
+              )}
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="font-dmsans text-base font-semibold text-white truncate">
-              {isGuest ? "Guest session" : user.email}
-            </p>
-            {isGuest ? (
-              <Badge className="mt-1 border border-yellow-600/50 bg-yellow-900/20 font-dmsans text-xs text-yellow-400 hover:bg-yellow-900/20">
-                Guest
-              </Badge>
-            ) : (
-              <Badge className="mt-1 border border-emerald-600/50 bg-emerald-900/20 font-dmsans text-xs text-emerald-400 hover:bg-emerald-900/20">
-                Full account
-              </Badge>
-            )}
-          </div>
-        </div>
 
-        {/* Joined date */}
-        {joinedDate && (
-          <>
-            <Separator className="my-6 bg-white/10" />
-            <div className="flex items-center justify-between">
+          {joinedDate && (
+            <div className="mt-5 flex items-center justify-between">
               <span className="font-inter text-sm text-[#A8A8A8]">Joined</span>
               <span className="font-inter text-sm text-white">
                 {joinedDate}
               </span>
             </div>
-          </>
-        )}
+          )}
+        </div>
 
-        {/* Guest upgrade prompt */}
+        {/* ── Guest upgrade prompt ── */}
         {isGuest && (
           <>
-            <Separator className="my-6 bg-white/10" />
-            <div className="rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-4">
-              <div className="flex items-start gap-3">
-                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
-                <div className="min-w-0">
-                  <p className="font-dmsans text-sm font-semibold text-yellow-300">
-                    Save your schedules permanently
-                  </p>
-                  <p className="mt-1 font-inter text-xs leading-5 text-[#A8A8A8]">
-                    Create a free account to keep your schedules across sessions
-                    and unlock sharing.
-                  </p>
-                  <Link href="/upgrade" className="mt-3 inline-block">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="cursor-pointer border-yellow-600/50 font-dmsans text-xs text-yellow-400 hover:bg-yellow-900/30"
-                    >
-                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                      Create Account
-                    </Button>
-                  </Link>
+            <Separator className="bg-white/8" />
+            <div className="p-6">
+              <div className="rounded-lg border border-yellow-600/30 bg-yellow-900/10 p-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
+                  <div className="min-w-0">
+                    <p className="font-dmsans text-sm font-semibold text-yellow-300">
+                      Save your schedules permanently
+                    </p>
+                    <p className="mt-1 font-inter text-xs leading-5 text-[#A8A8A8]">
+                      Create a free account to keep your schedules across
+                      sessions and unlock sharing.
+                    </p>
+                    <Link href="/upgrade" className="mt-3 inline-block">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer border-yellow-600/50 font-dmsans text-xs text-yellow-400 hover:bg-yellow-900/30"
+                      >
+                        <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                        Create Account
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
           </>
         )}
 
-        {/* Sign out */}
-        <Separator className="my-6 bg-white/10" />
-        <Button
-          variant="outline"
-          className="w-full cursor-pointer border-white/10 font-dmsans text-sm text-white/70 hover:bg-white/5 hover:text-white"
-          onClick={handleSignOut}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sign out
-        </Button>
+        {/* ── Schedules section ── */}
+        <Separator className="bg-white/8" />
+        <div className="p-6">
+          {/* Section header */}
+          <div className="mb-3 flex items-center justify-between">
+            <p className="font-dmsans text-xs font-semibold uppercase tracking-widest text-white/40">
+              Schedules
+            </p>
+            {someSelected && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 cursor-pointer gap-1.5 px-2 font-dmsans text-xs text-red-400/80 hover:bg-red-500/10 hover:text-red-400"
+                onClick={handleDeleteSelected}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3 w-3" />
+                )}
+                Delete {selected.size}
+              </Button>
+            )}
+          </div>
+
+          {schedulesLoading ? (
+            <div className="flex items-center justify-center py-5">
+              <Loader2 className="h-4 w-4 animate-spin text-white/30" />
+            </div>
+          ) : schedules.length === 0 ? (
+            <p className="py-3 text-center font-inter text-sm text-[#A8A8A8]">
+              No schedules yet.{" "}
+              <Link
+                href="/builder"
+                className="text-white underline-offset-2 hover:underline"
+              >
+                Build one
+              </Link>{" "}
+              to get started.
+            </p>
+          ) : (
+            <>
+              {/* Select-all row */}
+              <div className="mb-2 flex items-center gap-2 px-0.5">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="h-3.5 w-3.5 cursor-pointer accent-white"
+                  aria-label="Select all schedules"
+                />
+                <span className="font-inter text-xs text-white/35">
+                  {allSelected ? "Deselect all" : "Select all"}
+                </span>
+              </div>
+
+              {/* Scrollable schedule list */}
+              <div className="scrollbar-hidden flex max-h-56 flex-col gap-1 overflow-y-auto">
+                {schedules.map((schedule) => (
+                  <div
+                    key={schedule.id}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors ${
+                      selected.has(schedule.id)
+                        ? "border-white/15 bg-white/6"
+                        : "border-white/6 bg-white/2 hover:border-white/10 hover:bg-white/4"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected.has(schedule.id)}
+                      onChange={() => toggleSelect(schedule.id)}
+                      className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-white"
+                      aria-label={`Select ${schedule.name}`}
+                    />
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-dmsans text-sm font-medium text-white leading-tight">
+                        {schedule.name}
+                      </p>
+                      <p className="font-inter text-xs text-[#A8A8A8]">
+                        {schedule.semester} {schedule.year}
+                        {schedule.isPublic && (
+                          <span className="ml-1.5 text-emerald-400">
+                            · Public
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
+                    {schedule.isPublic && (
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 cursor-pointer p-0 text-white/40 hover:bg-white/8 hover:text-white"
+                          onClick={() => handleCopyLink(schedule)}
+                          title="Copy share link"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 cursor-pointer p-0 text-red-400/50 hover:bg-red-500/10 hover:text-red-400"
+                          onClick={() => handleRevoke(schedule)}
+                          disabled={revokingId === schedule.id}
+                          title="Revoke public link"
+                        >
+                          {revokingId === schedule.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Link2Off className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* ── Sign out ── */}
+        <Separator className="bg-white/8" />
+        <div className="p-6">
+          <Button
+            variant="outline"
+            className="w-full cursor-pointer border-white/10 font-dmsans text-sm text-white/60 hover:bg-white/5 hover:text-white"
+            onClick={handleSignOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign out
+          </Button>
+        </div>
       </motion.div>
 
       {/* Back link */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.35 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
         className="mt-5"
       >
         <Link
