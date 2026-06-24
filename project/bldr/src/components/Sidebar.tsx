@@ -912,24 +912,23 @@ export function Sidebar() {
                     </h1>
 
                     <Accordion
-                      type="single"
-                      collapsible
-                      defaultValue="spring-2026"
-                      className="font-figtree flex-1 overflow-hidden"
+                      type="multiple"
+                      defaultValue={["spring-2026"]}
+                      className="font-figtree flex-1 overflow-hidden flex flex-col"
                     >
-                      <AccordionItem value="spring-2026" className="border-b-0">
-                        <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:no-underline hover:cursor-pointer hover:bg-white/5 font-semibold py-2 transition-colors">
+                      <AccordionItem value="spring-2026" className="border-b-0 flex flex-col flex-1 min-h-0">
+                        <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:no-underline hover:cursor-pointer hover:bg-white/5 font-semibold py-2 transition-colors shrink-0">
                           Spring 2026
                         </AccordionTrigger>
-                        <AccordionContent className="font-inter">
+                        <AccordionContent className="font-inter flex flex-col">
                           {/* New schedule input */}
                           <Label
                             htmlFor="schedule-name"
-                            className="text-xs lg:text-sm font-dmsans mb-1 text-[#888888]"
+                            className="text-xs lg:text-sm font-dmsans mb-1 text-[#888888] shrink-0"
                           >
                             Make new schedule
                           </Label>
-                          <div className="flex flex-row items-center justify-between gap-2 mb-3 lg:mb-4">
+                          <div className="flex flex-row items-center justify-between gap-2 mb-3 lg:mb-4 shrink-0">
                             <Input
                               type="text"
                               id="schedule-name"
@@ -962,10 +961,10 @@ export function Sidebar() {
                           </div>
 
                           {/* Schedule list with overflow indicator */}
-                          <div className="relative">
+                          <div className="relative flex-1 min-h-0">
                             <ul
                               ref={scheduleListRef}
-                              className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden max-h-[min(40vh,250px)] pb-4"
+                              className="list-none overflow-y-auto overflow-x-hidden scrollbar-hidden h-full"
                             >
                               {isLoadingSchedules ? (
                                 <div className="flex items-center justify-center gap-2 py-6">
@@ -975,7 +974,7 @@ export function Sidebar() {
                                   </span>
                                 </div>
                               ) : userSchedules.length === 0 ? (
-                                <p className="text-xs text-gray-500 py-2">
+                                <p className="text-xs text-white/30 font-inter px-4 py-4">
                                   No schedules found.
                                 </p>
                               ) : (
@@ -997,14 +996,10 @@ export function Sidebar() {
                                       onMouseLeave={() =>
                                         setHoveredScheduleId(null)
                                       }
-                                      className={`flex justify-between items-center text-xs text-gray-200 font-inter my-1 rounded-lg transition-all duration-150 ${
-                                        activeSchedule?.id === schedule.id
-                                          ? "bg-white/10 font-medium shadow-sm"
-                                          : "hover:bg-white/5"
-                                      }`}
+                                      className="flex items-center my-0.5 px-1"
                                     >
                                       {renamingScheduleId === schedule.id ? (
-                                        <div className="flex items-center gap-1 lg:gap-2 w-full px-1.5 lg:px-2 py-0.5 lg:py-1">
+                                        <div className="flex items-center gap-1 lg:gap-2 w-full px-2 py-1.5">
                                           <Input
                                             type="text"
                                             value={renameValue}
@@ -1023,7 +1018,7 @@ export function Sidebar() {
                                             }}
                                             autoFocus
                                             disabled={isRenamingSaving}
-                                            className="h-7 text-xs border-[#404040] bg-[#2a2a2a] flex-1 disabled:opacity-50"
+                                            className="h-7 text-xs border-white/10 bg-white/5 flex-1 disabled:opacity-50"
                                           />
                                           {isRenamingSaving ? (
                                             <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
@@ -1037,51 +1032,69 @@ export function Sidebar() {
                                                     renameValue,
                                                   )
                                                 }
-                                                className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                                className="p-1 hover:bg-white/10 rounded transition cursor-pointer"
                                               >
-                                                <Check className="h-4 w-4 text-green-500" />
+                                                <Check className="h-4 w-4 text-emerald-400" />
                                               </button>
                                               <button
                                                 type="button"
                                                 onClick={cancelRenaming}
-                                                className="p-1 hover:bg-[#444] rounded transition cursor-pointer"
+                                                className="p-1 hover:bg-white/10 rounded transition cursor-pointer"
                                               >
-                                                <X className="h-4 w-4 text-red-500" />
+                                                <X className="h-4 w-4 text-red-400" />
                                               </button>
                                             </>
                                           )}
                                         </div>
                                       ) : (
-                                        <>
+                                        <div
+                                          className={`flex items-center w-full rounded-lg transition-colors duration-150 ${
+                                            activeSchedule?.id === schedule.id
+                                              ? "bg-white/8"
+                                              : "hover:bg-white/5"
+                                          }`}
+                                        >
+                                          <span
+                                            className={`ml-3 h-1.5 w-1.5 shrink-0 rounded-full ${
+                                              activeSchedule?.id === schedule.id
+                                                ? "bg-emerald-400"
+                                                : ""
+                                            }`}
+                                          />
                                           <button
                                             type="button"
-                                            className="py-2 px-3 cursor-pointer w-full text-left truncate"
+                                            className="flex-1 min-w-0 py-2 px-2 cursor-pointer text-left truncate"
                                             onClick={() => {
                                               loadSchedule(schedule.id);
                                               setActiveSemester(
                                                 schedule.semester,
                                               );
-                                              console.log(activeSchedule);
                                             }}
                                           >
                                             <span className="flex min-w-0 items-center gap-1.5">
-                                              <span className="truncate">
+                                              <span
+                                                className={`truncate font-dmsans text-xs ${
+                                                  activeSchedule?.id ===
+                                                  schedule.id
+                                                    ? "font-semibold text-white"
+                                                    : "text-white/55"
+                                                }`}
+                                              >
                                                 {schedule.name}
                                               </span>
                                               {schedule.isPublic && (
-                                                <LinkIcon className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                                                <LinkIcon className="h-3 w-3 shrink-0 text-emerald-400" />
                                               )}
                                             </span>
                                           </button>
-                                          {hoveredScheduleId ===
-                                            schedule.id && (
+                                          {hoveredScheduleId === schedule.id ? (
                                             <Popover>
                                               <PopoverTrigger asChild>
                                                 <button
                                                   type="button"
                                                   className="flex items-center z-50 cursor-pointer"
                                                 >
-                                                  <MoreHorizontal className="h-4 w-4 mr-2" />
+                                                  <MoreHorizontal className="h-4 w-4 mr-2 text-white/40" />
                                                 </button>
                                               </PopoverTrigger>
                                               <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
@@ -1145,21 +1158,26 @@ export function Sidebar() {
                                                       )
                                                     }
                                                   >
-                                                    <Trash2 className="h-4 w-4 " />
+                                                    <Trash2 className="h-4 w-4" />
                                                     Delete
                                                   </button>
                                                 </div>
                                               </PopoverContent>
                                             </Popover>
-                                          )}
-                                        </>
+                                          ) : activeSchedule?.id ===
+                                            schedule.id ? (
+                                            <span className="mr-3 shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 font-dmsans text-[10px] font-medium text-emerald-400">
+                                              Active
+                                            </span>
+                                          ) : null}
+                                        </div>
                                       )}
                                     </motion.li>
                                   ))}
                                 </AnimatePresence>
                               )}
                             </ul>
-                            {/* Gradient overlay to indicate scrollable content - only visible when content overflows */}
+                            {/* Gradient overlay to indicate scrollable content */}
                             {hasScheduleListOverflow && (
                               <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#141414] to-transparent pointer-events-none" />
                             )}
