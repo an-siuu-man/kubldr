@@ -90,21 +90,19 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-8 lg:px-10">
           {/* Wordmark */}
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2">
+            <img
+              src="/logo.svg"
+              alt="bldr logo"
+              className="h-10 w-auto"
+              draggable={false}
+            />
             <span className="font-dmsans text-3xl font-bold tracking-tight">
               <span className="text-white">b</span>
               <span className="text-red-500">l</span>
               <span className="text-blue-500">d</span>
               <span className="text-yellow-300">r</span>
             </span>
-            <div className="hidden sm:block">
-              <p className="font-figtree text-lg font-semibold leading-tight tracking-tight">
-                Flagship Schedule Builder
-              </p>
-              <p className="font-inter text-xs text-white/45">
-                Built for University of Kansas students
-              </p>
-            </div>
           </Link>
 
           {/* Nav CTAs */}
@@ -225,7 +223,7 @@ export default function LandingPage() {
                 surface: "from-emerald-500/12 to-emerald-500/3",
                 title: "Secure accounts and guest access",
                 description:
-                  "Sign up with email, log in securely, or start as a guest. Your work is scoped to your account and protected from the moment you start.",
+                  "Sign up with email or jump straight in as a guest. Your schedules are scoped to your account and private by default.",
               },
               {
                 icon: CalendarDays,
@@ -233,7 +231,7 @@ export default function LandingPage() {
                 surface: "from-amber-500/12 to-amber-500/3",
                 title: "Visual weekly calendar",
                 description:
-                  "Build schedules on a Monday–Friday grid with color-coded department blocks and meeting-time labels — see your week at a glance before you commit.",
+                  "See your full week on a Monday–Friday grid with color-coded blocks and time labels — before you commit to anything.",
               },
             ].map((f) => {
               const Icon = f.icon;
@@ -269,10 +267,9 @@ export default function LandingPage() {
                     Real-time class search.
                   </h3>
                   <p className="mt-4 font-inter text-base leading-7 text-white/55">
-                    Search KU classes instantly by department, course code, or
-                    title. Keyboard-friendly results let you add sections to
-                    your draft without taking your hands off the keys — or
-                    leaving the page.
+                    Search KU classes by department, code, or title. Add
+                    sections to your draft without taking your hands off the
+                    keys.
                   </p>
                 </div>
                 {/* Preview side */}
@@ -295,9 +292,9 @@ export default function LandingPage() {
                     Multiple schedule versions.
                   </h3>
                   <p className="mt-3 font-inter text-sm leading-6 text-white/55">
-                    Create, rename, switch, and save alternate semester plans.
-                    Compare Plan A against Plan B before enrollment opens and
-                    keep every option intact.
+                    Create and save alternate semester plans. Switch between
+                    versions before enrollment opens and keep every option
+                    intact.
                   </p>
                 </div>
                 <div className="mt-auto border-t border-white/6 bg-[#0a0a0a] p-6">
@@ -316,9 +313,8 @@ export default function LandingPage() {
                     Section details and seat visibility.
                   </h3>
                   <p className="mt-3 font-inter text-sm leading-6 text-white/55">
-                    Review instructor, meeting days, section type, and live seat
-                    availability before committing a class to your draft — no
-                    more surprises on enrollment day.
+                    Check instructor, meeting days, and live seat availability
+                    before adding a class to your draft.
                   </p>
                 </div>
                 <div className="mt-auto border-t border-white/6 bg-[#0a0a0a] p-6">
@@ -345,10 +341,8 @@ export default function LandingPage() {
                     Shareable read-only schedules.
                   </h3>
                   <p className="mt-4 font-inter text-base leading-7 text-white/55">
-                    Enable sharing for any saved schedule and copy a public link
-                    that opens a read-only calendar view — perfect for showing
-                    an advisor or comparing options with a friend. Revoke
-                    anytime with a single toggle.
+                    Toggle on a public link for any saved schedule. Anyone with
+                    the link gets a read-only view — revoke access anytime.
                   </p>
                 </div>
               </div>

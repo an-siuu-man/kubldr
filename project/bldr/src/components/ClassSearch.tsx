@@ -29,13 +29,6 @@ import {
   autoUpdate,
   FloatingPortal,
 } from "@floating-ui/react";
-import { Input } from "./ui/input";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import { SearchedClass } from "@/types";
 import { Trash2, Search } from "lucide-react";
 import Class from "./Class";
@@ -211,212 +204,204 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col justify-start items-center w-full h-full overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-b-[10px] rounded-t-none">
-      <div className="flex flex-col justify-start items-center w-full h-full p-2 lg:p-3 xl:p-4 overflow-hidden">
-        <h1 className="text-sm lg:text-base xl:text-lg self-start font-figtree font-bold text-[#fafafa]">
-          Search for classes
-        </h1>
-        <div className="flex-col justify-start items-center w-full">
-          <div
-            ref={wrapperRef}
-            className="class-search-form flex flex-row justify-start items-center gap-2 w-full mt-3 lg:mt-4"
-            tabIndex={-1}
+    <div className="flex flex-col w-full h-full overflow-hidden bg-[#111111] border border-white/10 rounded-[20px]">
+      {/* Search header */}
+      <div className="border-b border-white/8 bg-[#0f0f0f] px-4 py-3 shrink-0">
+        <div
+          ref={wrapperRef}
+          className="class-search-form flex items-center gap-2 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2"
+          tabIndex={-1}
+          onFocus={() => setDropdownOpen(true)}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+              setDropdownOpen(false);
+            }
+          }}
+        >
+          <Search className="h-4 w-4 shrink-0 text-white/30" aria-hidden="true" />
+          <input
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setDropdownOpen(true);
+            }}
             onFocus={() => setDropdownOpen(true)}
-            onBlur={(e) => {
-              // Only close if focus moves outside the dropdown/input
-              if (!e.currentTarget.contains(e.relatedTarget)) {
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
                 setDropdownOpen(false);
+                return;
+              }
+
+              if (!dropdownOpen || classes.length === 0) return;
+
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setHighlightedIndex((prev) =>
+                  prev < classes.length - 1 ? prev + 1 : prev,
+                );
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (classes[highlightedIndex]) {
+                  handleDropdownSelect(classes[highlightedIndex].uuid);
+                  setDropdownOpen(false);
+                }
               }
             }}
-          >
-            <Input
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setDropdownOpen(true);
-              }}
-              onFocus={() => setDropdownOpen(true)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  e.preventDefault();
-                  setDropdownOpen(false);
-                  return;
-                }
-
-                if (!dropdownOpen || classes.length === 0) return;
-
-                if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  setHighlightedIndex((prev) =>
-                    prev < classes.length - 1 ? prev + 1 : prev,
-                  );
-                } else if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
-                } else if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (classes[highlightedIndex]) {
-                    handleDropdownSelect(classes[highlightedIndex].uuid);
-                    setDropdownOpen(false);
-                  }
-                }
-              }}
-              placeholder="Class name"
-              className="font-inter border-[#404040] border placeholder:text-xs selection:bg-blue-400 text-xs text-[#fafafa]"
-            />
-            <TooltipProvider>
-              <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <button className="cursor-pointer hover:bg-[#404040] p-1 rounded-md transition duration-300">
-                    <Search className="h-6 w-6 text-[#fafafa]" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="font-figtree" side="bottom">
-                  <p>Search class</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          <FloatingPortal>
-            {dropdownOpen && searchQuery.trim() && (
-              <ul
-                ref={(el) => {
-                  refs.setFloating(el);
-                  dropdownRef.current = el;
-                }}
-                key="dropdown"
-                className="rounded shadow bg-[#232323] overflow-y-auto mt-2"
-                style={{ position: strategy, left: x ?? 0, top: y ?? 0 }}
-                tabIndex={-1}
-                role="listbox"
-                aria-label="Search results"
-              >
-                {isLoading ? (
-                  <li className="p-4 flex items-center justify-center">
-                    <Loader />
-                  </li>
-                ) : classes.length === 0 ? (
-                  <li className="p-4 text-sm text-[#888888] text-center font-inter">
-                    No results found
-                  </li>
-                ) : (
-                  <AnimatePresence mode="popLayout">
-                    {classes.map((c, index) => (
-                      <motion.li
-                        key={toSearchedClassKey(c)}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          handleDropdownSelect(c.uuid);
-                          setDropdownOpen(false);
-                        }}
-                        onMouseEnter={() => setHighlightedIndex(index)}
-                        role="option"
-                        aria-selected={index === highlightedIndex}
-                        className={`p-2 text-xs sm:text-sm text-[#fafafa] hover:cursor-pointer scroll-p-4 font-inter last:border-b-0 ${
-                          index === highlightedIndex
-                            ? "bg-[#181818]"
-                            : "hover:bg-[#181818]"
-                        }`}
-                      >
-                        <strong>
-                          {c.dept} {c.code}
-                        </strong>{" "}
-                        - {c.title}
-                      </motion.li>
-                    ))}
-                  </AnimatePresence>
-                )}
-              </ul>
-            )}
-          </FloatingPortal>
+            placeholder="Search by dept, code, or title…"
+            className="flex-1 bg-transparent font-inter text-sm text-white/90 placeholder:text-white/25 outline-none selection:bg-blue-400"
+          />
         </div>
+      </div>
 
-        {/* Searched Section */}
-        <div className="w-full max-w-full mt-3 lg:mt-4 flex-1 overflow-hidden flex flex-col min-h-0">
-          <div className="flex items-center justify-between pt-1 pb-1.5 shrink-0">
-            <h2 className="text-sm lg:text-base text-green-400 font-bold font-figtree">
-              Searched
-            </h2>
-            {selectedClasses.length > 0 && (
-              <button
-                onClick={() => {
-                  setSelectedClasses([]);
-                  setSearchQuery("");
-                }}
-                className="text-[10px] lg:text-xs px-1.5 lg:px-2 py-0.5 lg:py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 cursor-pointer transition-colors font-inter font-normal"
-                aria-label="Clear all searched classes"
-              >
-                Clear all
-              </button>
-            )}
-          </div>
-          <div
-            ref={searchedListRef}
-            className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden pt-1 pb-4"
-            role="region"
-            aria-label="Searched classes list"
+      <FloatingPortal>
+        {dropdownOpen && searchQuery.trim() && (
+          <ul
+            ref={(el) => {
+              refs.setFloating(el);
+              dropdownRef.current = el;
+            }}
+            key="dropdown"
+            className="rounded-xl border border-white/10 bg-[#111111] shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-y-auto divide-y divide-white/5"
+            style={{ position: strategy, left: x ?? 0, top: y ?? 0 }}
+            tabIndex={-1}
+            role="listbox"
+            aria-label="Search results"
           >
-            <AnimatePresence initial={false}>
-              {selectedClasses.map((c) => (
-                <motion.div
-                  key={toSearchedClassKey(c)}
-                  layout="position"
-                  initial={{ opacity: 0, y: 8, scale: 0.99 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.99 }}
-                  transition={{
-                    layout: {
-                      duration: 0.22,
-                      ease: [0.22, 1, 0.36, 1],
-                    },
-                    opacity: {
-                      duration: 0.18,
-                      ease: "easeOut",
-                    },
-                    y: {
-                      duration: 0.2,
-                      ease: [0.22, 1, 0.36, 1],
-                    },
-                    scale: {
-                      duration: 0.2,
-                      ease: "easeOut",
-                    },
-                  }}
-                  className="relative group origin-top"
-                >
-                  <Class uuid={c.uuid} classcode={c.code || ""} dept={c.dept || ""} />
-                  <button
-                    onClick={() =>
-                      setSelectedClasses((prev) =>
-                        prev.filter(
-                          (cls) => toSearchedClassKey(cls) !== toSearchedClassKey(c),
-                        ),
-                      )
-                    }
-                    className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#080808]/80 hover:bg-[#181818]"
-                    title="Remove from searched"
+            {isLoading ? (
+              <li className="p-4 flex items-center justify-center">
+                <Loader />
+              </li>
+            ) : classes.length === 0 ? (
+              <li className="px-4 py-3 font-inter text-xs text-white/40 text-center">
+                No results found
+              </li>
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {classes.map((c, index) => (
+                  <motion.li
+                    key={toSearchedClassKey(c)}
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleDropdownSelect(c.uuid);
+                      setDropdownOpen(false);
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    role="option"
+                    aria-selected={index === highlightedIndex}
+                    className={`flex items-center justify-between gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                      index === highlightedIndex
+                        ? "bg-white/5"
+                        : "hover:bg-white/3"
+                    }`}
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </button>
-                </motion.div>
-              ))}
-              {selectedClasses.length === 0 && (
-                <motion.div
-                  key="searched-empty-state"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="text-xs lg:text-sm text-[#888888] font-figtree"
+                    <div className="min-w-0">
+                      <p className="font-dmsans text-sm font-semibold text-white/90">
+                        {c.dept} {c.code}
+                      </p>
+                      <p className="font-inter text-xs text-white/45 truncate">
+                        {c.title}
+                      </p>
+                    </div>
+                    <div className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-dmsans text-xs text-white/60">
+                      Add
+                    </div>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            )}
+          </ul>
+        )}
+      </FloatingPortal>
+
+      {/* Searched section */}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/8 bg-[#0f0f0f] shrink-0">
+          <p className="font-dmsans text-xs font-semibold uppercase tracking-widest text-white/40">
+            Searched
+          </p>
+          {selectedClasses.length > 0 && (
+            <button
+              onClick={() => {
+                setSelectedClasses([]);
+                setSearchQuery("");
+              }}
+              className="text-[10px] px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 hover:bg-red-500/25 cursor-pointer transition-colors font-inter"
+              aria-label="Clear all searched classes"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+        <div
+          ref={searchedListRef}
+          className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden divide-y divide-white/5"
+          role="region"
+          aria-label="Searched classes list"
+        >
+          <AnimatePresence initial={false}>
+            {selectedClasses.map((c) => (
+              <motion.div
+                key={toSearchedClassKey(c)}
+                layout="position"
+                initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.99 }}
+                transition={{
+                  layout: {
+                    duration: 0.22,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
+                  opacity: {
+                    duration: 0.18,
+                    ease: "easeOut",
+                  },
+                  y: {
+                    duration: 0.2,
+                    ease: [0.22, 1, 0.36, 1],
+                  },
+                  scale: {
+                    duration: 0.2,
+                    ease: "easeOut",
+                  },
+                }}
+                className="relative group origin-top"
+              >
+                <Class uuid={c.uuid} classcode={c.code || ""} dept={c.dept || ""} />
+                <button
+                  onClick={() =>
+                    setSelectedClasses((prev) =>
+                      prev.filter(
+                        (cls) => toSearchedClassKey(cls) !== toSearchedClassKey(c),
+                      ),
+                    )
+                  }
+                  className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#111111]/80 hover:bg-[#1a1a1a]"
+                  title="Remove from searched"
                 >
-                  No classes searched
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </button>
+              </motion.div>
+            ))}
+            {selectedClasses.length === 0 && (
+              <motion.div
+                key="searched-empty-state"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="px-4 py-6 text-xs text-white/30 font-inter text-center"
+              >
+                No classes searched
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

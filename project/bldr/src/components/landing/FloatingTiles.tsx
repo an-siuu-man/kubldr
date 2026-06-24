@@ -13,7 +13,8 @@ import {
 type Tile = {
   id: string;
   icon: React.ElementType;
-  edgeColor: string;
+  spineColor: string;
+  iconColor: string;
   glowColor: string;
   top?: string;
   bottom?: string;
@@ -26,8 +27,9 @@ const heroTiles: Tile[] = [
   {
     id: "calendar",
     icon: CalendarDays,
-    edgeColor: "border-l-blue-500",
-    glowColor: "shadow-[0_0_24px_rgba(59,130,246,0.25)]",
+    spineColor: "bg-blue-500",
+    iconColor: "text-blue-300",
+    glowColor: "shadow-[0_4px_24px_rgba(59,130,246,0.28)]",
     top: "10%",
     left: "3%",
     floatDelay: 0,
@@ -35,8 +37,9 @@ const heroTiles: Tile[] = [
   {
     id: "search",
     icon: Search,
-    edgeColor: "border-l-red-500",
-    glowColor: "shadow-[0_0_20px_rgba(239,68,68,0.22)]",
+    spineColor: "bg-red-500",
+    iconColor: "text-red-300",
+    glowColor: "shadow-[0_4px_20px_rgba(239,68,68,0.25)]",
     top: "4%",
     right: "8%",
     floatDelay: 0.4,
@@ -44,8 +47,9 @@ const heroTiles: Tile[] = [
   {
     id: "clock",
     icon: Clock,
-    edgeColor: "border-l-yellow-400",
-    glowColor: "shadow-[0_0_20px_rgba(250,204,21,0.2)]",
+    spineColor: "bg-yellow-400",
+    iconColor: "text-yellow-300",
+    glowColor: "shadow-[0_4px_20px_rgba(250,204,21,0.22)]",
     top: "52%",
     left: "1%",
     floatDelay: 0.8,
@@ -53,8 +57,9 @@ const heroTiles: Tile[] = [
   {
     id: "share",
     icon: Share2,
-    edgeColor: "border-l-emerald-500",
-    glowColor: "shadow-[0_0_20px_rgba(16,185,129,0.2)]",
+    spineColor: "bg-emerald-500",
+    iconColor: "text-emerald-300",
+    glowColor: "shadow-[0_4px_20px_rgba(16,185,129,0.22)]",
     top: "70%",
     right: "3%",
     floatDelay: 0.3,
@@ -62,8 +67,9 @@ const heroTiles: Tile[] = [
   {
     id: "folder",
     icon: FolderKanban,
-    edgeColor: "border-l-rose-500",
-    glowColor: "shadow-[0_0_20px_rgba(244,63,94,0.2)]",
+    spineColor: "bg-rose-500",
+    iconColor: "text-rose-300",
+    glowColor: "shadow-[0_4px_20px_rgba(244,63,94,0.22)]",
     top: "18%",
     right: "3%",
     floatDelay: 0.6,
@@ -71,8 +77,9 @@ const heroTiles: Tile[] = [
   {
     id: "book",
     icon: BookOpen,
-    edgeColor: "border-l-cyan-400",
-    glowColor: "shadow-[0_0_20px_rgba(34,211,238,0.2)]",
+    spineColor: "bg-cyan-400",
+    iconColor: "text-cyan-300",
+    glowColor: "shadow-[0_4px_20px_rgba(34,211,238,0.22)]",
     bottom: "12%",
     left: "4%",
     floatDelay: 1.0,
@@ -83,7 +90,7 @@ function FloatTile({ tile }: { tile: Tile }) {
   const Icon = tile.icon;
   return (
     <motion.div
-      className={`absolute hidden lg:flex h-[56px] w-[56px] items-center justify-center rounded-[14px] border border-white/10 border-l-[3px] ${tile.edgeColor} bg-[#111111] ${tile.glowColor}`}
+      className={`absolute hidden lg:block h-[68px] w-[50px] rounded-[7px] border border-white/12 bg-[#111111] overflow-hidden ${tile.glowColor}`}
       style={{
         top: tile.top,
         bottom: tile.bottom,
@@ -105,7 +112,27 @@ function FloatTile({ tile }: { tile: Tile }) {
         },
       }}
     >
-      <Icon className="h-5 w-5 text-white/70" />
+      {/* Spine */}
+      <div className={`absolute left-0 top-0 bottom-0 w-[9px] ${tile.spineColor} opacity-80`} />
+      {/* Spine shadow / page edge */}
+      <div className="absolute left-[9px] top-0 bottom-0 w-[2px] bg-black/30" />
+      {/* Ruled lines on cover */}
+      <div
+        className="absolute top-0 bottom-0 right-0"
+        style={{
+          left: "11px",
+          backgroundImage:
+            "repeating-linear-gradient(transparent, transparent 8px, rgba(255,255,255,0.045) 8px, rgba(255,255,255,0.045) 9px)",
+          backgroundPosition: "0 14px",
+        }}
+      />
+      {/* Icon */}
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ paddingLeft: "11px" }}
+      >
+        <Icon className={`h-4 w-4 ${tile.iconColor}`} />
+      </div>
     </motion.div>
   );
 }
