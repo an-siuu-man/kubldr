@@ -198,14 +198,8 @@ export const ActiveScheduleProvider = ({
     if (user?.id) {
       fetchUserSchedules();
     }
-  }, [
-    user?.id,
-    loading,
-    fetchUserSchedules,
-    setActiveSchedule,
-    setActiveSemester, // User changed — clear all persisted state in React and localStorage
-    setUserSchedules,
-  ]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: fetchUserSchedules is not memoized — adding it to deps causes an infinite loop; intentionally reactive only on user id/loading changes
+  }, [user?.id, loading]);
 
   return (
     <ActiveScheduleContext.Provider

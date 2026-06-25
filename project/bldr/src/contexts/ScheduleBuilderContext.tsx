@@ -188,22 +188,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     setDraftYear(activeSchedule.year || "");
     setIsEditingExisting(true);
     setExistingScheduleId(activeSchedule.id || null);
-  }, [
-    activeSchedule?.id,
-    activeSchedule.classes,
-    activeSchedule.name,
-    activeSchedule.semester,
-    activeSchedule.year,
-    existingScheduleId,
-    isEditingExisting,
-    setDraftSchedule,
-    setDraftScheduleName,
-    setDraftSemester,
-    setDraftYear,
-    setExistingScheduleId,
-    activeSchedule,
-    setIsEditingExisting,
-  ]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reactive only on id change — accessing other properties in the dep array without optional chaining crashes when activeSchedule is null
+  }, [activeSchedule?.id]);
 
   // Load permutations from localStorage on mount
   useEffect(() => {
