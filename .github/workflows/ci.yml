@@ -89,6 +89,7 @@ jobs:
       #    Runs the binary directly to avoid gitleaks-action@v2's node20 runtime,
       #    which is deprecated on GitHub-hosted runners (now default node24).
       - name: Gitleaks secret scan
+        working-directory: ${{ github.workspace }}
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
             | tar -xz -C /usr/local/bin gitleaks
