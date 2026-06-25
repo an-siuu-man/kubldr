@@ -117,7 +117,12 @@ export default function LoginPage() {
         >
           {/* Brand */}
           <Link href="/" className="mb-8 flex flex-col items-center gap-3">
-            <img src="/logo.svg" alt="bldr logo" className="h-16 w-auto" draggable={false} />
+            <img
+              src="/logo.svg"
+              alt="bldr logo"
+              className="h-16 w-auto"
+              draggable={false}
+            />
             <div className="text-center">
               <p className="font-figtree text-xl font-semibold tracking-tight">
                 Flagship Schedule Builder

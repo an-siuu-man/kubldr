@@ -1,38 +1,35 @@
 "use client";
 
 import {
+  AlertCircle,
+  AlertTriangle,
+  Check,
+  Pin,
+  Repeat,
+  Trash2,
+} from "lucide-react";
+import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
-  useState,
   useRef,
-  useCallback,
+  useState,
 } from "react";
+import { toast } from "sonner";
+import toastStyle from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { timeToDecimal } from "@/lib/timeUtils";
-import { parseDays } from "@/lib/timeUtils";
-import { toast } from "sonner";
 import {
-  AlertTriangle,
-  AlertCircle,
-  Check,
-  Repeat,
-  Shuffle,
-  Pin,
-} from "lucide-react";
-import toastStyle from "@/components/ui/toastStyle";
-import { ActiveScheduleProvider } from "@/contexts/ActiveScheduleContext";
-import { Trash2 } from "lucide-react";
-import { ClassSection } from "@/types";
-import {
-  getUniqueClassesFromDraft,
-  generatePermutations,
-  createDraftHash,
-  savePermutationsToStorage,
-  loadPermutationsFromStorage,
   clearPermutationsFromStorage,
+  createDraftHash,
+  generatePermutations,
+  getUniqueClassesFromDraft,
+  loadPermutationsFromStorage,
+  savePermutationsToStorage,
 } from "@/lib/permutationUtils";
+import { parseDays, timeToDecimal } from "@/lib/timeUtils";
+import type { ClassSection } from "@/types";
 
 const ScheduleBuilderContext = createContext<any>(undefined);
 
@@ -73,26 +70,26 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
   // Draft schedule data (unsaved)
   const [draftSchedule, setDraftSchedule] = usePersistedState(
     "draftSchedule",
-    []
+    [],
   );
   const [draftScheduleName, setDraftScheduleName] = usePersistedState(
     "draftScheduleName",
-    ""
+    "",
   );
   const [draftSemester, setDraftSemester] = usePersistedState(
     "draftSemester",
-    ""
+    "",
   );
   const [draftYear, setDraftYear] = usePersistedState("draftYear", "");
 
   // Track if editing existing schedule
   const [isEditingExisting, setIsEditingExisting] = usePersistedState(
     "isEditingExisting",
-    false
+    false,
   );
   const [existingScheduleId, setExistingScheduleId] = usePersistedState(
     "existingScheduleId",
-    null
+    null,
   );
 
   // Permutation browsing state
@@ -120,7 +117,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     activeSchedule = activeScheduleContext.activeSchedule;
     setActiveSchedule = activeScheduleContext.setActiveSchedule;
     addScheduleToList = activeScheduleContext.addScheduleToList;
-  } catch (e) {
+  } catch (_e) {
     activeSchedule = null;
     setActiveSchedule = null;
     addScheduleToList = null;
@@ -164,7 +161,16 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
     // Update the ref for next comparison
     prevUserIdRef.current = currentUserId;
-  }, [user?.id, loading]);
+  }, [
+    user?.id,
+    loading, // User changed — clear all draft state in React and localStorage
+    setDraftSchedule,
+    setDraftScheduleName,
+    setDraftSemester,
+    setDraftYear,
+    setExistingScheduleId,
+    setIsEditingExisting,
+  ]);
 
   // When a schedule becomes active, copy its classes into the draft so the
   // schedule builder immediately reflects the selected active schedule.
@@ -182,6 +188,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     setDraftYear(activeSchedule.year || "");
     setIsEditingExisting(true);
     setExistingScheduleId(activeSchedule.id || null);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reactive only on id change — accessing other properties in the dep array without optional chaining crashes when activeSchedule is null
   }, [activeSchedule?.id]);
 
   // Load permutations from localStorage on mount
@@ -206,7 +213,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       }
       return true;
     },
-    []
+    [],
   );
 
   // Find the index of a schedule in the permutations list
@@ -219,7 +226,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       }
       return 0; // Default to 0 if not found
     },
-    [areSchedulesEquivalent]
+    [areSchedulesEquivalent],
   );
 
   // Fetch all sections for a class from the API
@@ -256,7 +263,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
             dept: data.data[0].dept,
             code: data.data[0].code,
             title: data.data[0].title,
-          })
+          }),
         );
 
         // Cache the result
@@ -268,7 +275,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         return [];
       }
     },
-    [allSectionsCache]
+    [allSectionsCache],
   );
 
   // Generate permutations when draft schedule changes
@@ -302,21 +309,21 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         uniqueClasses.map(async (cls) => {
           const sections = await fetchAllSectionsForClass(cls.dept, cls.code);
           allSections.set(cls.classKey, sections);
-        })
+        }),
       );
 
       // Get pinned section UUIDs from the draft schedule
       const pinnedSections = new Set<string>(
         draftSchedule
           .filter((section: ClassSection) => section.pinned)
-          .map((section: ClassSection) => section.uuid)
+          .map((section: ClassSection) => section.uuid),
       );
 
       // Generate permutations (respecting pinned sections)
       const newPermutations = generatePermutations(
         allSections,
         uniqueClasses,
-        pinnedSections
+        pinnedSections,
       );
 
       // Find the index of the current draft in the permutations
@@ -330,7 +337,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       savePermutationsToStorage(
         newPermutations,
         currentIndex,
-        currentDraftHash
+        currentDraftHash,
       );
     } catch (error) {
       console.error("Error generating permutations:", error);
@@ -352,7 +359,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [draftSchedule]);
+  }, [generateSchedulePermutations]);
 
   // Navigate to next permutation
   const nextPermutation = useCallback(() => {
@@ -384,7 +391,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       setDraftSchedule(permutations[index]);
       savePermutationsToStorage(permutations, index, prevDraftHashRef.current);
     },
-    [permutations, setDraftSchedule]
+    [permutations, setDraftSchedule],
   );
 
   // Sync permutation index to match a given schedule (without changing draft)
@@ -395,7 +402,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       setPermutationIndex(index);
       savePermutationsToStorage(permutations, index, prevDraftHashRef.current);
     },
-    [permutations, findPermutationIndex]
+    [permutations, findPermutationIndex],
   );
 
   // Helper functions
@@ -420,7 +427,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
       // Check if there's any day overlap
       const hasCommonDay = newDays.some((day: string) =>
-        existingDays.includes(day)
+        existingDays.includes(day),
       );
 
       if (hasCommonDay) {
@@ -429,7 +436,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
         if (timeOverlap) {
           console.log(
-            `Checking conflict between ${newClass.dept} ${newClass.code} ${newClass.classID} and ${existing.dept} ${existing.code} ${existing.classID}`
+            `Checking conflict between ${newClass.dept} ${newClass.code} ${newClass.classID} and ${existing.dept} ${existing.code} ${existing.classID}`,
           );
 
           return {
@@ -496,7 +503,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
     // Check conditions before state update
     const exists = draftSchedule.some(
-      (item: any) => item.uuid === classItem.uuid
+      (item: any) => item.uuid === classItem.uuid,
     );
     if (exists) {
       // Show toast notification for duplicate
@@ -506,7 +513,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           style: toastStyle,
           duration: 2000,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
-        }
+        },
       );
       return; // Don't add duplicate UUID
     }
@@ -515,7 +522,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       (item: any) =>
         item.dept === classItem.dept &&
         item.code === classItem.code &&
-        item.component === classItem.component
+        item.component === classItem.component,
     );
 
     const conflictCheck = checkTimeConflict(classItem, draftSchedule);
@@ -528,7 +535,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           style: toastStyle,
           duration: 2000,
           icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-        }
+        },
       );
       return;
     }
@@ -539,7 +546,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         (item: any) =>
           item.dept === classItem.dept &&
           item.code === classItem.code &&
-          item.component === classItem.component
+          item.component === classItem.component,
       );
 
       // Show toast notification for replacement
@@ -549,7 +556,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           style: toastStyle,
           duration: 2000,
           icon: <Repeat className="h-5 w-5 text-blue-500" />,
-        }
+        },
       );
 
       // Replace the existing section of this component type
@@ -559,7 +566,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           item.code === classItem.code &&
           item.component === classItem.component
             ? classItem
-            : item
+            : item,
         );
         return next;
       });
@@ -573,7 +580,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         style: toastStyle,
         duration: 2000,
         icon: <Check className="h-5 w-5 text-green-500" />,
-      }
+      },
     );
 
     // Add new class section — compute next array so we can log the updated value
@@ -600,7 +607,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         style: toastStyle,
         duration: 2000,
         icon: <Trash2 className="h-5 w-5 text-red-500" />,
-      }
+      },
     );
   };
 
@@ -626,7 +633,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
               style: toastStyle,
               duration: 2000,
               icon: <Pin className="h-5 w-5 text-blue-400" />,
-            }
+            },
           );
 
           return section;

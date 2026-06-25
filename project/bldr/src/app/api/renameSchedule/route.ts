@@ -1,9 +1,9 @@
 /**
  * API Route: /api/renameSchedule
- * 
+ *
  * Renames an existing schedule by updating its schedulename field.
  * Verifies user ownership before allowing the rename operation.
- * 
+ *
  * @method POST
  * @requires Authorization header with Bearer token
  * @body {
@@ -11,19 +11,20 @@
  *   newName: string     // The new name for the schedule
  * }
  * @returns { message: string, schedule: object }
- * 
+ *
  * @throws 401 - Unauthorized (missing/invalid auth header)
  * @throws 400 - Missing scheduleId or newName
  * @throws 404 - Schedule not found or user doesn't own it
  * @throws 500 - Database error during update
  */
+
+import { type NextRequest, NextResponse } from "next/server";
 import { supabase } from "../../lib/supabaseClient";
-import { NextRequest, NextResponse } from "next/server";
 
 /**
  * POST handler for renaming a schedule.
  * Authenticates user, verifies ownership, and updates the schedule name.
- * 
+ *
  * @param {NextRequest} req - The incoming request with scheduleId and newName
  * @returns {NextResponse} JSON response with updated schedule or error
  */
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (!authHeader) {
       return NextResponse.json(
         { error: "No authorization header" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!scheduleId || !newName) {
       return NextResponse.json(
         { error: "Missing scheduleId or newName" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,11 +72,11 @@ export async function POST(req: NextRequest) {
     if (ownershipError || !ownership) {
       console.error(
         "[renameSchedule] ownership lookup failed:",
-        ownershipError
+        ownershipError,
       );
       return NextResponse.json(
         { error: "Schedule not found or unauthorized" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
       console.error("Error renaming schedule:", error);
       return NextResponse.json(
         { error: "Failed to rename schedule" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

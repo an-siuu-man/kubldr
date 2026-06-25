@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, DM_Sans, Figtree } from "next/font/google";
+import { DM_Sans, Figtree, Geist, Geist_Mono, Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
+import { ActiveScheduleProvider } from "@/contexts/ActiveScheduleContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ScheduleBuilderProvider } from "@/contexts/ScheduleBuilderContext";
-import { ActiveScheduleProvider } from "@/contexts/ActiveScheduleContext";
-import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import Script from "next/script";
 

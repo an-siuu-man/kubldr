@@ -7,13 +7,28 @@ env:
   VERCEL_GIT_COMMIT_AUTHOR_NAME: ${{ secrets.VERCEL_GIT_AUTHOR_NAME }}
   VERCEL_GIT_COMMIT_AUTHOR_EMAIL: ${{ secrets.VERCEL_GIT_AUTHOR_EMAIL }}
 
+# Deploy only after the CI workflow (lint, typecheck, tests, build, security)
+# completes successfully on the main branch. This prevents broken or
+# insecure commits from reaching production automatically.
+#
+# ⚠️  Branch protection recommendation:
+#   In repo Settings → Branches → Branch protection rules for "main",
+#   require all ci.yml status checks to pass before merging pull requests.
+#   That is the strongest guarantee; this workflow_run trigger covers
+#   direct pushes to main.
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
     branches:
       - main
+    types:
+      - completed
 
 jobs:
   Deploy-Production:
+    # Only deploy when the CI workflow succeeded (not skipped or failed)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

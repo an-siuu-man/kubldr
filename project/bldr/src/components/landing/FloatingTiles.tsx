@@ -113,7 +113,9 @@ function FloatTile({ tile }: { tile: Tile }) {
       }}
     >
       {/* Spine */}
-      <div className={`absolute left-0 top-0 bottom-0 w-[9px] ${tile.spineColor} opacity-80`} />
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-[9px] ${tile.spineColor} opacity-80`}
+      />
       {/* Spine shadow / page edge */}
       <div className="absolute left-[9px] top-0 bottom-0 w-[2px] bg-black/30" />
       {/* Ruled lines on cover */}

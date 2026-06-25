@@ -1,10 +1,10 @@
 /**
  * API Route: /api/auth/guest
- * 
+ *
  * Creates an anonymous guest session using Supabase anonymous authentication.
  * Allows users to try the app without creating a full account.
  * Guest users can later upgrade to a full account while preserving their data.
- * 
+ *
  * @method POST
  * @body None required
  * @returns {
@@ -12,17 +12,18 @@
  *   user: User,      // Supabase User object
  *   session: Session // Supabase Session with access token
  * }
- * 
+ *
  * @throws 400 - Supabase auth error
  * @throws 500 - Server error
  */
-import { createClient } from "@/lib/supabase/server";
+
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * POST handler for guest login.
  * Creates anonymous session that can later be upgraded to full account.
- * 
+ *
  * @returns {NextResponse} JSON with user and session data
  */
 export async function POST() {
@@ -43,13 +44,13 @@ export async function POST() {
         user: data.user,
         session: data.session,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Guest login error:", error);
     return NextResponse.json(
       { error: "An error occurred during guest login" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

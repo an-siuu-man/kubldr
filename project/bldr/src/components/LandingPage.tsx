@@ -12,7 +12,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
 import { CalendarPreview } from "@/components/landing/CalendarPreview";
 import { FloatingTiles } from "@/components/landing/FloatingTiles";
 import {
@@ -28,6 +27,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Content data ────────────────────────────────────────────────────────────
 

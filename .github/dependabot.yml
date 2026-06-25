@@ -1,0 +1,39 @@
+version: 2
+updates:
+  # npm packages for the Next.js app
+  - package-ecosystem: npm
+    directory: /project/bldr
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    groups:
+      # Group Radix UI updates to avoid PR noise
+      radix-ui:
+        patterns:
+          - "@radix-ui/*"
+      # Group testing tooling updates
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "@vitejs/*"
+          - "vite-tsconfig-paths"
+          - "jsdom"
+
+  # GitHub Actions themselves
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Chicago
+    labels:
+      - dependencies
+      - github-actions

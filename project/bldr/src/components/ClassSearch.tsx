@@ -18,19 +18,19 @@
  */
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  useFloating,
-  offset,
-  flip,
-  shift,
-  size,
   autoUpdate,
   FloatingPortal,
+  flip,
+  offset,
+  shift,
+  size,
+  useFloating,
 } from "@floating-ui/react";
-import { SearchedClass } from "@/types";
-import { Trash2, Search } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { SearchedClass } from "@/types";
 import Class from "./Class";
 import Loader from "./Loader";
 
@@ -103,7 +103,7 @@ export default function ClassSearch() {
   }, [checkShadows]);
 
   // Dynamic positioning styles for the dropdown
-  const [dropdownPosStyle, setDropdownPosStyle] = useState<
+  const [_dropdownPosStyle, _setDropdownPosStyle] = useState<
     React.CSSProperties | undefined
   >(undefined);
 
@@ -176,7 +176,7 @@ export default function ClassSearch() {
   // Update dropdown position when it opens or results change
   useEffect(() => {
     if (dropdownOpen) update?.();
-  }, [dropdownOpen, classes.length, update]);
+  }, [dropdownOpen, update]);
 
   // Ensure the highlighted item is visible in the dropdown (keyboard navigation)
   useEffect(() => {
@@ -294,7 +294,6 @@ export default function ClassSearch() {
             className="rounded-xl border border-white/10 bg-[#111111] shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-y-auto divide-y divide-white/5"
             style={{ position: strategy, left: x ?? 0, top: y ?? 0 }}
             tabIndex={-1}
-            role="listbox"
             aria-label="Search results"
           >
             {isLoading ? (
@@ -378,68 +377,68 @@ export default function ClassSearch() {
             role="region"
             aria-label="Searched classes list"
           >
-          <AnimatePresence initial={false}>
-            {selectedClasses.map((c) => (
-              <motion.div
-                key={toSearchedClassKey(c)}
-                layout="position"
-                initial={{ opacity: 0, y: 8, scale: 0.99 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.99 }}
-                transition={{
-                  layout: {
-                    duration: 0.22,
-                    ease: [0.22, 1, 0.36, 1],
-                  },
-                  opacity: {
-                    duration: 0.18,
-                    ease: "easeOut",
-                  },
-                  y: {
-                    duration: 0.2,
-                    ease: [0.22, 1, 0.36, 1],
-                  },
-                  scale: {
-                    duration: 0.2,
-                    ease: "easeOut",
-                  },
-                }}
-                className="relative group origin-top"
-              >
-                <Class
-                  uuid={c.uuid}
-                  classcode={c.code || ""}
-                  dept={c.dept || ""}
-                />
-                <button
-                  onClick={() =>
-                    setSelectedClasses((prev) =>
-                      prev.filter(
-                        (cls) =>
-                          toSearchedClassKey(cls) !== toSearchedClassKey(c),
-                      ),
-                    )
-                  }
-                  className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#111111]/80 hover:bg-[#1a1a1a]"
-                  title="Remove from searched"
+            <AnimatePresence initial={false}>
+              {selectedClasses.map((c) => (
+                <motion.div
+                  key={toSearchedClassKey(c)}
+                  layout="position"
+                  initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.99 }}
+                  transition={{
+                    layout: {
+                      duration: 0.22,
+                      ease: [0.22, 1, 0.36, 1],
+                    },
+                    opacity: {
+                      duration: 0.18,
+                      ease: "easeOut",
+                    },
+                    y: {
+                      duration: 0.2,
+                      ease: [0.22, 1, 0.36, 1],
+                    },
+                    scale: {
+                      duration: 0.2,
+                      ease: "easeOut",
+                    },
+                  }}
+                  className="relative group origin-top"
                 >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </button>
-              </motion.div>
-            ))}
-            {selectedClasses.length === 0 && (
-              <motion.div
-                key="searched-empty-state"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-                className="px-4 py-6 text-xs text-white/30 font-inter text-center"
-              >
-                No classes searched
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <Class
+                    uuid={c.uuid}
+                    classcode={c.code || ""}
+                    dept={c.dept || ""}
+                  />
+                  <button
+                    onClick={() =>
+                      setSelectedClasses((prev) =>
+                        prev.filter(
+                          (cls) =>
+                            toSearchedClassKey(cls) !== toSearchedClassKey(c),
+                        ),
+                      )
+                    }
+                    className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#111111]/80 hover:bg-[#1a1a1a]"
+                    title="Remove from searched"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </button>
+                </motion.div>
+              ))}
+              {selectedClasses.length === 0 && (
+                <motion.div
+                  key="searched-empty-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="px-4 py-6 text-xs text-white/30 font-inter text-center"
+                >
+                  No classes searched
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

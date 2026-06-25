@@ -309,99 +309,100 @@ export default function CurrentlySelected() {
             {showBottomShadow && (
               <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-[#080808] to-transparent" />
             )}
-          <motion.section
-            ref={listRef}
-            layout
-            transition={{ layout: layoutSpring }}
-            className="font-inter h-full w-full overflow-y-auto scrollbar-hidden pt-1 pb-4"
-            aria-label="Currently selected classes"
-          >
-            {typedDraftSchedule.length === 0 ? (
-              <div className="text-xs lg:text-sm text-[#888888] font-figtree">
-                No classes added
-              </div>
-            ) : (
-              groupedClasses.map((classGroup, groupIndex) => {
-                const missingComponents =
-                  missingComponentsByClass[classGroup.classKey] ?? [];
-                const hasMissingComponents = missingComponents.length > 0;
+            <motion.section
+              ref={listRef}
+              layout
+              transition={{ layout: layoutSpring }}
+              className="font-inter h-full w-full overflow-y-auto scrollbar-hidden pt-1 pb-4"
+              aria-label="Currently selected classes"
+            >
+              {typedDraftSchedule.length === 0 ? (
+                <div className="text-xs lg:text-sm text-[#888888] font-figtree">
+                  No classes added
+                </div>
+              ) : (
+                groupedClasses.map((classGroup, groupIndex) => {
+                  const missingComponents =
+                    missingComponentsByClass[classGroup.classKey] ?? [];
+                  const hasMissingComponents = missingComponents.length > 0;
 
-                return (
-                  <motion.div
-                    layout
-                    transition={{ layout: layoutSpring }}
-                    key={`${toKeyPart(classGroup.classKey, "class")}-${groupIndex}`}
-                    className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
-                  >
-                    <div className="mb-4 flex items-start justify-between gap-2">
-                      <div className="font-bold text-white text-xs lg:text-sm font-inter">
-                        {classGroup.dept} {classGroup.code}: {classGroup.title}
+                  return (
+                    <motion.div
+                      layout
+                      transition={{ layout: layoutSpring }}
+                      key={`${toKeyPart(classGroup.classKey, "class")}-${groupIndex}`}
+                      className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-2">
+                        <div className="font-bold text-white text-xs lg:text-sm font-inter">
+                          {classGroup.dept} {classGroup.code}:{" "}
+                          {classGroup.title}
+                        </div>
+                        {hasMissingComponents && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-500/70 bg-yellow-500/15 text-yellow-300">
+                                <AlertCircle className="h-3.5 w-3.5" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="font-inter">
+                              <p className="text-xs">
+                                You haven&apos;t added all components for this
+                                class.
+                              </p>
+                              <p className="mt-1 text-[11px] text-yellow-300">
+                                Missing: {missingComponents.join(", ")}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
-                      {hasMissingComponents && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-500/70 bg-yellow-500/15 text-yellow-300">
-                              <AlertCircle className="h-3.5 w-3.5" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="font-inter">
-                            <p className="text-xs">
-                              You haven&apos;t added all components for this
-                              class.
-                            </p>
-                            <p className="mt-1 text-[11px] text-yellow-300">
-                              Missing: {missingComponents.join(", ")}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {classGroup.sections.map((section) => (
-                        <div
-                          key={section.originalIndex}
-                          className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
-                        >
-                          <div className="flex flex-col gap-1">
-                            <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-purple-400 font-inter">
-                              {section.component} ({section.classID})
-                              {(section.seats_available ?? 0) <= 0 && (
-                                <span className="flex items-center text-red-400">
-                                  <AlertCircle className="inline h-3 w-3 lg:h-4 lg:w-4 mr-1" />
-                                  <span className="text-[10px] lg:text-xs">
-                                    No open seats
+                      <div className="flex flex-col gap-2">
+                        {classGroup.sections.map((section) => (
+                          <div
+                            key={section.originalIndex}
+                            className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-purple-400 font-inter">
+                                {section.component} ({section.classID})
+                                {(section.seats_available ?? 0) <= 0 && (
+                                  <span className="flex items-center text-red-400">
+                                    <AlertCircle className="inline h-3 w-3 lg:h-4 lg:w-4 mr-1" />
+                                    <span className="text-[10px] lg:text-xs">
+                                      No open seats
+                                    </span>
                                   </span>
-                                </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
+                                {section.days} | {section.starttime} -{" "}
+                                {section.endtime}
+                              </div>
+                              {section.instructor && (
+                                <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
+                                  {section.instructor}
+                                </div>
                               )}
                             </div>
-                            <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
-                              {section.days} | {section.starttime} -{" "}
-                              {section.endtime}
-                            </div>
-                            {section.instructor && (
-                              <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
-                                {section.instructor}
-                              </div>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeClassFromDraft(section.originalIndex)
+                              }
+                              className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                              title="Remove section"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              removeClassFromDraft(section.originalIndex)
-                            }
-                            className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            title="Remove section"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </motion.section>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.section>
           </div>
         </motion.div>
       </motion.div>

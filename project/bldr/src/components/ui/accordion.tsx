@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "lucide-react";
+import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -58,7 +58,9 @@ function AccordionContent({
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm flex-1 min-h-0 flex flex-col [animation-duration:300ms] [animation-timing-function:ease-in-out]"
       {...props}
     >
-      <div className={cn("pt-0 pb-4 flex-1 min-h-0 overflow-hidden", className)}>
+      <div
+        className={cn("pt-0 pb-4 flex-1 min-h-0 overflow-hidden", className)}
+      >
         {children}
       </div>
     </AccordionPrimitive.Content>
