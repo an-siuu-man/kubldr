@@ -204,7 +204,7 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden bg-[#111111] border border-white/10 rounded-[20px]">
+    <div className="flex flex-col w-full h-full overflow-hidden bg-[#111111] border border-white/10 rounded-b-[20px]">
       {/* Search header */}
       <div className="border-b border-white/8 bg-[#0f0f0f] px-4 py-3 shrink-0">
         <div
@@ -218,7 +218,10 @@ export default function ClassSearch() {
             }
           }}
         >
-          <Search className="h-4 w-4 shrink-0 text-white/30" aria-hidden="true" />
+          <Search
+            className="h-4 w-4 shrink-0 text-white/30"
+            aria-hidden="true"
+          />
           <input
             value={searchQuery}
             onChange={(e) => {
@@ -322,7 +325,7 @@ export default function ClassSearch() {
 
       {/* Searched section */}
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/8 bg-[#0f0f0f] shrink-0">
+        <div className="flex items-center justify-between px-4 py-3   shrink-0">
           <p className="font-dmsans text-xs font-semibold uppercase tracking-widest text-white/40">
             Searched
           </p>
@@ -373,12 +376,17 @@ export default function ClassSearch() {
                 }}
                 className="relative group origin-top"
               >
-                <Class uuid={c.uuid} classcode={c.code || ""} dept={c.dept || ""} />
+                <Class
+                  uuid={c.uuid}
+                  classcode={c.code || ""}
+                  dept={c.dept || ""}
+                />
                 <button
                   onClick={() =>
                     setSelectedClasses((prev) =>
                       prev.filter(
-                        (cls) => toSearchedClassKey(cls) !== toSearchedClassKey(c),
+                        (cls) =>
+                          toSearchedClassKey(cls) !== toSearchedClassKey(c),
                       ),
                     )
                   }

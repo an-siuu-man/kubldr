@@ -188,7 +188,7 @@ export default function CurrentlySelected() {
       <motion.div
         layout
         transition={{ layout: layoutSpring }}
-        className="flex flex-col justify-start items-center w-full h-full overflow-hidden bg-[#080808] transition-all duration-150 border-2 border-[#303030] rounded-b-[10px] rounded-t-none"
+        className="flex flex-col justify-start items-center w-full h-full overflow-hidden bg-[#111111] transition-all duration-150 border-2 border-[#303030] rounded-b-[10px] rounded-t-none"
       >
         <motion.div
           layout
