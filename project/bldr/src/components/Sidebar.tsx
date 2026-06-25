@@ -40,7 +40,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -206,9 +206,9 @@ export function Sidebar() {
     null,
   );
 
-  // Track if the schedule list has overflow (for showing gradient shadow)
-  const [hasScheduleListOverflow, setHasScheduleListOverflow] = useState(false);
   const scheduleListRef = useRef<HTMLUListElement>(null);
+  const [showTopShadow, setShowTopShadow] = useState(false);
+  const [showBottomShadow, setShowBottomShadow] = useState(false);
 
   // Cleanup close timer on unmount
   useEffect(() => {
@@ -217,37 +217,30 @@ export function Sidebar() {
     };
   }, []);
 
-  // Check if the schedule list has overflow using ResizeObserver
+  const checkShadows = useCallback(() => {
+    const el = scheduleListRef.current;
+    if (!el) return;
+    setShowTopShadow(el.scrollTop > 0);
+    setShowBottomShadow(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  }, []);
+
   useEffect(() => {
     if (isMobile || !isSidebarWide) {
-      setHasScheduleListOverflow(false);
+      setShowTopShadow(false);
+      setShowBottomShadow(false);
       return;
     }
-
-    const listElement = scheduleListRef.current;
-    if (!listElement) return;
-
-    const checkOverflow = () => {
-      const { scrollHeight, clientHeight } = listElement;
-      setHasScheduleListOverflow(scrollHeight > clientHeight);
-    };
-
-    // Initial check with a small delay to ensure DOM is ready
-    const timeoutId = setTimeout(checkOverflow, 50);
-
-    // Use ResizeObserver to detect content size changes
-    const resizeObserver = new ResizeObserver(checkOverflow);
-    resizeObserver.observe(listElement);
-
-    // Also check on window resize
-    window.addEventListener("resize", checkOverflow);
-
+    const el = scheduleListRef.current;
+    if (!el) return;
+    checkShadows();
+    el.addEventListener("scroll", checkShadows, { passive: true });
+    const ro = new ResizeObserver(checkShadows);
+    ro.observe(el);
     return () => {
-      clearTimeout(timeoutId);
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", checkOverflow);
+      el.removeEventListener("scroll", checkShadows);
+      ro.disconnect();
     };
-  }, [isMobile, isSidebarWide]);
+  }, [isMobile, isSidebarWide, checkShadows]);
 
   /**
    * Toggles the sidebar between open and closed states.
@@ -599,12 +592,15 @@ export function Sidebar() {
                   </Button>
                 </Link>
               )}
-              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+              <Link
+                href="/profile"
+                className="flex items-center gap-1.5 text-xs text-gray-400 rounded-md hover:bg-white/8 px-1.5 py-1 transition-colors"
+              >
                 <User className="h-4 w-4" />
                 <span className="font-figtree truncate max-w-20">
                   {user?.is_anonymous ? "Guest" : user?.email?.split("@")[0]}
                 </span>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -872,7 +868,7 @@ export function Sidebar() {
           <div
             className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed top-0 left-0 h-screen transition-all duration-300 ease-out ${
               isSidebarWide
-                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-linear-to-b from-[#1a1a1a] to-[#141414] shadow-2xl shadow-black/50"
+                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-[#151515] shadow-2xl shadow-black/50"
                 : "bg-transparent min-w-[70px] max-w-[70px]"
             } overflow-hidden p-4 lg:p-5`}
           >
@@ -916,7 +912,10 @@ export function Sidebar() {
                       defaultValue={["spring-2026"]}
                       className="font-figtree flex-1 overflow-hidden flex flex-col"
                     >
-                      <AccordionItem value="spring-2026" className="border-b-0 flex flex-col flex-1 min-h-0">
+                      <AccordionItem
+                        value="spring-2026"
+                        className="border-b-0 flex flex-col flex-1 min-h-0"
+                      >
                         <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:no-underline hover:cursor-pointer hover:bg-white/5 font-semibold py-2 transition-colors shrink-0">
                           Spring 2026
                         </AccordionTrigger>
@@ -1177,9 +1176,11 @@ export function Sidebar() {
                                 </AnimatePresence>
                               )}
                             </ul>
-                            {/* Gradient overlay to indicate scrollable content */}
-                            {hasScheduleListOverflow && (
-                              <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#141414] to-transparent pointer-events-none" />
+                            {showTopShadow && (
+                              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-[#151515] to-transparent" />
+                            )}
+                            {showBottomShadow && (
+                              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#151515] to-transparent" />
                             )}
                           </div>
                         </AccordionContent>
@@ -1215,8 +1216,11 @@ export function Sidebar() {
                 )}
               </AnimatePresence>
 
-              {/* User info */}
-              <div className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2">
+              {/* User info — links to profile page */}
+              <Link
+                href="/profile"
+                className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2 rounded-md hover:bg-white/8 px-1 py-1 transition-colors"
+              >
                 <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
                 <AnimatePresence initial={false}>
                   {open && (
@@ -1232,7 +1236,7 @@ export function Sidebar() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

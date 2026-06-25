@@ -1,12 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  UserCircle,
-  XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, UserCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -122,14 +117,7 @@ export default function LoginPage() {
         >
           {/* Brand */}
           <Link href="/" className="mb-8 flex flex-col items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_0_40px_rgba(255,255,255,0.04)]">
-              <span className="font-dmsans text-2xl font-bold tracking-tight">
-                <span className="text-white">b</span>
-                <span className="text-red-500">l</span>
-                <span className="text-blue-500">d</span>
-                <span className="text-yellow-300">r</span>
-              </span>
-            </div>
+            <img src="/logo.svg" alt="bldr logo" className="h-16 w-auto" draggable={false} />
             <div className="text-center">
               <p className="font-figtree text-xl font-semibold tracking-tight">
                 Flagship Schedule Builder
@@ -270,7 +258,10 @@ export default function LoginPage() {
                 className="mt-5 font-inter text-xs text-[#a8a8a8]"
               >
                 Don&apos;t have an account?{" "}
-                <Link href="/signup" className="font-medium text-white underline underline-offset-2">
+                <Link
+                  href="/signup"
+                  className="font-medium text-white underline underline-offset-2"
+                >
                   Sign up
                 </Link>
               </motion.div>
