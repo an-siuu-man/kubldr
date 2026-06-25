@@ -85,6 +85,12 @@ jobs:
           # Fetch full history so gitleaks can scan all commits on PRs
           fetch-depth: 0
 
+      # Set up Node before gitleaks — gitleaks-action@v2 is a Node.js action
+      # and fails with a version mismatch if Node is not explicitly set up first.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
       # 1. Gitleaks — detects hardcoded secrets/tokens in source and git history
       - name: Gitleaks secret scan
         uses: gitleaks/gitleaks-action@v2
