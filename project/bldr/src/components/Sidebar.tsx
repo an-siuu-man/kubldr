@@ -40,7 +40,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -206,9 +206,9 @@ export function Sidebar() {
     null,
   );
 
-  // Track if the schedule list has overflow (for showing gradient shadow)
-  const [hasScheduleListOverflow, setHasScheduleListOverflow] = useState(false);
   const scheduleListRef = useRef<HTMLUListElement>(null);
+  const [showTopShadow, setShowTopShadow] = useState(false);
+  const [showBottomShadow, setShowBottomShadow] = useState(false);
 
   // Cleanup close timer on unmount
   useEffect(() => {
@@ -217,37 +217,30 @@ export function Sidebar() {
     };
   }, []);
 
-  // Check if the schedule list has overflow using ResizeObserver
+  const checkShadows = useCallback(() => {
+    const el = scheduleListRef.current;
+    if (!el) return;
+    setShowTopShadow(el.scrollTop > 0);
+    setShowBottomShadow(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  }, []);
+
   useEffect(() => {
     if (isMobile || !isSidebarWide) {
-      setHasScheduleListOverflow(false);
+      setShowTopShadow(false);
+      setShowBottomShadow(false);
       return;
     }
-
-    const listElement = scheduleListRef.current;
-    if (!listElement) return;
-
-    const checkOverflow = () => {
-      const { scrollHeight, clientHeight } = listElement;
-      setHasScheduleListOverflow(scrollHeight > clientHeight);
-    };
-
-    // Initial check with a small delay to ensure DOM is ready
-    const timeoutId = setTimeout(checkOverflow, 50);
-
-    // Use ResizeObserver to detect content size changes
-    const resizeObserver = new ResizeObserver(checkOverflow);
-    resizeObserver.observe(listElement);
-
-    // Also check on window resize
-    window.addEventListener("resize", checkOverflow);
-
+    const el = scheduleListRef.current;
+    if (!el) return;
+    checkShadows();
+    el.addEventListener("scroll", checkShadows, { passive: true });
+    const ro = new ResizeObserver(checkShadows);
+    ro.observe(el);
     return () => {
-      clearTimeout(timeoutId);
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", checkOverflow);
+      el.removeEventListener("scroll", checkShadows);
+      ro.disconnect();
     };
-  }, [isMobile, isSidebarWide]);
+  }, [isMobile, isSidebarWide, checkShadows]);
 
   /**
    * Toggles the sidebar between open and closed states.
@@ -875,7 +868,7 @@ export function Sidebar() {
           <div
             className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed top-0 left-0 h-screen transition-all duration-300 ease-out ${
               isSidebarWide
-                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-linear-to-b from-[#1a1a1a] to-[#141414] shadow-2xl shadow-black/50"
+                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-[#151515] shadow-2xl shadow-black/50"
                 : "bg-transparent min-w-[70px] max-w-[70px]"
             } overflow-hidden p-4 lg:p-5`}
           >
@@ -1183,9 +1176,11 @@ export function Sidebar() {
                                 </AnimatePresence>
                               )}
                             </ul>
-                            {/* Gradient overlay to indicate scrollable content */}
-                            {hasScheduleListOverflow && (
-                              <div className="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#141414] to-transparent pointer-events-none" />
+                            {showTopShadow && (
+                              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-[#151515] to-transparent" />
+                            )}
+                            {showBottomShadow && (
+                              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#151515] to-transparent" />
                             )}
                           </div>
                         </AccordionContent>

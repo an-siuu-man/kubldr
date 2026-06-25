@@ -15,7 +15,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -72,6 +72,30 @@ export default function CurrentlySelected() {
     Record<string, string[]>
   >({});
   const [isMissingNoteCollapsed, setIsMissingNoteCollapsed] = useState(false);
+
+  const listRef = useRef<HTMLElement>(null);
+  const [showTopShadow, setShowTopShadow] = useState(false);
+  const [showBottomShadow, setShowBottomShadow] = useState(false);
+
+  const checkShadows = useCallback(() => {
+    const el = listRef.current;
+    if (!el) return;
+    setShowTopShadow(el.scrollTop > 0);
+    setShowBottomShadow(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    checkShadows();
+    el.addEventListener("scroll", checkShadows, { passive: true });
+    const ro = new ResizeObserver(checkShadows);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", checkShadows);
+      ro.disconnect();
+    };
+  }, [checkShadows]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -278,10 +302,18 @@ export default function CurrentlySelected() {
             )}
           </AnimatePresence>
 
+          <div className="relative flex-1 min-h-0 w-full">
+            {showTopShadow && (
+              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-[#080808] to-transparent" />
+            )}
+            {showBottomShadow && (
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-[#080808] to-transparent" />
+            )}
           <motion.section
+            ref={listRef}
             layout
             transition={{ layout: layoutSpring }}
-            className="font-inter flex-1 min-h-0 w-full overflow-y-auto scrollbar-hidden pt-1 pb-4"
+            className="font-inter h-full w-full overflow-y-auto scrollbar-hidden pt-1 pb-4"
             aria-label="Currently selected classes"
           >
             {typedDraftSchedule.length === 0 ? (
@@ -370,6 +402,7 @@ export default function CurrentlySelected() {
               })
             )}
           </motion.section>
+          </div>
         </motion.div>
       </motion.div>
     </TooltipProvider>

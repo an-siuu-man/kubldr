@@ -38,6 +38,23 @@ const toKeyPart = (value: unknown, fallback: string) => {
   return normalized.length > 0 ? normalized : fallback;
 };
 
+const COMPONENT_COLORS: Record<string, string> = {
+  LEC: "text-blue-400",
+  LAB: "text-green-400",
+  LBN: "text-emerald-400",
+  DIS: "text-violet-400",
+  REC: "text-orange-400",
+  SEM: "text-yellow-400",
+  STU: "text-pink-400",
+  CLI: "text-cyan-400",
+  IND: "text-rose-400",
+};
+
+const componentBadgeClass = (component?: string) => {
+  const key = component?.trim().toUpperCase() ?? "";
+  return COMPONENT_COLORS[key] ?? "text-[#a8a8a8]";
+};
+
 /**
  * Class Component
  *
@@ -66,7 +83,7 @@ export default function Class(props: ClassProps) {
    */
   const handleSectionClick = async (
     section: ClassSection,
-    classData: ClassData
+    classData: ClassData,
   ) => {
     // Merge section data with class-level data for the calendar display
     const classToAdd: ClassSection = {
@@ -135,60 +152,64 @@ export default function Class(props: ClassProps) {
           <p className="text-[10px] lg:text-xs text-[#b0b0b0] font-inter self-start line-clamp-2">
             {classInfo.data[0].description || "No description available."}
           </p>
-          {classInfo.data[0].sections.map((section: ClassSection, index) => (
-            <button
-              // disabled={(section.seats_available ?? 0) <= 0}
-              key={
-                section.uuid?.trim() ||
-                `${toKeyPart(section.classID, "class")}-${toKeyPart(section.component, "comp")}-${toKeyPart(section.days, "days")}-${toKeyPart(section.starttime, "start")}-${toKeyPart(section.endtime, "end")}-${index}`
-              }
-              onClick={() => handleSectionClick(section, classInfo.data[0])}
-              className={`w-full font-inter rounded-md mt-1.5 lg:mt-2 bg-[#181818] hover:bg-[#232323] transition duration-100 px-1.5 lg:px-2 text-left cursor-pointer`}
-            >
-              <div className="flex flex-row w-full justify-between gap-1 sm:gap-2 items-start my-1">
-                <div className="flex flex-row gap-2 items-start">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-xs lg:text-sm">
-                      #{section.classID}
-                    </span>
-                    <span className="text-[10px] lg:text-xs text-[#a8a8a8] self-center">
-                      {section.component}
-                    </span>
-                  </div>
-                  <div className="flex flex-col justify-start items-start font-inter">
-                    <span className="text-xs lg:text-sm text-[#fafafa] break-words">
-                      {section.days}{" "}
-                      {section.starttime && section.endtime
-                        ? `${section.starttime} - ${section.endtime}`
-                        : section.starttime || section.endtime || ""}
-                    </span>
-                    {section.instructor ? (
-                      <span className="text-[10px] lg:text-xs text-[#a8a8a8] truncate max-w-[90px] sm:max-w-[120px] lg:max-w-[150px]">
-                        {section.instructor}
+          <div className="flex flex-col gap-2 mt-2 w-full">
+            {classInfo.data[0].sections.map((section: ClassSection, index) => (
+              <button
+                // disabled={(section.seats_available ?? 0) <= 0}
+                key={
+                  section.uuid?.trim() ||
+                  `${toKeyPart(section.classID, "class")}-${toKeyPart(section.component, "comp")}-${toKeyPart(section.days, "days")}-${toKeyPart(section.starttime, "start")}-${toKeyPart(section.endtime, "end")}-${index}`
+                }
+                onClick={() => handleSectionClick(section, classInfo.data[0])}
+                className={`w-full font-inter rounded-md bg-[#181818] hover:bg-[#232323] transition duration-100 p-2 border border-[#404040] text-left cursor-pointer`}
+              >
+                <div className="flex flex-row w-full justify-between gap-1 sm:gap-2 items-start">
+                  <div className="flex flex-row gap-2 items-start">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-xs lg:text-sm">
+                        #{section.classID}
                       </span>
-                    ) : (
-                      <span className="text-[10px] lg:text-xs text-[#a8a8a8]">
-                        Instructor TBA
+                      <span
+                        className={`text-[10px] lg:text-xs self-center ${componentBadgeClass(section.component)}`}
+                      >
+                        {section.component}
                       </span>
-                    )}
+                    </div>
+                    <div className="flex flex-col justify-start items-start font-inter">
+                      <span className="text-xs lg:text-sm text-[#fafafa] break-words">
+                        {section.days}{" "}
+                        {section.starttime && section.endtime
+                          ? `${section.starttime} - ${section.endtime}`
+                          : section.starttime || section.endtime || ""}
+                      </span>
+                      {section.instructor ? (
+                        <span className="text-[10px] lg:text-xs text-[#a8a8a8] truncate max-w-[90px] sm:max-w-[120px] lg:max-w-[150px]">
+                          {section.instructor}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] lg:text-xs text-[#a8a8a8]">
+                          Instructor TBA
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  <span
+                    className={`text-xs lg:text-sm font-semibold justify-self-end ${
+                      (section.seats_available ?? 0) <= 0
+                        ? "text-gray-500"
+                        : (section.seats_available ?? 0) <= 3
+                          ? "text-red-400"
+                          : (section.seats_available ?? 0) < 10
+                            ? "text-yellow-400"
+                            : "text-green-400"
+                    }`}
+                  >
+                    {section.seats_available}
+                  </span>
                 </div>
-                <span
-                  className={`text-xs lg:text-sm font-semibold justify-self-end ${
-                    (section.seats_available ?? 0) <= 0
-                      ? "text-gray-500"
-                      : (section.seats_available ?? 0) <= 3
-                      ? "text-red-400"
-                      : (section.seats_available ?? 0) < 10
-                      ? "text-yellow-400"
-                      : "text-green-400"
-                  }`}
-                >
-                  {section.seats_available}
-                </span>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </motion.div>
       ) : (
         <motion.div

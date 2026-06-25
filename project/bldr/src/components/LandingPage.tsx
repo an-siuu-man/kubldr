@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 import { CalendarPreview } from "@/components/landing/CalendarPreview";
 import { FloatingTiles } from "@/components/landing/FloatingTiles";
 import {
@@ -29,7 +30,6 @@ import {
 import { Button } from "@/components/ui/button";
 
 // ─── Content data ────────────────────────────────────────────────────────────
-
 
 const faqs = [
   {
@@ -78,6 +78,9 @@ function SectionHeading({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  const { user } = useAuth();
+  const isLoggedIn = Boolean(user);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#080808] text-white">
       {/* ── Background layers ── */}
@@ -107,23 +110,38 @@ export default function LandingPage() {
 
           {/* Nav CTAs */}
           <div className="flex items-center gap-2.5">
-            <Button
-              asChild
-              variant="ghost"
-              className="hidden border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10 sm:inline-flex"
-            >
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button
-              asChild
-              variant="ghost"
-              className="bg-white font-dmsans text-[#101010] shadow-[0_8px_28px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
-            >
-              <Link href="/signup">
-                Start building
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                asChild
+                variant="ghost"
+                className="bg-white font-dmsans text-[#101010] shadow-[0_8px_28px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
+              >
+                <Link href="/builder">
+                  Go to Builder
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="hidden border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10 sm:inline-flex"
+                >
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="bg-white font-dmsans text-[#101010] shadow-[0_8px_28px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
+                >
+                  <Link href="/signup">
+                    Start building
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -165,28 +183,42 @@ export default function LandingPage() {
 
             {/* Dual CTA */}
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                variant="ghost"
-                className="bg-white font-dmsans text-[#101010] shadow-[0_16px_48px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
-              >
-                <Link href="/signup">
-                  Create a free account
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="ghost"
-                className="border border-white/12 bg-white/5 font-dmsans text-white hover:bg-white/10"
-              >
-                <Link href="/login">Log in or continue as guest</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  asChild
+                  size="lg"
+                  variant="ghost"
+                  className="bg-white font-dmsans text-[#101010] shadow-[0_16px_48px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
+                >
+                  <Link href="/builder">
+                    Go to Builder
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="ghost"
+                    className="bg-white font-dmsans text-[#101010] shadow-[0_16px_48px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
+                  >
+                    <Link href="/signup">
+                      Create a free account
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="ghost"
+                    className="border border-white/12 bg-white/5 font-dmsans text-white hover:bg-white/10"
+                  >
+                    <Link href="/login">Log in or continue as guest</Link>
+                  </Button>
+                </>
+              )}
             </div>
-
-
           </motion.div>
 
           {/* Product preview — calendar in browser chrome */}

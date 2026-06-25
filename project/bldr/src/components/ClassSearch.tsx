@@ -18,7 +18,7 @@
  */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   useFloating,
@@ -78,6 +78,29 @@ export default function ClassSearch() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLUListElement | null>(null);
   const searchedListRef = useRef<HTMLDivElement | null>(null);
+
+  const [showTopShadow, setShowTopShadow] = useState(false);
+  const [showBottomShadow, setShowBottomShadow] = useState(false);
+
+  const checkShadows = useCallback(() => {
+    const el = searchedListRef.current;
+    if (!el) return;
+    setShowTopShadow(el.scrollTop > 0);
+    setShowBottomShadow(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = searchedListRef.current;
+    if (!el) return;
+    checkShadows();
+    el.addEventListener("scroll", checkShadows, { passive: true });
+    const ro = new ResizeObserver(checkShadows);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", checkShadows);
+      ro.disconnect();
+    };
+  }, [checkShadows]);
 
   // Dynamic positioning styles for the dropdown
   const [dropdownPosStyle, setDropdownPosStyle] = useState<
@@ -342,12 +365,19 @@ export default function ClassSearch() {
             </button>
           )}
         </div>
-        <div
-          ref={searchedListRef}
-          className="font-inter flex-1 min-h-0 overflow-y-auto scrollbar-hidden divide-y divide-white/5"
-          role="region"
-          aria-label="Searched classes list"
-        >
+        <div className="relative flex-1 min-h-0">
+          {showTopShadow && (
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-[#111111] to-transparent" />
+          )}
+          {showBottomShadow && (
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-[#111111] to-transparent" />
+          )}
+          <div
+            ref={searchedListRef}
+            className="font-inter p-2 h-full overflow-y-auto scrollbar-hidden divide-y divide-white/5"
+            role="region"
+            aria-label="Searched classes list"
+          >
           <AnimatePresence initial={false}>
             {selectedClasses.map((c) => (
               <motion.div
@@ -410,6 +440,7 @@ export default function ClassSearch() {
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
