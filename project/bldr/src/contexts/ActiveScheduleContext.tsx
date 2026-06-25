@@ -2,14 +2,14 @@
 
 import {
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
-  useState,
   useRef,
-  ReactNode,
+  useState,
 } from "react";
-import { Schedule } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
+import type { Schedule } from "@/types";
 
 interface ActiveScheduleContextType {
   // Active schedule being viewed/edited (could be saved or unsaved)
@@ -78,13 +78,13 @@ export const ActiveScheduleProvider = ({
   // Active semester filter
   const [activeSemester, setActiveSemester] = usePersistedState<string>(
     "activeSemester",
-    ""
+    "",
   );
 
   // All user schedules
   const [userSchedules, setUserSchedules] = usePersistedState<Schedule[]>(
     "userSchedules",
-    []
+    [],
   );
 
   // Loading state for schedules
@@ -113,10 +113,10 @@ export const ActiveScheduleProvider = ({
   // Update an existing schedule in the list
   const updateScheduleInList = (
     scheduleId: string,
-    updatedSchedule: Schedule
+    updatedSchedule: Schedule,
   ) => {
     setUserSchedules((prev) =>
-      prev.map((s) => (s.id === scheduleId ? updatedSchedule : s))
+      prev.map((s) => (s.id === scheduleId ? updatedSchedule : s)),
     );
 
     // If this is the active schedule, update it too
@@ -198,7 +198,14 @@ export const ActiveScheduleProvider = ({
     if (user?.id) {
       fetchUserSchedules();
     }
-  }, [user?.id, loading]);
+  }, [
+    user?.id,
+    loading,
+    fetchUserSchedules,
+    setActiveSchedule,
+    setActiveSemester, // User changed — clear all persisted state in React and localStorage
+    setUserSchedules,
+  ]);
 
   return (
     <ActiveScheduleContext.Provider
@@ -227,7 +234,7 @@ export const useActiveSchedule = () => {
   const context = useContext(ActiveScheduleContext);
   if (context === undefined) {
     throw new Error(
-      "useActiveSchedule must be used within an ActiveScheduleProvider"
+      "useActiveSchedule must be used within an ActiveScheduleProvider",
     );
   }
   return context;

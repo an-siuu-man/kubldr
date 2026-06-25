@@ -6,8 +6,8 @@
  * that don't have time conflicts.
  */
 
-import { ClassSection } from "@/types";
-import { timeToDecimal, parseDays } from "@/lib/timeUtils";
+import { parseDays, timeToDecimal } from "@/lib/timeUtils";
+import type { ClassSection } from "@/types";
 
 /**
  * Groups sections by component type for a given class
@@ -35,7 +35,7 @@ interface ClassWithComponents {
  */
 export function hasTimeConflict(
   section1: ClassSection,
-  section2: ClassSection
+  section2: ClassSection,
 ): boolean {
   const days1 = parseDays(section1.days || "");
   const days2 = parseDays(section2.days || "");
@@ -62,7 +62,7 @@ export function hasTimeConflict(
  */
 export function conflictsWithSchedule(
   newSection: ClassSection,
-  existingSections: ClassSection[]
+  existingSections: ClassSection[],
 ): boolean {
   for (const existing of existingSections) {
     if (hasTimeConflict(newSection, existing)) {
@@ -78,7 +78,7 @@ export function conflictsWithSchedule(
  * @returns Array of unique classes with their component groups
  */
 export function getUniqueClassesFromDraft(
-  draftSchedule: ClassSection[]
+  draftSchedule: ClassSection[],
 ): ClassWithComponents[] {
   // First, get unique class keys (dept-code combinations)
   const classMap = new Map<string, ClassWithComponents>();
@@ -99,7 +99,7 @@ export function getUniqueClassesFromDraft(
 
     // Find or create the component group
     let componentGroup = classData.components.find(
-      (c) => c.component === section.component
+      (c) => c.component === section.component,
     );
     if (!componentGroup) {
       componentGroup = { component: section.component, sections: [] };
@@ -128,7 +128,7 @@ export function getUniqueClassesFromDraft(
 export function generatePermutations(
   allSections: Map<string, ClassSection[]>,
   uniqueClasses: ClassWithComponents[],
-  pinnedSections: Set<string> = new Set()
+  pinnedSections: Set<string> = new Set(),
 ): ClassSection[][] {
   const permutations: ClassSection[][] = [];
 
@@ -150,12 +150,12 @@ export function generatePermutations(
     for (const compGroup of cls.components) {
       // Check if any section in this component group is pinned
       const pinnedSection = compGroup.sections.find((s) =>
-        pinnedSections.has(s.uuid)
+        pinnedSections.has(s.uuid),
       );
 
       // Get all sections for this component from the fetched data
       const sectionsForComponent = allClassSections.filter(
-        (s) => s.component === compGroup.component
+        (s) => s.component === compGroup.component,
       );
 
       if (sectionsForComponent.length > 0) {
@@ -232,7 +232,7 @@ export function createDraftHash(draftSchedule: ClassSection[]): string {
   const pinnedSections: string[] = [];
   for (const section of draftSchedule) {
     uniqueComponents.add(
-      `${section.dept}-${section.code}-${section.component}`
+      `${section.dept}-${section.code}-${section.component}`,
     );
     // Include pinned sections in the hash so regeneration happens when pins change
     if (section.pinned) {
@@ -255,7 +255,7 @@ export function createDraftHash(draftSchedule: ClassSection[]): string {
 export function savePermutationsToStorage(
   _permutations: ClassSection[][],
   currentIndex: number,
-  draftHash: string
+  draftHash: string,
 ): void {
   if (typeof window === "undefined") return;
 

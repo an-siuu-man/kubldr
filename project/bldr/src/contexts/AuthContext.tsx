@@ -1,8 +1,8 @@
 "use client";
 
+import type { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
 
 type AuthContextType = {
   user: User | null;
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ];
       try {
         keysToClear.forEach((k) => localStorage.removeItem(k));
-      } catch (e) {
+      } catch (_e) {
         // ignore storage errors
       }
     };
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("draftYear");
         localStorage.removeItem("isEditingExisting");
         localStorage.removeItem("existingScheduleId");
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
     }

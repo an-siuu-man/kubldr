@@ -21,17 +21,16 @@
  */
 "use client";
 
-import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
-import {
-  ClassProps,
-  ClassSection,
+import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import type {
   ClassData,
   ClassInfoResponse,
+  ClassProps,
+  ClassSection,
 } from "@/types";
-import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-import { timeToDecimal, calculateDuration } from "@/lib/timeUtils";
 
 const toKeyPart = (value: unknown, fallback: string) => {
   const normalized = typeof value === "string" ? value.trim() : "";
@@ -69,7 +68,7 @@ export default function Class(props: ClassProps) {
   const { addClassToDraft } = useScheduleBuilder();
 
   // Local state for tracking selected classes (for UI feedback)
-  const [selectedClasses, setSelectedClasses] = useState<any>({});
+  const [_selectedClasses, _setSelectedClasses] = useState<any>({});
 
   // State to hold the fetched class information from the API
   const [classInfo, setClassInfo] = useState<ClassInfoResponse>({ data: [] });
@@ -122,7 +121,7 @@ export default function Class(props: ClassProps) {
   // Fetch class info when component mounts
   useEffect(() => {
     callAPI(props.dept, props.classcode);
-  }, []);
+  }, [callAPI, props.classcode, props.dept]);
 
   // Debug logging for class info updates
   useEffect(() => {

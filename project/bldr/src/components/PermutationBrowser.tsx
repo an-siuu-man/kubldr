@@ -14,10 +14,9 @@
  */
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Tooltip,
@@ -25,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 
 /**
  * PermutationBrowser Component

@@ -1,28 +1,29 @@
 /**
  * API Route: /api/deleteSchedule
- * 
+ *
  * Permanently deletes a user's schedule from the database.
  * Uses cascading foreign keys to automatically remove related
  * schedule_classes and userschedule entries.
- * 
+ *
  * @method POST
  * @requires Authorization header with Bearer token
  * @body { scheduleId: string } - The UUID of the schedule to delete
  * @returns { success: true, scheduleId: string } - Confirmation of deletion
- * 
+ *
  * @throws 401 - Unauthorized (missing/invalid auth header)
  * @throws 400 - Missing scheduleId in request body
  * @throws 404 - Schedule not found or user doesn't own it
  * @throws 500 - Database error during deletion
  */
+
+import { type NextRequest, NextResponse } from "next/server";
 import { supabase } from "../../lib/supabaseClient";
-import { NextRequest, NextResponse } from "next/server";
 
 /**
  * POST handler for deleting a schedule.
  * Verifies user ownership before performing the deletion.
  * The delete operation cascades to remove all related records.
- * 
+ *
  * @param {NextRequest} req - The incoming request with scheduleId in body
  * @returns {NextResponse} JSON response with result or error
  */
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (!authHeader) {
       return NextResponse.json(
         { error: "No authorization header" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (!scheduleId) {
       return NextResponse.json(
         { error: "Missing scheduleId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -69,11 +70,11 @@ export async function POST(req: NextRequest) {
     if (ownershipError || !ownership) {
       console.error(
         "[deleteSchedule] ownership lookup failed:",
-        ownershipError
+        ownershipError,
       );
       return NextResponse.json(
         { error: "Schedule not found or unauthorized" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
       console.error("[deleteSchedule] delete error:", deleteError);
       return NextResponse.json(
         { error: "Failed to delete schedule" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
     console.error("[deleteSchedule] Unexpected error:", error);
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

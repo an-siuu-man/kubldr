@@ -1,26 +1,26 @@
 /**
  * Loader.tsx
- * 
+ *
  * A simple animated loading spinner component using Framer Motion.
  * Displays a rotating circular border to indicate loading state.
- * 
+ *
  * Features:
  * - Smooth infinite rotation animation
  * - Lightweight and reusable
  * - Consistent 8x8 size
  * - Transparent background for overlay use
- * 
+ *
  * @component
  */
-import React from "react";
+
 import { motion } from "framer-motion";
 
 /**
  * Loader Component
- * 
+ *
  * Renders an animated spinning loader indicator.
  * Used throughout the app to show loading states.
- * 
+ *
  * @returns {JSX.Element} An animated spinning circle loader
  */
 export default function Loader() {
