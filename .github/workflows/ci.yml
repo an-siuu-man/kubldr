@@ -1,0 +1,188 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: project/bldr
+
+jobs:
+  lint:
+    name: Lint (Biome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: project/bldr/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: project/bldr/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+
+  test:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: project/bldr/package-lock.json
+      - run: npm ci
+      - run: npm run test:coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: project/bldr/coverage/
+          retention-days: 14
+
+  build:
+    name: Next.js Build
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values so the build succeeds without real Supabase credentials.
+      # The build only needs the env vars to be non-empty strings.
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key-for-build-only
+      NEXT_PUBLIC_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: project/bldr/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  style:
+    name: Style Checks (non-blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Warn if any route.ts is missing a file-level JSDoc block in the first 5 lines
+      - name: Check API route JSDoc headers
+        run: |
+          MISSING=0
+          for file in $(find src/app/api -name "route.ts"); do
+            if ! head -5 "$file" | grep -q '^\s*/\*\*'; then
+              echo "::warning file=project/bldr/$file::API route is missing a file-level JSDoc block"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          [ "$MISSING" -gt 0 ] \
+            && echo "⚠ $MISSING route file(s) missing JSDoc headers — add a /** ... */ block at the top" \
+            || echo "✓ All route files have JSDoc headers"
+
+      # Warn if any exported function in a route.ts is not a valid HTTP method name
+      - name: Check API route export names
+        run: |
+          INVALID=0
+          for file in $(find src/app/api -name "route.ts"); do
+            BAD=$(grep -nE '^export (async )?function [A-Za-z]+' "$file" \
+              | grep -vE 'function (GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\b' || true)
+            if [ -n "$BAD" ]; then
+              while IFS= read -r match; do
+                LINENUM=$(echo "$match" | cut -d: -f1)
+                echo "::warning file=project/bldr/$file,line=$LINENUM::Exported function is not a standard HTTP method handler (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)"
+                INVALID=$((INVALID + 1))
+              done <<< "$BAD"
+            fi
+          done
+          [ "$INVALID" -gt 0 ] \
+            && echo "⚠ $INVALID non-standard export(s) found in route files — only HTTP method names should be exported" \
+            || echo "✓ All route exports are valid HTTP method handlers"
+
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch full history so gitleaks can scan all commits on PRs
+          fetch-depth: 0
+
+      # 1. Gitleaks — detects hardcoded secrets/tokens in source files.
+      #    Runs the binary directly to avoid gitleaks-action@v2's node20 runtime,
+      #    which is deprecated on GitHub-hosted runners (now default node24).
+      - name: Gitleaks secret scan
+        working-directory: ${{ github.workspace }}
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks detect --source . --no-git --redact --config .gitleaks.toml
+
+      # 2. Service-role / private key leak gate
+      #    Fail if any server-only secret pattern appears in src/
+      - name: Check for service-role key references in src/
+        working-directory: project/bldr
+        run: |
+          if grep -rE "service_role|SERVICE_ROLE|serviceRole|SUPABASE_SERVICE" src/; then
+            echo "::error::Service-role key reference found in src/. All Supabase access must use the anon key."
+            exit 1
+          fi
+          echo "✓ No service-role key references found"
+
+      # 3. Client-side env var gate
+      #    Non-NEXT_PUBLIC_ env vars must not appear in "use client" files
+      - name: Check for private env vars in client components
+        working-directory: project/bldr
+        run: |
+          CLIENT_FILES=$(grep -rl '"use client"' src/ || true)
+          if [ -n "$CLIENT_FILES" ]; then
+            BAD=$(echo "$CLIENT_FILES" | xargs grep -E 'process\.env\.[A-Z_]+' | grep -v 'NEXT_PUBLIC_' || true)
+            if [ -n "$BAD" ]; then
+              echo "::error::Private environment variable referenced in a 'use client' file:"
+              echo "$BAD"
+              exit 1
+            fi
+          fi
+          echo "✓ No private env vars in client components"
+
+      # 4. Committed-secrets gate
+      #    Fail if any .env or key files are tracked in git
+      - name: Check for sensitive files tracked by git
+        run: |
+          # Allowlist: .env.example is intentionally committed
+          SENSITIVE=$(git ls-files | grep -E '\.(env|pem|key|p12|pfx)$|^id_rsa|service[-_]account.*\.json' | grep -v '\.env\.example$' || true)
+          if [ -n "$SENSITIVE" ]; then
+            echo "::error::Sensitive file(s) are tracked by git:"
+            echo "$SENSITIVE"
+            echo "Remove them with: git rm --cached <file>"
+            exit 1
+          fi
+          echo "✓ No sensitive files tracked by git"
+
+      # 5. npm audit — non-blocking, surfaces known vulnerabilities
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: project/bldr/package-lock.json
+      - run: npm ci
+      - name: npm audit
+        working-directory: project/bldr
+        run: npm audit --audit-level=high || true
+        # Non-blocking (|| true) to start; remove || true once audit is clean

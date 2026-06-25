@@ -18,6 +18,9 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "style": {
+        "useNamingConvention": "warn"
+      },
       "suspicious": {
         "noUnknownAtRules": "off"
       }
