@@ -1,7 +1,7 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
+import { AlertTriangle } from "lucide-react";
 
 export default function MaintenanceBanner() {
   return (
@@ -19,8 +19,8 @@ export default function MaintenanceBanner() {
           </span>{" "}
           We are under critical maintenance for an undisclosed length of time.
           We are solving the issues with full diligence and apologize for any
-        inconvenience. For the time being, you will not be able to access your
-        account.
+          inconvenience. For the time being, you will not be able to access your
+          account.
         </p>
       </div>
     </motion.div>

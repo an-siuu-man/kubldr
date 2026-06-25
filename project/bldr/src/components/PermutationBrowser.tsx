@@ -7,6 +7,7 @@
  * Features:
  * - Left/Right arrows to navigate between permutations
  * - Display of current position (e.g., "3 of 12")
+ * - Click the current number to type and jump to any permutation directly
  * - Loading state while generating permutations
  * - Only visible when there are multiple permutations available
  *
@@ -14,10 +15,10 @@
  */
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Shuffle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Tooltip,
@@ -25,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 
 /**
  * PermutationBrowser Component
@@ -42,7 +44,41 @@ export default function PermutationBrowser() {
     isGeneratingPermutations,
     nextPermutation,
     prevPermutation,
+    goToPermutation,
   } = useScheduleBuilder();
+
+  // Local state for the inline edit mode on the permutation number
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus and select the input text whenever edit mode is entered
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  /**
+   * Commit the current input: parse, clamp to [1, total], jump, then exit edit mode.
+   * Invalid/blank input clamps to the current permutation (no-op jump).
+   */
+  const commitEdit = () => {
+    const parsed = Number.parseInt(inputValue, 10);
+    const total = permutations.length;
+    // NaN → treat as current; otherwise clamp to valid 1-based range
+    const oneBased = Number.isNaN(parsed)
+      ? permutationIndex + 1
+      : Math.min(Math.max(parsed, 1), total);
+    goToPermutation(oneBased - 1);
+    setIsEditing(false);
+  };
+
+  const enterEditMode = () => {
+    setInputValue(String(permutationIndex + 1));
+    setIsEditing(true);
+  };
 
   // Don't show if draft is empty
   if (draftSchedule.length === 0) {
@@ -105,9 +141,32 @@ export default function PermutationBrowser() {
         </Button>
 
         <div className="flex items-center gap-0.5 min-w-10 lg:min-w-[50px] justify-center">
-          <span className="text-[10px] lg:text-xs font-dmsans text-white font-medium">
-            {permutationIndex + 1}
-          </span>
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              inputMode="numeric"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitEdit();
+                if (e.key === "Escape") setIsEditing(false);
+              }}
+              onBlur={commitEdit}
+              // Width matches the widest reasonable number so layout stays stable
+              className="w-7 lg:w-8 bg-transparent text-center text-[10px] lg:text-xs font-dmsans text-white font-medium outline-none border-b border-[#A8A8A8] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              aria-label="Permutation number"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={enterEditMode}
+              className="text-[10px] lg:text-xs font-dmsans text-white font-medium hover:underline cursor-pointer"
+              aria-label="Jump to a permutation number"
+            >
+              {permutationIndex + 1}
+            </button>
+          )}
           <span className="text-[9px] lg:text-[10px] text-[#A8A8A8] font-inter">
             /
           </span>

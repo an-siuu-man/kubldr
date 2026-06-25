@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Optional pre-commit hook: blocks committing sensitive files locally.
+#
+# To activate:
+#   git config core.hooksPath .githooks
+#
+# To deactivate (revert to default hooks dir):
+#   git config --unset core.hooksPath
+
+# Files to block (allowlist: .env.example is the only .env variant allowed)
+SENSITIVE=$(git diff --cached --name-only | grep -E '\.(env|pem|key|p12|pfx)$|^id_rsa|service[-_]account.*\.json' | grep -v '\.env\.example$' || true)
+
+if [ -n "$SENSITIVE" ]; then
+  echo ""
+  echo "  ❌  Blocked: sensitive file(s) staged for commit:"
+  echo "$SENSITIVE" | sed 's/^/    /'
+  echo ""
+  echo "  Remove them from staging with:"
+  echo "    git reset HEAD <file>"
+  echo ""
+  exit 1
+fi
+
+exit 0

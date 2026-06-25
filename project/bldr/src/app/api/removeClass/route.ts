@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const classid = classData.classid;
+    const _classid = classData.classid;
 
     // Delete the schedule-class mapping
     const { error: deleteError } = await supabase

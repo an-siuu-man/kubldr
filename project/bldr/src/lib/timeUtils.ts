@@ -6,21 +6,21 @@ export function timeToDecimal(timeStr: string): number {
 
   // If already in 24-hour format (e.g., "13:30") or missing AM/PM, parse directly
   if (!/AM|PM/i.test(timeStr)) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    const [hours, minutes] = timeStr.split(":").map(Number);
     return hours + (minutes || 0) / 60;
   }
 
   // Convert from 12-hour format with AM/PM
-  const [time, meridian] = timeStr.trim().split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
-  
-  if (meridian.toUpperCase() === 'PM' && hours !== 12) {
+  const [time, meridian] = timeStr.trim().split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (meridian.toUpperCase() === "PM" && hours !== 12) {
     hours += 12;
   }
-  if (meridian.toUpperCase() === 'AM' && hours === 12) {
+  if (meridian.toUpperCase() === "AM" && hours === 12) {
     hours = 0;
   }
-  
+
   return hours + (minutes || 0) / 60;
 }
 
@@ -42,13 +42,13 @@ export function calculateDuration(startTime: string, endTime: string): number {
  */
 export function mapDayAbbreviation(abbr: string): string {
   const dayMap: { [key: string]: string } = {
-    'M': 'Monday',
-    'Tu': 'Tuesday',
-    'W': 'Wednesday',
-    'Th': 'Thursday',
-    'F': 'Friday',
-    'Sa': 'Saturday',
-    'U': 'Sunday',
+    M: "Monday",
+    Tu: "Tuesday",
+    W: "Wednesday",
+    Th: "Thursday",
+    F: "Friday",
+    Sa: "Saturday",
+    U: "Sunday",
   };
   return dayMap[abbr] || abbr;
 }
@@ -58,25 +58,25 @@ export function mapDayAbbreviation(abbr: string): string {
  */
 export function parseDays(daysStr: string): string[] {
   if (!daysStr) return [];
-  
+
   const days: string[] = [];
   let i = 0;
-  
+
   while (i < daysStr.length) {
     // Check for two-letter abbreviations first (Tu, Th, Sa)
     if (i + 1 < daysStr.length) {
       const twoChar = daysStr.substring(i, i + 2);
-      if (twoChar === 'Tu' || twoChar === 'Th' || twoChar === 'Sa') {
+      if (twoChar === "Tu" || twoChar === "Th" || twoChar === "Sa") {
         days.push(mapDayAbbreviation(twoChar));
         i += 2;
         continue;
       }
     }
-    
+
     // Single-letter abbreviation (M, W, F, U)
     days.push(mapDayAbbreviation(daysStr[i]));
     i++;
   }
-  
+
   return days.filter(Boolean);
 }

@@ -1,9 +1,9 @@
 /**
  * API Route: /api/createSchedule
- * 
+ *
  * Creates a new schedule for the authenticated user.
  * Inserts a record in allschedules and links it to the user via userschedule.
- * 
+ *
  * @method POST
  * @requires Authentication via Supabase session cookies
  * @body {
@@ -11,20 +11,21 @@
  *   semester: string,      // Semester (e.g., "Spring 2026")
  *   year: number           // Academic year
  * }
- * 
+ *
  * @returns { schedule: object, userSchedule: object } - The created schedule and link
- * 
+ *
  * @throws 401 - Unauthorized (not logged in)
  * @throws 500 - Database error during creation
  */
-import { createClient } from "@/lib/supabase/server";
+
 import { v4 as uuid } from "uuid";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * POST handler for creating a new schedule.
  * Uses server-side Supabase client to get authenticated user.
  * Creates schedule and links it to the user in a two-step process.
- * 
+ *
  * @param {Request} req - The incoming request with schedule details
  * @returns {Response} JSON response with created schedule or error
  */

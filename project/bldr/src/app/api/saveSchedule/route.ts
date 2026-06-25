@@ -1,10 +1,10 @@
 /**
  * API Route: /api/saveSchedule
- * 
+ *
  * Saves or updates a user's schedule with its class sections.
  * Handles both creating new schedules and updating existing ones.
  * For updates, clears existing classes and replaces with new ones.
- * 
+ *
  * @method POST
  * @requires Authorization header with Bearer token
  * @body {
@@ -15,19 +15,20 @@
  *   classes: Array<{uuid: string}> // Classes to add to schedule
  * }
  * @returns { success: true, scheduleId: string, message: string }
- * 
+ *
  * @throws 401 - Unauthorized
  * @throws 400 - Missing required fields
  * @throws 404 - Schedule not found (for updates)
  * @throws 500 - Database error
  */
+
+import { type NextRequest, NextResponse } from "next/server";
 import { supabase } from "../../lib/supabaseClient";
-import { NextRequest, NextResponse } from "next/server";
 
 /**
  * POST handler for saving a schedule.
  * Creates new schedule or updates existing one, then populates classes.
- * 
+ *
  * @param {NextRequest} req - The incoming request with schedule data
  * @returns {NextResponse} JSON response with result or error
  */
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     if (!authHeader) {
       return NextResponse.json(
         { error: "No authorization header" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
     if (!name || !semester || !year) {
       return NextResponse.json(
         { error: "Missing required fields (name, semester, year)" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
       if (ownershipError || !ownership) {
         return NextResponse.json(
           { error: "Schedule not found or unauthorized" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
         .update({
           schedulename: name,
           semester,
-          year: parseInt(year),
+          year: parseInt(year, 10),
           lastedited: new Date().toISOString(),
         })
         .eq("scheduleid", targetScheduleId);
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
         .insert({
           schedulename: name,
           semester,
-          year: parseInt(year),
+          year: parseInt(year, 10),
         })
         .select("scheduleid")
         .single();
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest) {
 
       if (linkError) {
         throw new Error(
-          `Failed to link user to schedule: ${linkError.message}`
+          `Failed to link user to schedule: ${linkError.message}`,
         );
       }
     }
@@ -155,7 +156,7 @@ export async function POST(req: NextRequest) {
 
       if (insertClassesError) {
         throw new Error(
-          `Failed to insert classes: ${insertClassesError.message}`
+          `Failed to insert classes: ${insertClassesError.message}`,
         );
       }
     }
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
     console.error("Save schedule error:", error);
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

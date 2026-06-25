@@ -6,17 +6,17 @@
  * The onlineid field should now store auth.uid() from Supabase
  */
 export interface UserDataRecord {
-  onlineid: string;                // UUID from Supabase auth.uid() (changed from text to uuid in DB)
-  passhash?: string;               // Deprecated - Supabase handles authentication
-  signindate?: Date | string;      // timestamp (default now())
-  isactive: boolean;               // boolean (default true)
+  onlineid: string; // UUID from Supabase auth.uid() (changed from text to uuid in DB)
+  passhash?: string; // Deprecated - Supabase handles authentication
+  signindate?: Date | string; // timestamp (default now())
+  isactive: boolean; // boolean (default true)
 }
 
 /**
  * User authentication/session data (from Supabase)
  */
 export interface User {
-  id: string;                      // Supabase auth UUID
+  id: string; // Supabase auth UUID
   email?: string;
   isactive?: boolean;
   signindate?: Date | string;

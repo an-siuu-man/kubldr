@@ -1,10 +1,10 @@
 /**
  * API Route: /api/replaceClass
- * 
+ *
  * Replaces one class with another in a user's schedule.
  * Adds the new class and removes the old class in a single operation.
  * Useful for swapping between different sections of the same course.
- * 
+ *
  * @method POST
  * @body {
  *   scheduleid: string,   // UUID of the schedule
@@ -14,7 +14,7 @@
  *   toClassId?: number    // Alternative: integer classid to add
  * }
  * @returns { success: true, message: string, details: object }
- * 
+ *
  * @throws 400 - Missing required fields or same source/target
  * @throws 404 - Source or target class not found
  * @throws 500 - Database error during operation
@@ -25,17 +25,17 @@ import { supabase } from "../../lib/supabaseClient";
  * Request body type supporting both UUID and classid lookups
  */
 type BodyUUID = {
-  scheduleid: string;    // UUID of schedule
-  fromUuid?: string;     // UUID of class to remove
-  toUuid?: string;       // UUID of class to add
-  fromClassId?: number;  // Integer classid alternative
-  toClassId?: number;    // Integer classid alternative
+  scheduleid: string; // UUID of schedule
+  fromUuid?: string; // UUID of class to remove
+  toUuid?: string; // UUID of class to add
+  fromClassId?: number; // Integer classid alternative
+  toClassId?: number; // Integer classid alternative
 };
 
 /**
  * POST handler for replacing a class in a schedule.
  * Performs a two-step operation: add new class, then remove old class.
- * 
+ *
  * @param {Request} req - The incoming request with class identifiers
  * @returns {Response} JSON response with result or error
  */
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     ) {
       return Response.json(
         { error: "Provide fromUuid/toUuid OR fromClassId/toClassId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,19 +81,19 @@ export async function POST(req: Request) {
     if (fromClassId == null) {
       return Response.json(
         { error: "Source class not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     if (toClassId == null) {
       return Response.json(
         { error: "Target class not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     if (fromClassId === toClassId) {
       return Response.json(
         { error: "Source and target class are the same — nothing to replace" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
     if (toClassErr || !toClass) {
       return Response.json(
         { error: "Failed to resolve target class uuid" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
       console.error("[replaceClass] upsert error:", upsertErr);
       return Response.json(
         { error: "Failed to add target class to schedule" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -139,7 +139,7 @@ export async function POST(req: Request) {
     if (fromClassErr || !fromClass) {
       // If we can't find the old class, that's okay - it might not be in the schedule
       console.warn(
-        "[replaceClass] Could not resolve fromClass uuid, skipping delete"
+        "[replaceClass] Could not resolve fromClass uuid, skipping delete",
       );
     } else {
       const { error: delErr, count: deletedOld } = await supabase
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
         // roll forward anyway: target is already present, old may not have existed
         return Response.json(
           { error: "Target added, but failed to remove old class" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -171,13 +171,13 @@ export async function POST(req: Request) {
           toClassId,
         },
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (err: any) {
     console.error("[replaceClass] server error:", err);
     return Response.json(
       { error: "Internal server error", details: err?.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
