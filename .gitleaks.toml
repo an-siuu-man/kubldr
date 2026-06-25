@@ -1,0 +1,28 @@
+# Gitleaks configuration for the bldr repository.
+# Extends the built-in default ruleset and adds allowlists for known
+# non-secrets (test placeholders) and generated/dependency paths.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlisted paths and known test placeholders"
+
+# Paths that never contain real secrets: build output, dependencies,
+# and committed example/template files. These are matched as regexes
+# against the file path. (.env itself is gitignored and never committed.)
+paths = [
+  '''(^|/)\.next/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)coverage/''',
+  '''\.env\.example$''',
+  # Vitest setup uses a hardcoded fake anon key so module-load env reads
+  # don't throw during tests. It is not a real credential.
+  '''project/bldr/vitest\.setup\.ts$''',
+]
+
+# Defense-in-depth: also allowlist the literal placeholder value itself,
+# so it is never flagged regardless of which file it appears in.
+regexes = [
+  '''test-anon-key-1234567890abcdef''',
+]
