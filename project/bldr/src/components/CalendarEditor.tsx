@@ -736,8 +736,9 @@ const CalendarEditor = ({
                                           )
                                         }
                                       />
-                                      <span className="font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
-                                        {block.label}
+                                      <span className="font-bold text-[8px] lg:text-[9px] xl:text-[10px] font-dmsans truncate w-full leading-tight">
+                                        {block.label}: {block.starttime} -{" "}
+                                        {block.endtime}
                                       </span>
                                     </motion.div>
                                   </ContextMenuTrigger>
