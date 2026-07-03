@@ -25,6 +25,7 @@ import {
   createDraftHash,
   generatePermutations,
   getUniqueClassesFromDraft,
+  hasBusyBlockConflict,
   loadPermutationsFromStorage,
   savePermutationsToStorage,
 } from "@/lib/permutationUtils";
@@ -686,6 +687,24 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       endtime: block.endtime,
       label: block.label || "Busy",
     };
+
+    // Pinned sections can't be moved by permutations, so a busy block over
+    // one would make the schedule immediately unsatisfiable — reject it
+    const pinnedOverlap = draftSchedule.find(
+      (section: ClassSection) =>
+        section.pinned && hasBusyBlockConflict(section, [optimistic]),
+    );
+    if (pinnedOverlap) {
+      toast.error(
+        `This time overlaps a pinned class (${pinnedOverlap.dept} ${pinnedOverlap.code})`,
+        {
+          style: toastStyle,
+          duration: 2000,
+          icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+        },
+      );
+      return;
+    }
 
     setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, optimistic]);
 

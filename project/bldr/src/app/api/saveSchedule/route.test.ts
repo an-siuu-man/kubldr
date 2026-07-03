@@ -150,6 +150,7 @@ describe("POST /api/saveSchedule", () => {
       { data: { scheduleid: SCHED_ID }, error: null }, // ownership check passes
       { data: null, error: null }, // update allschedules
       { data: null, error: null }, // delete old schedule_classes
+      { data: null, error: null }, // delete old schedule_busyblocks
       { data: null, error: null }, // insert new classes
     ];
     const res = await post(
@@ -166,5 +167,40 @@ describe("POST /api/saveSchedule", () => {
     const body = await res.json();
     expect(body.success).toBe(true);
     expect(body.scheduleId).toBe(SCHED_ID);
+  });
+
+  it("replaces busy blocks when they are included in the save", async () => {
+    mockSupabase.auth.getUser.mockResolvedValue({
+      data: { user: { id: "user-1" } },
+      error: null,
+    });
+    const SCHED_ID = "existing-sched-id";
+    fromResponses = [
+      { data: { scheduleid: SCHED_ID }, error: null }, // ownership check passes
+      { data: null, error: null }, // update allschedules
+      { data: null, error: null }, // delete old schedule_classes
+      { data: null, error: null }, // delete old schedule_busyblocks
+      { data: null, error: null }, // insert new classes
+      { data: null, error: null }, // insert new busy blocks
+    ];
+    const res = await post(
+      {
+        scheduleId: SCHED_ID,
+        name: "Updated",
+        semester: "Fall",
+        year: 2025,
+        classes: [{ uuid: "class-1" }],
+        busyBlocks: [
+          { day: "M", starttime: "09:00", endtime: "10:00", label: "Busy" },
+        ],
+      },
+      "token",
+    );
+    expect(res.status).toBe(200);
+    const busyBlockCalls = mockSupabase.from.mock.calls.filter(
+      (call) => call[0] === "schedule_busyblocks",
+    );
+    // One delete (clear) and one insert (replace)
+    expect(busyBlockCalls).toHaveLength(2);
   });
 });

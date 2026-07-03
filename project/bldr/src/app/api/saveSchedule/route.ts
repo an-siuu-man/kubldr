@@ -12,7 +12,8 @@
  *   name: string,        // Schedule name
  *   semester: string,    // Semester (e.g., "Spring 2026")
  *   year: number,        // Academic year
- *   classes: Array<{uuid: string}> // Classes to add to schedule
+ *   classes: Array<{uuid: string}>, // Classes to add to schedule
+ *   busyBlocks?: Array<{day, starttime, endtime, label}> // Busy blocks to persist
  * }
  * @returns { success: true, scheduleId: string, message: string }
  *
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     // Step 2: Parse request body
     const body = await req.json();
-    const { scheduleId, name, semester, year, classes } = body;
+    const { scheduleId, name, semester, year, classes, busyBlocks } = body;
 
     // Validate required fields
     if (!name || !semester || !year) {
@@ -109,6 +110,18 @@ export async function POST(req: NextRequest) {
       if (deleteError) {
         throw new Error(`Failed to clear old classes: ${deleteError.message}`);
       }
+
+      // Clear existing busy blocks; the draft's blocks are reinserted below
+      const { error: deleteBusyError } = await supabase
+        .from("schedule_busyblocks")
+        .delete()
+        .eq("scheduleid", targetScheduleId);
+
+      if (deleteBusyError) {
+        throw new Error(
+          `Failed to clear old busy blocks: ${deleteBusyError.message}`,
+        );
+      }
     } else {
       // --- CREATE NEW SCHEDULE ---
 
@@ -157,6 +170,34 @@ export async function POST(req: NextRequest) {
       if (insertClassesError) {
         throw new Error(
           `Failed to insert classes: ${insertClassesError.message}`,
+        );
+      }
+    }
+
+    // Step 5: Insert busy blocks into schedule_busyblocks
+    if (busyBlocks && busyBlocks.length > 0) {
+      const busyBlockRows = busyBlocks.map(
+        (block: {
+          day: string;
+          starttime: string;
+          endtime: string;
+          label?: string;
+        }) => ({
+          scheduleid: targetScheduleId,
+          day: block.day,
+          starttime: block.starttime,
+          endtime: block.endtime,
+          label: block.label || "Busy",
+        }),
+      );
+
+      const { error: insertBusyError } = await supabase
+        .from("schedule_busyblocks")
+        .insert(busyBlockRows);
+
+      if (insertBusyError) {
+        throw new Error(
+          `Failed to insert busy blocks: ${insertBusyError.message}`,
         );
       }
     }
