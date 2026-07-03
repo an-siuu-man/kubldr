@@ -18,11 +18,11 @@
  * @throws 400 - Missing or invalid fields
  * @throws 500 - Database error
  */
-import type { BusyBlockRecord } from "@/types";
 import {
   isValidBusyBlockDay,
   validateBusyBlockTimes,
 } from "@/lib/busyBlockValidation";
+import type { BusyBlockRecord } from "@/types";
 import { supabase } from "../../lib/supabaseClient";
 
 type AddBusyBlockBody = {

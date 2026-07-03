@@ -211,10 +211,7 @@ const CalendarEditor = ({
   /**
    * Starts moving an existing busy block within its current day column.
    */
-  const handleBusyBlockMouseDown = (
-    block: BusyBlock,
-    e: React.MouseEvent,
-  ) => {
+  const handleBusyBlockMouseDown = (block: BusyBlock, e: React.MouseEvent) => {
     if (readOnly || e.button !== 0) return;
 
     const day = mapDayAbbreviation(block.day);
