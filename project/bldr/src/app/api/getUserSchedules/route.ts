@@ -11,6 +11,7 @@
 
 import type { NextRequest } from "next/server";
 import { type ClassDetailRow, formatClassSection } from "@/lib/scheduleFormat";
+import type { BusyBlock } from "@/types";
 import { supabase } from "../../lib/supabaseClient";
 
 type ScheduleRow = {
@@ -104,6 +105,36 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const { data: busyBlockRows, error: busyBlocksError } = await supabase
+      .from("schedule_busyblocks")
+      .select("uuid, scheduleid, day, starttime, endtime, label")
+      .in("scheduleid", scheduleIds)
+      .order("created_at", { ascending: true });
+
+    if (busyBlocksError) {
+      console.error(
+        "[getUserSchedules] Error fetching busy blocks:",
+        busyBlocksError,
+      );
+      return Response.json(
+        { error: "Failed to fetch busy blocks" },
+        { status: 500 },
+      );
+    }
+
+    const busyBlocksByScheduleId = new Map<string, BusyBlock[]>();
+    for (const row of busyBlockRows ?? []) {
+      const existing = busyBlocksByScheduleId.get(row.scheduleid) ?? [];
+      existing.push({
+        uuid: row.uuid,
+        day: row.day,
+        starttime: row.starttime,
+        endtime: row.endtime,
+        label: row.label,
+      });
+      busyBlocksByScheduleId.set(row.scheduleid, existing);
+    }
+
     const classUuids = Array.from(
       new Set((scheduleClasses ?? []).map((row) => row.class_uuid)),
     );
@@ -157,6 +188,7 @@ export async function GET(req: NextRequest) {
           semester: schedule.semester,
           year: schedule.year,
           classes: formattedClasses,
+          busyBlocks: busyBlocksByScheduleId.get(schedule.scheduleid) ?? [],
           isActive: activeByScheduleId.get(schedule.scheduleid) ?? false,
           isPublic: Boolean(schedule.is_public),
           createdAt: schedule.createdat,
