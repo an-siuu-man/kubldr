@@ -32,6 +32,7 @@ import {
   Loader2,
   Menu,
   MoreHorizontal,
+  Settings,
   Share2,
   Sidebar as SidebarIcon,
   Trash2,
@@ -42,6 +43,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { AppSettingsDialog } from "@/components/AppSettingsDialog";
 import {
   Accordion,
   AccordionContent,
@@ -174,6 +176,7 @@ export function Sidebar() {
   const [open, setOpen] = useState(true);
   const [isSidebarWide, setIsSidebarWide] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Loading state for async operations (e.g., creating schedules)
@@ -601,6 +604,14 @@ export function Sidebar() {
                   {user?.is_anonymous ? "Guest" : user?.email?.split("@")[0]}
                 </span>
               </Link>
+              <button
+                type="button"
+                aria-label="Open settings"
+                onClick={() => setSettingsDialogOpen(true)}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-white/8 hover:text-gray-200"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -1217,30 +1228,45 @@ export function Sidebar() {
               </AnimatePresence>
 
               {/* User info — links to profile page */}
-              <Link
-                href="/profile"
-                className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2 rounded-md hover:bg-white/8 px-1 py-1 transition-colors"
-              >
-                <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
-                <AnimatePresence initial={false}>
-                  {open && (
-                    <motion.div
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      variants={sidebarContentVariants}
-                      key={user?.email || "guest"}
-                      className="font-figtree text-xs lg:text-sm truncate min-w-[min(280px,25vw)]"
-                    >
-                      {user?.is_anonymous ? "Guest" : user?.email}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Link>
+              <div className="flex w-full flex-row items-center gap-1">
+                <Link
+                  href="/profile"
+                  className="flex min-w-0 flex-1 flex-row items-center justify-start gap-1.5 rounded-md px-1 py-1 transition-colors hover:bg-white/8 lg:gap-2"
+                >
+                  <User className="h-4 w-4 shrink-0 lg:h-5 lg:w-5" />
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={sidebarContentVariants}
+                        key={user?.email || "guest"}
+                        className="min-w-0 truncate font-figtree text-xs lg:text-sm"
+                      >
+                        {user?.is_anonymous ? "Guest" : user?.email}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Link>
+                <button
+                  type="button"
+                  aria-label="Open settings"
+                  onClick={() => setSettingsDialogOpen(true)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-white/8 hover:text-gray-200"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      <AppSettingsDialog
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
+      />
 
       {/* Delete Confirmation AlertDialog */}
       <AlertDialog
