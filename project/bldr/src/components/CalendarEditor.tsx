@@ -143,6 +143,7 @@ const CalendarEditor = ({
 
   // While a drag is active, track the cursor globally and commit on mouseup
   const isDraggingBusyBlock = busyDrag !== null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: listeners only need to attach/detach per drag session; handlers read live state via refs
   useEffect(() => {
     if (!isDraggingBusyBlock) return;
 
@@ -176,8 +177,8 @@ const CalendarEditor = ({
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseup", handleUp);
     };
-    // biome-ignore lint/correctness/useExhaustiveDependencies: listeners only need to attach/detach per drag session; handlers read live state via refs
   }, [isDraggingBusyBlock]);
+
   const calendarClasses = classes ?? draftSchedule;
   const calendarName = scheduleName ?? draftScheduleName;
   // Busy blocks come from the viewer's own draft, so they are never shown
