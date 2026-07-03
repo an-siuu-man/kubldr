@@ -94,7 +94,19 @@ type BusyDragMoveState = {
   originalEnd: number;
 };
 
-type BusyDragState = BusyDragCreateState | BusyDragMoveState;
+type BusyDragResizeState = {
+  mode: "resize-start" | "resize-end";
+  uuid: string;
+  day: string;
+  current: number; // decimal hour under the cursor (snapped)
+  originalStart: number;
+  originalEnd: number;
+};
+
+type BusyDragState =
+  | BusyDragCreateState
+  | BusyDragMoveState
+  | BusyDragResizeState;
 
 const getMovedTimes = (drag: BusyDragMoveState) => {
   const duration = drag.originalEnd - drag.originalStart;
@@ -106,6 +118,20 @@ const getMovedTimes = (drag: BusyDragMoveState) => {
   return {
     start: drag.originalStart + delta,
     end: drag.originalStart + delta + duration,
+  };
+};
+
+const getResizedTimes = (drag: BusyDragResizeState) => {
+  if (drag.mode === "resize-start") {
+    return {
+      start: clamp(drag.current, CAL_START_HOUR, drag.originalEnd - 0.25),
+      end: drag.originalEnd,
+    };
+  }
+
+  return {
+    start: drag.originalStart,
+    end: clamp(drag.current, drag.originalStart + 0.25, CAL_END_HOUR),
   };
 };
 
@@ -197,6 +223,32 @@ const CalendarEditor = ({
     });
   };
 
+  /**
+   * Starts resizing an existing busy block from its top or bottom edge.
+   */
+  const handleBusyBlockResizeMouseDown = (
+    block: BusyBlock,
+    mode: BusyDragResizeState["mode"],
+    e: React.MouseEvent,
+  ) => {
+    if (readOnly || e.button !== 0) return;
+
+    const day = mapDayAbbreviation(block.day);
+    const current = timeFromClientY(e.clientY);
+    if (!day || current == null) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    setBusyDrag({
+      mode,
+      uuid: block.uuid,
+      day,
+      current,
+      originalStart: timeToDecimal(block.starttime),
+      originalEnd: timeToDecimal(block.endtime),
+    });
+  };
+
   // While a drag is active, track the cursor globally and commit on mouseup
   const isDraggingBusyBlock = busyDrag !== null;
   // biome-ignore lint/correctness/useExhaustiveDependencies: listeners only need to attach/detach per drag session; handlers read live state via refs
@@ -224,7 +276,7 @@ const CalendarEditor = ({
               label: "Busy",
             });
           }
-        } else {
+        } else if (drag.mode === "move") {
           const moved = getMovedTimes(drag);
           if (
             moved.start !== drag.originalStart ||
@@ -234,6 +286,18 @@ const CalendarEditor = ({
               drag.uuid,
               decimalToTimeString(moved.start),
               decimalToTimeString(moved.end),
+            );
+          }
+        } else {
+          const resized = getResizedTimes(drag);
+          if (
+            resized.start !== drag.originalStart ||
+            resized.end !== drag.originalEnd
+          ) {
+            updateBusyBlockInDraft(
+              drag.uuid,
+              decimalToTimeString(resized.start),
+              decimalToTimeString(resized.end),
             );
           }
         }
@@ -258,15 +322,23 @@ const CalendarEditor = ({
   }, [isDraggingBusyBlock]);
 
   const getVisibleBusyBlock = (block: BusyBlock): BusyBlock => {
-    if (busyDrag?.mode !== "move" || busyDrag.uuid !== block.uuid) {
+    if (
+      !busyDrag ||
+      busyDrag.mode === "create" ||
+      busyDrag.uuid !== block.uuid
+    ) {
       return block;
     }
 
-    const moved = getMovedTimes(busyDrag);
+    const times =
+      busyDrag.mode === "move"
+        ? getMovedTimes(busyDrag)
+        : getResizedTimes(busyDrag);
+
     return {
       ...block,
-      starttime: decimalToTimeString(moved.start),
-      endtime: decimalToTimeString(moved.end),
+      starttime: decimalToTimeString(times.start),
+      endtime: decimalToTimeString(times.end),
     };
   };
 
@@ -638,6 +710,32 @@ const CalendarEditor = ({
                                       }}
                                       title={`${block.label} • ${block.starttime} - ${block.endtime}`}
                                     >
+                                      <button
+                                        aria-label="Resize busy block start"
+                                        className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize z-20 appearance-none border-0 bg-transparent p-0"
+                                        tabIndex={-1}
+                                        type="button"
+                                        onMouseDown={(e) =>
+                                          handleBusyBlockResizeMouseDown(
+                                            block,
+                                            "resize-start",
+                                            e,
+                                          )
+                                        }
+                                      />
+                                      <button
+                                        aria-label="Resize busy block end"
+                                        className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize z-20 appearance-none border-0 bg-transparent p-0"
+                                        tabIndex={-1}
+                                        type="button"
+                                        onMouseDown={(e) =>
+                                          handleBusyBlockResizeMouseDown(
+                                            block,
+                                            "resize-end",
+                                            e,
+                                          )
+                                        }
+                                      />
                                       <span className="font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
                                         {block.label}
                                       </span>
