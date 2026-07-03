@@ -68,16 +68,82 @@ const DAY_ABBREVIATIONS: Record<string, string> = {
 
 const snapToQuarterHour = (time: number) => Math.round(time * 4) / 4;
 
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
 const decimalToTimeString = (time: number) => {
   const h = Math.floor(time);
   const m = Math.round((time - h) * 60);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 };
 
-type BusyDragState = {
+type BusyDragCreateState = {
+  mode: "create";
   day: string; // full day name of the column the drag started in
   anchor: number; // decimal hour where the drag started (snapped)
   current: number; // decimal hour under the cursor (snapped)
+};
+
+type BusyDragMoveState = {
+  mode: "move";
+  uuid: string;
+  day: string; // full day name; moves never cross day columns
+  anchor: number; // decimal hour where the drag started (snapped)
+  current: number; // decimal hour under the cursor (snapped)
+  originalStart: number;
+  originalEnd: number;
+};
+
+type BusyDragResizeState = {
+  mode: "resize-start" | "resize-end";
+  uuid: string;
+  day: string;
+  anchor: number; // decimal hour where the resize drag started (snapped)
+  current: number; // decimal hour under the cursor (snapped)
+  originalStart: number;
+  originalEnd: number;
+};
+
+type BusyDragState =
+  | BusyDragCreateState
+  | BusyDragMoveState
+  | BusyDragResizeState;
+
+const getMovedTimes = (drag: BusyDragMoveState) => {
+  const duration = drag.originalEnd - drag.originalStart;
+  const rawDelta = snapToQuarterHour(drag.current - drag.anchor);
+  const minDelta = CAL_START_HOUR - drag.originalStart;
+  const maxDelta = CAL_END_HOUR - drag.originalEnd;
+  const delta = clamp(rawDelta, minDelta, maxDelta);
+
+  return {
+    start: drag.originalStart + delta,
+    end: drag.originalStart + delta + duration,
+  };
+};
+
+const getResizedTimes = (drag: BusyDragResizeState) => {
+  const delta = snapToQuarterHour(drag.current - drag.anchor);
+
+  if (drag.mode === "resize-start") {
+    return {
+      start: clamp(
+        drag.originalStart + delta,
+        CAL_START_HOUR,
+        drag.originalEnd - 0.25,
+      ),
+      end: drag.originalEnd,
+    };
+  }
+
+  return {
+    start: drag.originalStart,
+    end: clamp(
+      drag.originalEnd + delta,
+      drag.originalStart + 0.25,
+      CAL_END_HOUR,
+    ),
+  };
 };
 
 /**
@@ -103,6 +169,7 @@ const CalendarEditor = ({
     togglePinSection,
     draftBusyBlocks,
     addBusyBlockToDraft,
+    updateBusyBlockInDraft,
     removeBusyBlockFromDraft,
   } = useScheduleBuilder();
 
@@ -138,7 +205,57 @@ const CalendarEditor = ({
     const time = timeFromClientY(e.clientY);
     if (time == null) return;
     e.preventDefault();
-    setBusyDrag({ day, anchor: time, current: time });
+    setBusyDrag({ mode: "create", day, anchor: time, current: time });
+  };
+
+  /**
+   * Starts moving an existing busy block within its current day column.
+   */
+  const handleBusyBlockMouseDown = (block: BusyBlock, e: React.MouseEvent) => {
+    if (readOnly || e.button !== 0) return;
+
+    const day = mapDayAbbreviation(block.day);
+    const anchor = timeFromClientY(e.clientY);
+    if (!day || anchor == null) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    setBusyDrag({
+      mode: "move",
+      uuid: block.uuid,
+      day,
+      anchor,
+      current: anchor,
+      originalStart: timeToDecimal(block.starttime),
+      originalEnd: timeToDecimal(block.endtime),
+    });
+  };
+
+  /**
+   * Starts resizing an existing busy block from its top or bottom edge.
+   */
+  const handleBusyBlockResizeMouseDown = (
+    block: BusyBlock,
+    mode: BusyDragResizeState["mode"],
+    e: React.MouseEvent,
+  ) => {
+    if (readOnly || e.button !== 0) return;
+
+    const day = mapDayAbbreviation(block.day);
+    const current = timeFromClientY(e.clientY);
+    if (!day || current == null) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    setBusyDrag({
+      mode,
+      uuid: block.uuid,
+      day,
+      anchor: current,
+      current,
+      originalStart: timeToDecimal(block.starttime),
+      originalEnd: timeToDecimal(block.endtime),
+    });
   };
 
   // While a drag is active, track the cursor globally and commit on mouseup
@@ -156,28 +273,83 @@ const CalendarEditor = ({
     const handleUp = () => {
       const drag = busyDragRef.current;
       if (drag) {
-        const start = Math.min(drag.anchor, drag.current);
-        const end = Math.max(drag.anchor, drag.current);
-        // Anything shorter than 15 minutes is treated as an accidental click
-        if (end - start >= 0.25) {
-          addBusyBlockToDraft({
-            day: DAY_ABBREVIATIONS[drag.day],
-            starttime: decimalToTimeString(start),
-            endtime: decimalToTimeString(end),
-            label: "Busy",
-          });
+        if (drag.mode === "create") {
+          const start = Math.min(drag.anchor, drag.current);
+          const end = Math.max(drag.anchor, drag.current);
+          // Anything shorter than 15 minutes is treated as an accidental click
+          if (end - start >= 0.25) {
+            addBusyBlockToDraft({
+              day: DAY_ABBREVIATIONS[drag.day],
+              starttime: decimalToTimeString(start),
+              endtime: decimalToTimeString(end),
+              label: "Busy",
+            });
+          }
+        } else if (drag.mode === "move") {
+          const moved = getMovedTimes(drag);
+          if (
+            moved.start !== drag.originalStart ||
+            moved.end !== drag.originalEnd
+          ) {
+            updateBusyBlockInDraft(
+              drag.uuid,
+              decimalToTimeString(moved.start),
+              decimalToTimeString(moved.end),
+            );
+          }
+        } else {
+          const resized = getResizedTimes(drag);
+          if (
+            resized.start !== drag.originalStart ||
+            resized.end !== drag.originalEnd
+          ) {
+            updateBusyBlockInDraft(
+              drag.uuid,
+              decimalToTimeString(resized.start),
+              decimalToTimeString(resized.end),
+            );
+          }
         }
       }
       setBusyDrag(null);
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setBusyDrag(null);
+      }
+    };
+
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("mouseup", handleUp);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isDraggingBusyBlock]);
+
+  const getVisibleBusyBlock = (block: BusyBlock): BusyBlock => {
+    if (
+      !busyDrag ||
+      busyDrag.mode === "create" ||
+      busyDrag.uuid !== block.uuid
+    ) {
+      return block;
+    }
+
+    const times =
+      busyDrag.mode === "move"
+        ? getMovedTimes(busyDrag)
+        : getResizedTimes(busyDrag);
+
+    return {
+      ...block,
+      starttime: decimalToTimeString(times.start),
+      endtime: decimalToTimeString(times.end),
+    };
+  };
 
   const calendarClasses = classes ?? draftSchedule;
   const calendarName = scheduleName ?? draftScheduleName;
@@ -509,6 +681,7 @@ const CalendarEditor = ({
                             })}
 
                           {busyBlocks
+                            .map(getVisibleBusyBlock)
                             .filter((block: BusyBlock) => {
                               const blockStart = timeToDecimal(block.starttime);
                               return (
@@ -533,7 +706,10 @@ const CalendarEditor = ({
                                       data-block
                                       initial={{ opacity: 0, scale: 0.8 }}
                                       animate={{ opacity: 1, scale: 1 }}
-                                      className="absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md border border-[#5a5a5a] text-[#d4d4d4] shadow-md z-10 overflow-hidden cursor-default select-none"
+                                      className="absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md border border-[#5a5a5a] text-[#d4d4d4] shadow-md z-10 overflow-hidden cursor-grab active:cursor-grabbing select-none"
+                                      onMouseDown={(e) =>
+                                        handleBusyBlockMouseDown(block, e)
+                                      }
                                       style={{
                                         top: `${offsetPercent}%`,
                                         height: `${heightPercent}%`,
@@ -543,8 +719,35 @@ const CalendarEditor = ({
                                       }}
                                       title={`${block.label} • ${block.starttime} - ${block.endtime}`}
                                     >
-                                      <span className="font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
-                                        {block.label}
+                                      <button
+                                        aria-label="Resize busy block start"
+                                        className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize z-20 appearance-none border-0 bg-transparent p-0"
+                                        tabIndex={-1}
+                                        type="button"
+                                        onMouseDown={(e) =>
+                                          handleBusyBlockResizeMouseDown(
+                                            block,
+                                            "resize-start",
+                                            e,
+                                          )
+                                        }
+                                      />
+                                      <button
+                                        aria-label="Resize busy block end"
+                                        className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize z-20 appearance-none border-0 bg-transparent p-0"
+                                        tabIndex={-1}
+                                        type="button"
+                                        onMouseDown={(e) =>
+                                          handleBusyBlockResizeMouseDown(
+                                            block,
+                                            "resize-end",
+                                            e,
+                                          )
+                                        }
+                                      />
+                                      <span className="font-bold text-[8px] lg:text-[9px] xl:text-[10px] font-dmsans truncate w-full leading-tight">
+                                        {block.label}: {block.starttime} -{" "}
+                                        {block.endtime}
                                       </span>
                                     </motion.div>
                                   </ContextMenuTrigger>
@@ -563,7 +766,7 @@ const CalendarEditor = ({
                               );
                             })}
 
-                          {busyDrag &&
+                          {busyDrag?.mode === "create" &&
                             busyDrag.day === day &&
                             (() => {
                               const previewStart = Math.min(

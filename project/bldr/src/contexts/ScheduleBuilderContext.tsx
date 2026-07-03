@@ -673,6 +673,23 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
    * once /api/addBusyBlock succeeds (or rolled back on failure).
    * @param block - Day, time range, and optional label for the new block
    */
+  const findPinnedBusyBlockOverlap = (block: BusyBlock) =>
+    draftSchedule.find(
+      (section: ClassSection) =>
+        section.pinned && hasBusyBlockConflict(section, [block]),
+    );
+
+  const showPinnedBusyBlockOverlapToast = (pinnedOverlap: ClassSection) => {
+    toast.error(
+      `This time overlaps a pinned class (${pinnedOverlap.dept} ${pinnedOverlap.code})`,
+      {
+        style: toastStyle,
+        duration: 2000,
+        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+      },
+    );
+  };
+
   const addBusyBlockToDraft = async (block: {
     day: string;
     starttime: string;
@@ -690,19 +707,9 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
     // Pinned sections can't be moved by permutations, so a busy block over
     // one would make the schedule immediately unsatisfiable — reject it
-    const pinnedOverlap = draftSchedule.find(
-      (section: ClassSection) =>
-        section.pinned && hasBusyBlockConflict(section, [optimistic]),
-    );
+    const pinnedOverlap = findPinnedBusyBlockOverlap(optimistic);
     if (pinnedOverlap) {
-      toast.error(
-        `This time overlaps a pinned class (${pinnedOverlap.dept} ${pinnedOverlap.code})`,
-        {
-          style: toastStyle,
-          duration: 2000,
-          icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-        },
-      );
+      showPinnedBusyBlockOverlapToast(pinnedOverlap);
       return;
     }
 
@@ -736,6 +743,63 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       console.error("Error adding busy block:", error);
       setDraftBusyBlocks((prev: BusyBlock[]) =>
         prev.filter((b: BusyBlock) => b.uuid !== tempUuid),
+      );
+      toast.error("Failed to save busy block. Please try again.", {
+        style: toastStyle,
+        duration: 2000,
+        icon: <AlertCircle className="h-5 w-5" />,
+      });
+    }
+  };
+
+  /**
+   * Updates a busy block's time range in the draft, optimistically, then
+   * persists the change for saved schedules.
+   * @param uuid - The uuid of the busy block to update
+   * @param starttime - New start time in HH:MM format
+   * @param endtime - New end time in HH:MM format
+   */
+  const updateBusyBlockInDraft = async (
+    uuid: string,
+    starttime: string,
+    endtime: string,
+  ) => {
+    const current = draftBusyBlocks.find((b: BusyBlock) => b.uuid === uuid);
+    if (!current) return;
+
+    if (current.starttime === starttime && current.endtime === endtime) return;
+
+    const updated: BusyBlock = { ...current, starttime, endtime };
+    const pinnedOverlap = findPinnedBusyBlockOverlap(updated);
+    if (pinnedOverlap) {
+      showPinnedBusyBlockOverlapToast(pinnedOverlap);
+      return;
+    }
+
+    setDraftBusyBlocks((prev: BusyBlock[]) =>
+      prev.map((b: BusyBlock) => (b.uuid === uuid ? updated : b)),
+    );
+
+    // Draft-only or temp blocks are persisted later when the schedule is saved
+    if (!existingScheduleId || uuid.startsWith("temp-")) return;
+
+    try {
+      const response = await fetch("/api/updateBusyBlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scheduleid: existingScheduleId,
+          uuid,
+          starttime,
+          endtime,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update busy block");
+    } catch (error) {
+      console.error("Error updating busy block:", error);
+      setDraftBusyBlocks((prev: BusyBlock[]) =>
+        prev.map((b: BusyBlock) => (b.uuid === uuid ? current : b)),
       );
       toast.error("Failed to save busy block. Please try again.", {
         style: toastStyle,
@@ -827,6 +891,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         togglePinSection,
         draftBusyBlocks,
         addBusyBlockToDraft,
+        updateBusyBlockInDraft,
         removeBusyBlockFromDraft,
         clearDraft,
         loadExistingScheduleIntoDraft,
