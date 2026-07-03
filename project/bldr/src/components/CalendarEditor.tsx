@@ -31,8 +31,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-import { calculateDuration, parseDays, timeToDecimal } from "@/lib/timeUtils";
-import type { ClassSection } from "@/types";
+import {
+  calculateDuration,
+  mapDayAbbreviation,
+  parseDays,
+  timeToDecimal,
+} from "@/lib/timeUtils";
+import type { BusyBlock, ClassSection } from "@/types";
 
 type CalendarEditorProps = {
   classes?: ClassSection[];
@@ -67,12 +72,19 @@ const CalendarEditor = ({
     draftScheduleName,
     removeClassFromDraft,
     togglePinSection,
+    draftBusyBlocks,
+    removeBusyBlockFromDraft,
   } = useScheduleBuilder();
   const calendarClasses = classes ?? draftSchedule;
   const calendarName = scheduleName ?? draftScheduleName;
+  // Busy blocks come from the viewer's own draft, so they are never shown
+  // in read-only mode (e.g. the public share page).
+  const busyBlocks: BusyBlock[] = readOnly ? [] : (draftBusyBlocks ?? []);
   const shouldShowCalendar = readOnly
     ? Boolean(calendarName)
-    : Boolean(calendarName && calendarClasses.length > 0);
+    : Boolean(
+        calendarName && (calendarClasses.length > 0 || busyBlocks.length > 0),
+      );
 
   // Days of the week to display as column headers
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -376,6 +388,64 @@ const CalendarEditor = ({
                                       </ContextMenuItem>
                                     </ContextMenuContent>
                                   )}
+                                </ContextMenu>
+                              );
+                            })}
+
+                          {busyBlocks
+                            .filter((block: BusyBlock) => {
+                              const blockStart = timeToDecimal(
+                                block.starttime,
+                              );
+                              return (
+                                mapDayAbbreviation(block.day) === day &&
+                                blockStart >= hour &&
+                                blockStart < hour + 1
+                              );
+                            })
+                            .map((block: BusyBlock) => {
+                              const blockStart = timeToDecimal(
+                                block.starttime,
+                              );
+                              const blockDuration = calculateDuration(
+                                block.starttime,
+                                block.endtime,
+                              );
+                              const offsetPercent = (blockStart - hour) * 100;
+                              const heightPercent = blockDuration * 100;
+
+                              return (
+                                <ContextMenu key={block.uuid}>
+                                  <ContextMenuTrigger>
+                                    <motion.div
+                                      initial={{ opacity: 0, scale: 0.8 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      className="absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md border border-[#5a5a5a] text-[#d4d4d4] shadow-md z-10 overflow-hidden cursor-default select-none"
+                                      style={{
+                                        top: `${offsetPercent}%`,
+                                        height: `${heightPercent}%`,
+                                        minHeight: "16px",
+                                        backgroundImage:
+                                          "repeating-linear-gradient(45deg, #454545 0, #454545 6px, #383838 6px, #383838 12px)",
+                                      }}
+                                      title={`${block.label} • ${block.starttime} - ${block.endtime}`}
+                                    >
+                                      <span className="font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
+                                        {block.label}
+                                      </span>
+                                    </motion.div>
+                                  </ContextMenuTrigger>
+                                  <ContextMenuContent className=" bg-[#2a2a2a] border-[#404040]">
+                                    <ContextMenuItem
+                                      className="text-destructive font-dmsans focus:bg-[#404040] focus:text-destructive cursor-pointer"
+                                      onClick={() =>
+                                        removeBusyBlockFromDraft(block.uuid)
+                                      }
+                                    >
+                                      <Trash2 className="mr-1 h-4 text-destructive" />
+                                      Delete Busy Block
+                                    </ContextMenuItem>
+                                  </ContextMenuContent>
                                 </ContextMenu>
                               );
                             })}
