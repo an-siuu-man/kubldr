@@ -6,8 +6,8 @@
  * that don't have time conflicts.
  */
 
-import { parseDays, timeToDecimal } from "@/lib/timeUtils";
-import type { ClassSection } from "@/types";
+import { mapDayAbbreviation, parseDays, timeToDecimal } from "@/lib/timeUtils";
+import type { BusyBlock, ClassSection } from "@/types";
 
 /**
  * Groups sections by component type for a given class
@@ -73,6 +73,38 @@ export function conflictsWithSchedule(
 }
 
 /**
+ * Checks if a class section overlaps any user-defined busy block.
+ * Busy blocks are a hard constraint: sections that overlap one can never
+ * appear in a generated permutation.
+ * @param section - The class section to check
+ * @param busyBlocks - The schedule's busy blocks
+ * @returns true if the section overlaps a busy block
+ */
+export function hasBusyBlockConflict(
+  section: ClassSection,
+  busyBlocks: BusyBlock[],
+): boolean {
+  if (busyBlocks.length === 0) return false;
+
+  const sectionDays = parseDays(section.days || "");
+  const sectionStart = timeToDecimal(section.starttime || "");
+  const sectionEnd = timeToDecimal(section.endtime || "");
+
+  for (const block of busyBlocks) {
+    if (!sectionDays.includes(mapDayAbbreviation(block.day))) continue;
+
+    const blockStart = timeToDecimal(block.starttime);
+    const blockEnd = timeToDecimal(block.endtime);
+
+    if (sectionStart < blockEnd && sectionEnd > blockStart) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Extracts unique classes from a draft schedule and groups their sections by component
  * @param draftSchedule - The current draft schedule (list of sections)
  * @returns Array of unique classes with their component groups
@@ -123,12 +155,14 @@ export function getUniqueClassesFromDraft(
  * @param allSections - Map of classKey to all available sections (fetched from API)
  * @param uniqueClasses - Unique classes extracted from draft schedule
  * @param pinnedSections - Array of pinned section UUIDs that should not be changed
+ * @param busyBlocks - User-defined busy blocks no permutation may overlap
  * @returns Array of valid schedule permutations (each is an array of ClassSection)
  */
 export function generatePermutations(
   allSections: Map<string, ClassSection[]>,
   uniqueClasses: ClassWithComponents[],
   pinnedSections: Set<string> = new Set(),
+  busyBlocks: BusyBlock[] = [],
 ): ClassSection[][] {
   const permutations: ClassSection[][] = [];
 
@@ -189,8 +223,11 @@ export function generatePermutations(
 
     // If this component has a pinned section, only use that section
     if (choice.pinnedSection) {
-      // Check if the pinned section conflicts with current schedule
-      if (!conflictsWithSchedule(choice.pinnedSection, currentSchedule)) {
+      // Check if the pinned section conflicts with current schedule or busy blocks
+      if (
+        !conflictsWithSchedule(choice.pinnedSection, currentSchedule) &&
+        !hasBusyBlockConflict(choice.pinnedSection, busyBlocks)
+      ) {
         currentSchedule.push(choice.pinnedSection);
         backtrack(index + 1, currentSchedule);
         currentSchedule.pop();
@@ -201,8 +238,11 @@ export function generatePermutations(
 
     // Try each section for this component (non-pinned)
     for (const section of choice.sections) {
-      // Check if this section conflicts with the current schedule
-      if (!conflictsWithSchedule(section, currentSchedule)) {
+      // Check if this section conflicts with the current schedule or busy blocks
+      if (
+        !conflictsWithSchedule(section, currentSchedule) &&
+        !hasBusyBlockConflict(section, busyBlocks)
+      ) {
         currentSchedule.push(section);
         backtrack(index + 1, currentSchedule);
         currentSchedule.pop();
@@ -225,9 +265,14 @@ export const PERMUTATION_DRAFT_HASH_KEY = "permutationDraftHash";
 /**
  * Creates a hash of the draft schedule to detect changes
  * @param draftSchedule - The draft schedule
- * @returns A string hash representing the unique class components and pinned sections in the draft
+ * @param busyBlocks - Busy blocks constraining the schedule; included so
+ *   regeneration happens when a block is added, removed, or changed
+ * @returns A string hash representing the unique class components, pinned sections, and busy blocks in the draft
  */
-export function createDraftHash(draftSchedule: ClassSection[]): string {
+export function createDraftHash(
+  draftSchedule: ClassSection[],
+  busyBlocks: BusyBlock[] = [],
+): string {
   const uniqueComponents = new Set<string>();
   const pinnedSections: string[] = [];
   for (const section of draftSchedule) {
@@ -241,7 +286,11 @@ export function createDraftHash(draftSchedule: ClassSection[]): string {
   }
   const componentsHash = Array.from(uniqueComponents).sort().join("|");
   const pinnedHash = pinnedSections.sort().join("|");
-  return `${componentsHash}||${pinnedHash}`;
+  const busyHash = busyBlocks
+    .map((block) => `${block.day}|${block.starttime}|${block.endtime}`)
+    .sort()
+    .join("|");
+  return `${componentsHash}||${pinnedHash}||${busyHash}`;
 }
 
 /**

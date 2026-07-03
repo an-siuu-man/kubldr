@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { ClassSection } from "@/types";
+import type { BusyBlock, ClassSection } from "@/types";
 import {
   clearPermutationsFromStorage,
   conflictsWithSchedule,
   createDraftHash,
   generatePermutations,
   getUniqueClassesFromDraft,
+  hasBusyBlockConflict,
   hasTimeConflict,
   loadPermutationsFromStorage,
   PERMUTATION_DRAFT_HASH_KEY,
@@ -27,6 +28,17 @@ function makeSection(overrides: Partial<ClassSection> = {}): ClassSection {
     starttime: "9:00 AM",
     endtime: "10:00 AM",
     component: "LEC",
+    ...overrides,
+  };
+}
+
+function makeBusyBlock(overrides: Partial<BusyBlock> = {}): BusyBlock {
+  return {
+    uuid: "busy-1",
+    day: "M",
+    starttime: "09:00",
+    endtime: "10:00",
+    label: "Busy",
     ...overrides,
   };
 }
@@ -139,6 +151,70 @@ describe("conflictsWithSchedule", () => {
       }),
     ];
     expect(conflictsWithSchedule(newSec, existing)).toBe(true);
+  });
+});
+
+// ─── hasBusyBlockConflict ─────────────────────────────────────────────────────
+
+describe("hasBusyBlockConflict", () => {
+  it("returns false when there are no busy blocks", () => {
+    expect(hasBusyBlockConflict(makeSection(), [])).toBe(false);
+  });
+
+  it("returns true when a section overlaps a busy block on the same day", () => {
+    const section = makeSection({
+      days: "MWF",
+      starttime: "9:00 AM",
+      endtime: "10:00 AM",
+    });
+    const block = makeBusyBlock({
+      day: "M",
+      starttime: "09:30",
+      endtime: "10:30",
+    });
+    expect(hasBusyBlockConflict(section, [block])).toBe(true);
+  });
+
+  it("returns false when the busy block is on a different day", () => {
+    const section = makeSection({
+      days: "TuTh",
+      starttime: "9:00 AM",
+      endtime: "10:00 AM",
+    });
+    const block = makeBusyBlock({
+      day: "M",
+      starttime: "09:00",
+      endtime: "10:00",
+    });
+    expect(hasBusyBlockConflict(section, [block])).toBe(false);
+  });
+
+  it("returns false when times touch but do not overlap", () => {
+    const section = makeSection({
+      days: "MWF",
+      starttime: "10:00 AM",
+      endtime: "11:00 AM",
+    });
+    const block = makeBusyBlock({
+      day: "M",
+      starttime: "09:00",
+      endtime: "10:00",
+    });
+    expect(hasBusyBlockConflict(section, [block])).toBe(false);
+  });
+
+  it("handles two-letter day abbreviations (Tu/Th)", () => {
+    const section = makeSection({
+      days: "TuTh",
+      starttime: "1:00 PM",
+      endtime: "2:00 PM",
+    });
+    const block = makeBusyBlock({
+      day: "Th",
+      starttime: "13:00",
+      endtime: "13:15",
+    });
+    expect(hasBusyBlockConflict(section, [block])).toBe(true);
   });
 });
 
@@ -352,13 +428,79 @@ describe("generatePermutations", () => {
     );
     expect(perms).toHaveLength(0);
   });
+
+  it("excludes sections that overlap a busy block", () => {
+    // Class A has two sections; the 9–10 AM one overlaps a Monday busy block
+    const a1 = makeSection({
+      dept: "EECS",
+      code: "101",
+      component: "LEC",
+      uuid: "a1",
+      days: "MWF",
+      starttime: "9:00 AM",
+      endtime: "10:00 AM",
+    });
+    const a2 = makeSection({
+      dept: "EECS",
+      code: "101",
+      component: "LEC",
+      uuid: "a2",
+      days: "MWF",
+      starttime: "10:00 AM",
+      endtime: "11:00 AM",
+    });
+
+    const draft = [a1];
+    const uniqueClasses = getUniqueClassesFromDraft(draft);
+    const allSections = new Map([["EECS-101", [a1, a2]]]);
+    const busyBlocks = [
+      makeBusyBlock({ day: "M", starttime: "09:00", endtime: "10:00" }),
+    ];
+
+    const perms = generatePermutations(
+      allSections,
+      uniqueClasses,
+      new Set(),
+      busyBlocks,
+    );
+    expect(perms).toHaveLength(1);
+    expect(perms[0][0].uuid).toBe("a2");
+  });
+
+  it("returns [] when a pinned section overlaps a busy block", () => {
+    const a1 = makeSection({
+      dept: "EECS",
+      code: "101",
+      component: "LEC",
+      uuid: "a1",
+      days: "MWF",
+      starttime: "9:00 AM",
+      endtime: "10:00 AM",
+      pinned: true,
+    });
+
+    const draft = [a1];
+    const uniqueClasses = getUniqueClassesFromDraft(draft);
+    const allSections = new Map([["EECS-101", [a1]]]);
+    const busyBlocks = [
+      makeBusyBlock({ day: "W", starttime: "09:30", endtime: "10:30" }),
+    ];
+
+    const perms = generatePermutations(
+      allSections,
+      uniqueClasses,
+      new Set(["a1"]),
+      busyBlocks,
+    );
+    expect(perms).toHaveLength(0);
+  });
 });
 
 // ─── createDraftHash ──────────────────────────────────────────────────────────
 
 describe("createDraftHash", () => {
   it("returns an empty hash for an empty draft", () => {
-    expect(createDraftHash([])).toBe("||");
+    expect(createDraftHash([])).toBe("||||");
   });
 
   it("is stable regardless of section order in the draft", () => {
@@ -400,6 +542,25 @@ describe("createDraftHash", () => {
       makeSection({ dept: "MATH", code: "220", component: "LEC", uuid: "u2" }),
     ];
     expect(createDraftHash(draft1)).not.toBe(createDraftHash(draft2));
+  });
+
+  it("changes when a busy block is added, removed, or modified", () => {
+    const draft = [makeSection({ uuid: "u1" })];
+    const block = makeBusyBlock();
+    const withBlock = createDraftHash(draft, [block]);
+    expect(withBlock).not.toBe(createDraftHash(draft));
+    expect(withBlock).not.toBe(
+      createDraftHash(draft, [{ ...block, endtime: "11:15" }]),
+    );
+  });
+
+  it("is stable regardless of busy block order", () => {
+    const draft = [makeSection({ uuid: "u1" })];
+    const b1 = makeBusyBlock({ uuid: "b1", day: "M" });
+    const b2 = makeBusyBlock({ uuid: "b2", day: "W" });
+    expect(createDraftHash(draft, [b1, b2])).toBe(
+      createDraftHash(draft, [b2, b1]),
+    );
   });
 });
 

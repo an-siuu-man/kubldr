@@ -295,7 +295,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       return;
     }
 
-    const currentDraftHash = createDraftHash(draftSchedule);
+    const currentDraftHash = createDraftHash(draftSchedule, draftBusyBlocks);
 
     // If the unique classes haven't changed, no need to regenerate
     if (
@@ -327,12 +327,26 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           .map((section: ClassSection) => section.uuid),
       );
 
-      // Generate permutations (respecting pinned sections)
+      // Generate permutations (respecting pinned sections and busy blocks)
       const newPermutations = generatePermutations(
         allSections,
         uniqueClasses,
         pinnedSections,
+        draftBusyBlocks,
       );
+
+      // Busy blocks are a hard constraint, so they can make the schedule
+      // unsatisfiable — tell the user instead of failing silently
+      if (newPermutations.length === 0 && draftBusyBlocks.length > 0) {
+        toast.error(
+          "No valid schedule combinations fit around your busy blocks",
+          {
+            style: toastStyle,
+            duration: 3000,
+            icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+          },
+        );
+      }
 
       // Find the index of the current draft in the permutations
       const currentIndex = findPermutationIndex(draftSchedule, newPermutations);
@@ -354,6 +368,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     }
   }, [
     draftSchedule,
+    draftBusyBlocks,
     permutations.length,
     fetchAllSectionsForClass,
     findPermutationIndex,
