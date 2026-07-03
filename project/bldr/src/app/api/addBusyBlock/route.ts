@@ -19,6 +19,10 @@
  * @throws 500 - Database error
  */
 import type { BusyBlockRecord } from "@/types";
+import {
+  isValidBusyBlockDay,
+  validateBusyBlockTimes,
+} from "@/lib/busyBlockValidation";
 import { supabase } from "../../lib/supabaseClient";
 
 type AddBusyBlockBody = {
@@ -28,21 +32,6 @@ type AddBusyBlockBody = {
   endtime?: string;
   label?: string;
 };
-
-const VALID_DAYS = new Set(["M", "Tu", "W", "Th", "F"]);
-
-/**
- * Parses a 24-hour "HH:MM" time string into minutes since midnight.
- * Returns null if the string is malformed.
- */
-function toMinutes(hhmm: string): number | null {
-  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
-  if (!m) return null;
-  const h = Number(m[1]);
-  const mi = Number(m[2]);
-  if (h > 23 || mi > 59) return null;
-  return h * 60 + mi;
-}
 
 export async function POST(req: Request) {
   try {
@@ -57,35 +46,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!VALID_DAYS.has(day)) {
+    if (!isValidBusyBlockDay(day)) {
       return Response.json(
         { error: "Invalid day (expected M, Tu, W, Th, or F)" },
         { status: 400 },
       );
     }
 
-    const startMin = toMinutes(starttime);
-    const endMin = toMinutes(endtime);
-
-    if (startMin == null || endMin == null) {
-      return Response.json(
-        { error: "Invalid time format (expected 24-hour HH:MM)" },
-        { status: 400 },
-      );
-    }
-
-    if (startMin % 15 !== 0 || endMin % 15 !== 0) {
-      return Response.json(
-        { error: "Times must be on 15-minute increments" },
-        { status: 400 },
-      );
-    }
-
-    if (endMin <= startMin) {
-      return Response.json(
-        { error: "endtime must be after starttime" },
-        { status: 400 },
-      );
+    const timeError = validateBusyBlockTimes(starttime, endtime);
+    if (timeError) {
+      return Response.json({ error: timeError }, { status: 400 });
     }
 
     const { data: inserted, error: insertError } = await supabase
