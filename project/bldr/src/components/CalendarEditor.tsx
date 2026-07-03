@@ -98,6 +98,7 @@ type BusyDragResizeState = {
   mode: "resize-start" | "resize-end";
   uuid: string;
   day: string;
+  anchor: number; // decimal hour where the resize drag started (snapped)
   current: number; // decimal hour under the cursor (snapped)
   originalStart: number;
   originalEnd: number;
@@ -122,16 +123,26 @@ const getMovedTimes = (drag: BusyDragMoveState) => {
 };
 
 const getResizedTimes = (drag: BusyDragResizeState) => {
+  const delta = snapToQuarterHour(drag.current - drag.anchor);
+
   if (drag.mode === "resize-start") {
     return {
-      start: clamp(drag.current, CAL_START_HOUR, drag.originalEnd - 0.25),
+      start: clamp(
+        drag.originalStart + delta,
+        CAL_START_HOUR,
+        drag.originalEnd - 0.25,
+      ),
       end: drag.originalEnd,
     };
   }
 
   return {
     start: drag.originalStart,
-    end: clamp(drag.current, drag.originalStart + 0.25, CAL_END_HOUR),
+    end: clamp(
+      drag.originalEnd + delta,
+      drag.originalStart + 0.25,
+      CAL_END_HOUR,
+    ),
   };
 };
 
@@ -243,6 +254,7 @@ const CalendarEditor = ({
       mode,
       uuid: block.uuid,
       day,
+      anchor: current,
       current,
       originalStart: timeToDecimal(block.starttime),
       originalEnd: timeToDecimal(block.endtime),
