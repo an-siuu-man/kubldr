@@ -25,11 +25,12 @@ import {
   createDraftHash,
   generatePermutations,
   getUniqueClassesFromDraft,
+  hasBusyBlockConflict,
   loadPermutationsFromStorage,
   savePermutationsToStorage,
 } from "@/lib/permutationUtils";
 import { parseDays, timeToDecimal } from "@/lib/timeUtils";
-import type { ClassSection } from "@/types";
+import type { BusyBlock, ClassSection } from "@/types";
 
 const ScheduleBuilderContext = createContext<any>(undefined);
 
@@ -81,6 +82,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     "",
   );
   const [draftYear, setDraftYear] = usePersistedState("draftYear", "");
+  const [draftBusyBlocks, setDraftBusyBlocks] = usePersistedState(
+    "draftBusyBlocks",
+    [],
+  );
 
   // Track if editing existing schedule
   const [isEditingExisting, setIsEditingExisting] = usePersistedState(
@@ -138,6 +143,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       setDraftScheduleName("");
       setDraftSemester("");
       setDraftYear("");
+      setDraftBusyBlocks([]);
       setIsEditingExisting(false);
       setExistingScheduleId(null);
 
@@ -147,6 +153,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         localStorage.removeItem("draftScheduleName");
         localStorage.removeItem("draftSemester");
         localStorage.removeItem("draftYear");
+        localStorage.removeItem("draftBusyBlocks");
         localStorage.removeItem("isEditingExisting");
         localStorage.removeItem("existingScheduleId");
         // Clear permutation storage
@@ -168,6 +175,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     setDraftScheduleName,
     setDraftSemester,
     setDraftYear,
+    setDraftBusyBlocks,
     setExistingScheduleId,
     setIsEditingExisting,
   ]);
@@ -186,6 +194,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     setDraftScheduleName(activeSchedule.name || "");
     setDraftSemester(activeSchedule.semester || "");
     setDraftYear(activeSchedule.year || "");
+    setDraftBusyBlocks(activeSchedule.busyBlocks || []);
     setIsEditingExisting(true);
     setExistingScheduleId(activeSchedule.id || null);
     // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reactive only on id change — accessing other properties in the dep array without optional chaining crashes when activeSchedule is null
@@ -287,7 +296,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       return;
     }
 
-    const currentDraftHash = createDraftHash(draftSchedule);
+    const currentDraftHash = createDraftHash(draftSchedule, draftBusyBlocks);
 
     // If the unique classes haven't changed, no need to regenerate
     if (
@@ -319,12 +328,26 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           .map((section: ClassSection) => section.uuid),
       );
 
-      // Generate permutations (respecting pinned sections)
+      // Generate permutations (respecting pinned sections and busy blocks)
       const newPermutations = generatePermutations(
         allSections,
         uniqueClasses,
         pinnedSections,
+        draftBusyBlocks,
       );
+
+      // Busy blocks are a hard constraint, so they can make the schedule
+      // unsatisfiable — tell the user instead of failing silently
+      if (newPermutations.length === 0 && draftBusyBlocks.length > 0) {
+        toast.error(
+          "No valid schedule combinations fit around your busy blocks",
+          {
+            style: toastStyle,
+            duration: 3000,
+            icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+          },
+        );
+      }
 
       // Find the index of the current draft in the permutations
       const currentIndex = findPermutationIndex(draftSchedule, newPermutations);
@@ -346,6 +369,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     }
   }, [
     draftSchedule,
+    draftBusyBlocks,
     permutations.length,
     fetchAllSectionsForClass,
     findPermutationIndex,
@@ -643,8 +667,128 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     });
   };
 
+  /**
+   * Adds a busy block to the draft. The block is applied optimistically
+   * with a temporary uuid, then reconciled with the server-assigned uuid
+   * once /api/addBusyBlock succeeds (or rolled back on failure).
+   * @param block - Day, time range, and optional label for the new block
+   */
+  const addBusyBlockToDraft = async (block: {
+    day: string;
+    starttime: string;
+    endtime: string;
+    label?: string;
+  }) => {
+    const tempUuid = `temp-${crypto.randomUUID()}`;
+    const optimistic: BusyBlock = {
+      uuid: tempUuid,
+      day: block.day,
+      starttime: block.starttime,
+      endtime: block.endtime,
+      label: block.label || "Busy",
+    };
+
+    // Pinned sections can't be moved by permutations, so a busy block over
+    // one would make the schedule immediately unsatisfiable — reject it
+    const pinnedOverlap = draftSchedule.find(
+      (section: ClassSection) =>
+        section.pinned && hasBusyBlockConflict(section, [optimistic]),
+    );
+    if (pinnedOverlap) {
+      toast.error(
+        `This time overlaps a pinned class (${pinnedOverlap.dept} ${pinnedOverlap.code})`,
+        {
+          style: toastStyle,
+          duration: 2000,
+          icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+        },
+      );
+      return;
+    }
+
+    setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, optimistic]);
+
+    // Draft isn't persisted yet — the block is saved with the schedule save
+    if (!existingScheduleId) return;
+
+    try {
+      const response = await fetch("/api/addBusyBlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scheduleid: existingScheduleId,
+          day: optimistic.day,
+          starttime: optimistic.starttime,
+          endtime: optimistic.endtime,
+          label: optimistic.label,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add busy block");
+
+      const data = await response.json();
+      setDraftBusyBlocks((prev: BusyBlock[]) =>
+        prev.map((b: BusyBlock) =>
+          b.uuid === tempUuid ? { ...b, uuid: data.added.uuid } : b,
+        ),
+      );
+    } catch (error) {
+      console.error("Error adding busy block:", error);
+      setDraftBusyBlocks((prev: BusyBlock[]) =>
+        prev.filter((b: BusyBlock) => b.uuid !== tempUuid),
+      );
+      toast.error("Failed to save busy block. Please try again.", {
+        style: toastStyle,
+        duration: 2000,
+        icon: <AlertCircle className="h-5 w-5" />,
+      });
+    }
+  };
+
+  /**
+   * Removes a busy block from the draft, optimistically, then deletes it
+   * on the server (re-adding it locally if the delete fails).
+   * @param uuid - The uuid of the busy block to remove
+   */
+  const removeBusyBlockFromDraft = async (uuid: string) => {
+    const removed = draftBusyBlocks.find((b: BusyBlock) => b.uuid === uuid);
+    if (!removed) return;
+
+    setDraftBusyBlocks((prev: BusyBlock[]) =>
+      prev.filter((b: BusyBlock) => b.uuid !== uuid),
+    );
+
+    toast(<div>Removed busy block from schedule</div>, {
+      style: toastStyle,
+      duration: 2000,
+      icon: <Trash2 className="h-5 w-5 text-red-500" />,
+    });
+
+    // Blocks with a temp uuid were never persisted; nothing to delete
+    if (!existingScheduleId || uuid.startsWith("temp-")) return;
+
+    try {
+      const response = await fetch("/api/removeBusyBlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduleid: existingScheduleId, uuid }),
+      });
+
+      if (!response.ok) throw new Error("Failed to remove busy block");
+    } catch (error) {
+      console.error("Error removing busy block:", error);
+      setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, removed]);
+      toast.error("Failed to remove busy block. Please try again.", {
+        style: toastStyle,
+        duration: 2000,
+        icon: <AlertCircle className="h-5 w-5" />,
+      });
+    }
+  };
+
   const clearDraft = () => {
     setDraftSchedule([]);
+    setDraftBusyBlocks([]);
     setIsEditingExisting(false);
     // setExistingScheduleId(null);
     // Clear permutations when draft is cleared
@@ -655,6 +799,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
   const loadExistingScheduleIntoDraft = (schedule: any) => {
     setDraftSchedule(schedule.classes || []);
+    setDraftBusyBlocks(schedule.busyBlocks || []);
     setDraftScheduleName(schedule.name || "");
     setDraftSemester(schedule.semester || "");
     setDraftYear(schedule.year || "");
@@ -680,6 +825,9 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         addClassToDraft,
         removeClassFromDraft,
         togglePinSection,
+        draftBusyBlocks,
+        addBusyBlockToDraft,
+        removeBusyBlockFromDraft,
         clearDraft,
         loadExistingScheduleIntoDraft,
         fetchAllSectionsForClass,

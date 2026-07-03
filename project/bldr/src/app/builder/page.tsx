@@ -41,6 +41,7 @@ export default function Builder() {
     draftScheduleName,
     draftSemester,
     draftYear,
+    draftBusyBlocks,
     existingScheduleId,
     setIsEditingExisting,
     setExistingScheduleId,
@@ -203,6 +204,7 @@ export default function Builder() {
           semester: draftSemester,
           year: draftYear,
           classes: draftSchedule,
+          busyBlocks: draftBusyBlocks,
         }),
       });
 
@@ -219,6 +221,7 @@ export default function Builder() {
         semester: draftSemester,
         year: draftYear,
         classes: draftSchedule,
+        busyBlocks: draftBusyBlocks,
         isActive: true,
         isPublic:
           existingScheduleId && activeSchedule?.id === existingScheduleId

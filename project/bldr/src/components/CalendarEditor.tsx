@@ -18,6 +18,7 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Pin, PinOff, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -31,8 +32,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
-import { calculateDuration, parseDays, timeToDecimal } from "@/lib/timeUtils";
-import type { ClassSection } from "@/types";
+import {
+  calculateDuration,
+  mapDayAbbreviation,
+  parseDays,
+  timeToDecimal,
+} from "@/lib/timeUtils";
+import type { BusyBlock, ClassSection } from "@/types";
 
 type CalendarEditorProps = {
   classes?: ClassSection[];
@@ -44,6 +50,34 @@ type CalendarEditorProps = {
 const toKeyPart = (value: unknown, fallback: string) => {
   const normalized = typeof value === "string" ? value.trim() : "";
   return normalized.length > 0 ? normalized : fallback;
+};
+
+// Calendar grid bounds in decimal hours: rows run 8:00–20:00, and the last
+// row represents the 20:00–21:00 slot.
+const CAL_START_HOUR = 8;
+const CAL_END_HOUR = 21;
+
+// Full day name → allclasses-style abbreviation used by busy blocks
+const DAY_ABBREVIATIONS: Record<string, string> = {
+  Monday: "M",
+  Tuesday: "Tu",
+  Wednesday: "W",
+  Thursday: "Th",
+  Friday: "F",
+};
+
+const snapToQuarterHour = (time: number) => Math.round(time * 4) / 4;
+
+const decimalToTimeString = (time: number) => {
+  const h = Math.floor(time);
+  const m = Math.round((time - h) * 60);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+
+type BusyDragState = {
+  day: string; // full day name of the column the drag started in
+  anchor: number; // decimal hour where the drag started (snapped)
+  current: number; // decimal hour under the cursor (snapped)
 };
 
 /**
@@ -67,12 +101,94 @@ const CalendarEditor = ({
     draftScheduleName,
     removeClassFromDraft,
     togglePinSection,
+    draftBusyBlocks,
+    addBusyBlockToDraft,
+    removeBusyBlockFromDraft,
   } = useScheduleBuilder();
+
+  // In-progress busy block drag (null when not dragging)
+  const [busyDrag, setBusyDrag] = useState<BusyDragState | null>(null);
+  const busyDragRef = useRef<BusyDragState | null>(null);
+  busyDragRef.current = busyDrag;
+  const tbodyRef = useRef<HTMLTableSectionElement>(null);
+
+  /**
+   * Converts a viewport Y coordinate into a decimal-hour time on the grid,
+   * snapped to the nearest 15-minute increment and clamped to the visible
+   * calendar range.
+   */
+  const timeFromClientY = (clientY: number): number | null => {
+    const rect = tbodyRef.current?.getBoundingClientRect();
+    if (!rect || rect.height === 0) return null;
+    const fraction = (clientY - rect.top) / rect.height;
+    const time = CAL_START_HOUR + fraction * (CAL_END_HOUR - CAL_START_HOUR);
+    return Math.min(
+      Math.max(snapToQuarterHour(time), CAL_START_HOUR),
+      CAL_END_HOUR,
+    );
+  };
+
+  /**
+   * Starts a busy block drag from an empty spot in a day column.
+   * Drags that begin on an existing class or busy block are ignored.
+   */
+  const handleCellMouseDown = (day: string, e: React.MouseEvent) => {
+    if (readOnly || e.button !== 0) return;
+    if ((e.target as HTMLElement).closest("[data-block]")) return;
+    const time = timeFromClientY(e.clientY);
+    if (time == null) return;
+    e.preventDefault();
+    setBusyDrag({ day, anchor: time, current: time });
+  };
+
+  // While a drag is active, track the cursor globally and commit on mouseup
+  const isDraggingBusyBlock = busyDrag !== null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: listeners only need to attach/detach per drag session; handlers read live state via refs
+  useEffect(() => {
+    if (!isDraggingBusyBlock) return;
+
+    const handleMove = (e: MouseEvent) => {
+      const time = timeFromClientY(e.clientY);
+      if (time == null) return;
+      setBusyDrag((prev) => (prev ? { ...prev, current: time } : prev));
+    };
+
+    const handleUp = () => {
+      const drag = busyDragRef.current;
+      if (drag) {
+        const start = Math.min(drag.anchor, drag.current);
+        const end = Math.max(drag.anchor, drag.current);
+        // Anything shorter than 15 minutes is treated as an accidental click
+        if (end - start >= 0.25) {
+          addBusyBlockToDraft({
+            day: DAY_ABBREVIATIONS[drag.day],
+            starttime: decimalToTimeString(start),
+            endtime: decimalToTimeString(end),
+            label: "Busy",
+          });
+        }
+      }
+      setBusyDrag(null);
+    };
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [isDraggingBusyBlock]);
+
   const calendarClasses = classes ?? draftSchedule;
   const calendarName = scheduleName ?? draftScheduleName;
+  // Busy blocks come from the viewer's own draft, so they are never shown
+  // in read-only mode (e.g. the public share page).
+  const busyBlocks: BusyBlock[] = readOnly ? [] : (draftBusyBlocks ?? []);
   const shouldShowCalendar = readOnly
     ? Boolean(calendarName)
-    : Boolean(calendarName && calendarClasses.length > 0);
+    : Boolean(
+        calendarName && (calendarClasses.length > 0 || busyBlocks.length > 0),
+      );
 
   // Days of the week to display as column headers
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -106,7 +222,10 @@ const CalendarEditor = ({
   };
 
   return (
-    <div className="relative grid grid-rows-1 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 py-2 w-full aspect-square md:aspect-auto md:h-full md:min-h-[500px]">
+    <div
+      className="relative grid grid-rows-1 bg-[#2c2c2c] border-2 border-[#404040] rounded-[10px] text-white px-2 py-2 w-full aspect-square md:aspect-auto md:h-full md:min-h-[500px]"
+      onMouseLeave={isDraggingBusyBlock ? () => setBusyDrag(null) : undefined}
+    >
       <div className="w-full h-full overflow-hidden">
         <AnimatePresence mode="wait">
           {shouldShowCalendar ? (
@@ -137,7 +256,7 @@ const CalendarEditor = ({
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody ref={tbodyRef}>
                   {hours.map((hour) => (
                     <tr
                       key={hour}
@@ -147,7 +266,15 @@ const CalendarEditor = ({
                         {hour}:00
                       </td>
                       {days.map((day) => (
-                        <td key={day} className="relative align-top w-[18%]">
+                        <td
+                          key={day}
+                          className="relative align-top w-[18%]"
+                          onMouseDown={
+                            readOnly
+                              ? undefined
+                              : (e) => handleCellMouseDown(day, e)
+                          }
+                        >
                           <div className="absolute top-[50%] translate-y-[-50%] w-full border-t border-dashed border-[#424242] z-0" />
 
                           {calendarClasses
@@ -217,6 +344,7 @@ const CalendarEditor = ({
                                       <Tooltip delayDuration={200}>
                                         <TooltipTrigger asChild>
                                           <motion.div
+                                            data-block
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer select-none ${
@@ -379,6 +507,101 @@ const CalendarEditor = ({
                                 </ContextMenu>
                               );
                             })}
+
+                          {busyBlocks
+                            .filter((block: BusyBlock) => {
+                              const blockStart = timeToDecimal(block.starttime);
+                              return (
+                                mapDayAbbreviation(block.day) === day &&
+                                blockStart >= hour &&
+                                blockStart < hour + 1
+                              );
+                            })
+                            .map((block: BusyBlock) => {
+                              const blockStart = timeToDecimal(block.starttime);
+                              const blockDuration = calculateDuration(
+                                block.starttime,
+                                block.endtime,
+                              );
+                              const offsetPercent = (blockStart - hour) * 100;
+                              const heightPercent = blockDuration * 100;
+
+                              return (
+                                <ContextMenu key={block.uuid}>
+                                  <ContextMenuTrigger>
+                                    <motion.div
+                                      data-block
+                                      initial={{ opacity: 0, scale: 0.8 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      className="absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md border border-[#5a5a5a] text-[#d4d4d4] shadow-md z-10 overflow-hidden cursor-default select-none"
+                                      style={{
+                                        top: `${offsetPercent}%`,
+                                        height: `${heightPercent}%`,
+                                        minHeight: "16px",
+                                        backgroundImage:
+                                          "repeating-linear-gradient(45deg, #454545 0, #454545 6px, #383838 6px, #383838 12px)",
+                                      }}
+                                      title={`${block.label} • ${block.starttime} - ${block.endtime}`}
+                                    >
+                                      <span className="font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
+                                        {block.label}
+                                      </span>
+                                    </motion.div>
+                                  </ContextMenuTrigger>
+                                  <ContextMenuContent className=" bg-[#2a2a2a] border-[#404040]">
+                                    <ContextMenuItem
+                                      className="text-destructive font-dmsans focus:bg-[#404040] focus:text-destructive cursor-pointer"
+                                      onClick={() =>
+                                        removeBusyBlockFromDraft(block.uuid)
+                                      }
+                                    >
+                                      <Trash2 className="mr-1 h-4 text-destructive" />
+                                      Delete Busy Block
+                                    </ContextMenuItem>
+                                  </ContextMenuContent>
+                                </ContextMenu>
+                              );
+                            })}
+
+                          {busyDrag &&
+                            busyDrag.day === day &&
+                            (() => {
+                              const previewStart = Math.min(
+                                busyDrag.anchor,
+                                busyDrag.current,
+                              );
+                              const previewEnd = Math.max(
+                                busyDrag.anchor,
+                                busyDrag.current,
+                              );
+                              if (
+                                previewEnd - previewStart < 0.25 ||
+                                previewStart < hour ||
+                                previewStart >= hour + 1
+                              ) {
+                                return null;
+                              }
+                              return (
+                                <div
+                                  className="absolute left-0.5 right-0.5 rounded-md border border-dashed border-[#8a8a8a] z-20 pointer-events-none flex flex-col items-start justify-center p-0.5 lg:p-1 text-[#d4d4d4]"
+                                  style={{
+                                    top: `${(previewStart - hour) * 100}%`,
+                                    height: `${(previewEnd - previewStart) * 100}%`,
+                                    minHeight: "16px",
+                                    backgroundImage:
+                                      "repeating-linear-gradient(45deg, rgba(69,69,69,0.7) 0, rgba(69,69,69,0.7) 6px, rgba(56,56,56,0.7) 6px, rgba(56,56,56,0.7) 12px)",
+                                  }}
+                                >
+                                  <span className="font-bold text-[9px] lg:text-[10px] font-dmsans truncate w-full">
+                                    Busy
+                                  </span>
+                                  <span className="text-[8px] lg:text-[9px] font-dmsans truncate w-full">
+                                    {decimalToTimeString(previewStart)} –{" "}
+                                    {decimalToTimeString(previewEnd)}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                         </td>
                       ))}
                     </tr>
