@@ -80,6 +80,10 @@ type BusyDragCreateState = {
   day: string; // full day name of the column the drag started in
   anchor: number; // decimal hour where the drag started (snapped)
   current: number; // decimal hour under the cursor (snapped)
+  // Bounds the drag can extend to before it would overlap a neighboring
+  // busy block (or the edge of the grid). Computed once at drag start.
+  lowerBound: number;
+  upperBound: number;
 };
 
 type BusyDragMoveState = {
@@ -195,6 +199,34 @@ const CalendarEditor = ({
   };
 
   /**
+   * Finds how far a new busy block anchored at `anchor` may extend up and
+   * down in a day column before it would touch an existing busy block.
+   * The anchor always sits in free space (creation can't start on a block),
+   * so it lies between the returned bounds.
+   */
+  const getCreateBounds = (day: string, anchor: number) => {
+    let lowerBound = CAL_START_HOUR;
+    let upperBound = CAL_END_HOUR;
+
+    for (const block of draftBusyBlocks as BusyBlock[]) {
+      if (mapDayAbbreviation(block.day) !== day) continue;
+      const blockStart = timeToDecimal(block.starttime);
+      const blockEnd = timeToDecimal(block.endtime);
+
+      // Block sits above the anchor: it caps how far up we can extend
+      if (blockEnd <= anchor) {
+        lowerBound = Math.max(lowerBound, blockEnd);
+      }
+      // Block sits below the anchor: it caps how far down we can extend
+      else if (blockStart >= anchor) {
+        upperBound = Math.min(upperBound, blockStart);
+      }
+    }
+
+    return { lowerBound, upperBound };
+  };
+
+  /**
    * Starts a busy block drag from an empty spot in a day column.
    * Drags that begin on an existing class or busy block are ignored.
    */
@@ -204,7 +236,15 @@ const CalendarEditor = ({
     const time = timeFromClientY(e.clientY);
     if (time == null) return;
     e.preventDefault();
-    setBusyDrag({ mode: "create", day, anchor: time, current: time });
+    const { lowerBound, upperBound } = getCreateBounds(day, time);
+    setBusyDrag({
+      mode: "create",
+      day,
+      anchor: time,
+      current: time,
+      lowerBound,
+      upperBound,
+    });
   };
 
   /**
@@ -266,7 +306,18 @@ const CalendarEditor = ({
     const handleMove = (e: MouseEvent) => {
       const time = timeFromClientY(e.clientY);
       if (time == null) return;
-      setBusyDrag((prev) => (prev ? { ...prev, current: time } : prev));
+      setBusyDrag((prev) => {
+        if (!prev) return prev;
+        // While creating, stop the drag at the neighboring block's edge so
+        // the new block can never overlap an existing one.
+        if (prev.mode === "create") {
+          return {
+            ...prev,
+            current: clamp(time, prev.lowerBound, prev.upperBound),
+          };
+        }
+        return { ...prev, current: time };
+      });
     };
 
     const handleUp = () => {
