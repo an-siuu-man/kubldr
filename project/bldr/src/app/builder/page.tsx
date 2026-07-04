@@ -26,14 +26,16 @@ import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import toastStyle from "@/components/ui/toastStyle";
+import { getToastStyle } from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import type { ClassSection } from "@/types";
 
 export default function Builder() {
   const { user, session, loading, signOut } = useAuth();
+  const { theme } = useAppSettings();
   const {
     clearDraft,
     draftSchedule,
@@ -61,6 +63,7 @@ export default function Builder() {
   const calendarContainerRef = useRef<HTMLDivElement | null>(null);
   const [calendarHeight, setCalendarHeight] = useState(500);
   const [activeTab, setActiveTab] = useState<"search" | "selected">("search");
+  const appToastStyle = getToastStyle(theme);
 
   // Check if user is a guest (anonymous)
   const isGuest = user?.is_anonymous === true;
@@ -145,7 +148,7 @@ export default function Builder() {
     try {
       await signOut();
       toast.success("Logged out successfully", {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: 2000,
         icon: <LogOut className="h-5 w-5 text-green-500" />,
       });
@@ -154,7 +157,7 @@ export default function Builder() {
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Failed to logout", {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -164,7 +167,7 @@ export default function Builder() {
   const handleSaveSchedule = async () => {
     if (!session?.access_token) {
       toast.error("You must be logged in to save schedules", {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -173,7 +176,7 @@ export default function Builder() {
 
     if (!draftScheduleName || !draftSemester || !draftYear) {
       toast.error("Please fill in schedule name, semester, and year", {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -182,7 +185,7 @@ export default function Builder() {
 
     // if (draftSchedule.length === 0) {
     //   toast.error("Cannot save an empty schedule", {
-    //     style: { ...toastStyle },
+    //     style: { ...appToastStyle },
     //     duration: 3000,
     //     icon: <AlertCircle className="h-5 w-5" />,
     //   });
@@ -233,7 +236,7 @@ export default function Builder() {
         // Update existing schedule
         updateScheduleInList(existingScheduleId, savedSchedule);
         toast.success("Schedule updated successfully!", {
-          style: { ...toastStyle },
+          style: { ...appToastStyle },
           duration: 3000,
           icon: <Check className="h-5 w-5 text-green-500" />,
         });
@@ -243,7 +246,7 @@ export default function Builder() {
         setIsEditingExisting(true);
         setExistingScheduleId(data.scheduleId);
         toast.success("Schedule saved successfully!", {
-          style: { ...toastStyle },
+          style: { ...appToastStyle },
           duration: 3000,
           icon: <Check className="h-5 w-5 text-green-500" />,
         });
@@ -254,7 +257,7 @@ export default function Builder() {
         setTimeout(() => {
           toast(
             <div className="flex flex-col gap-2">
-              <p className="font-inter text-white text-xs lg:text-sm">
+              <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
                 Schedule saved! Create an account to keep it permanently.
               </p>
               <Link href="/upgrade">
@@ -270,7 +273,7 @@ export default function Builder() {
               </Link>
             </div>,
             {
-              style: { ...toastStyle },
+              style: { ...appToastStyle },
               duration: 6000,
               icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
             },
@@ -285,7 +288,7 @@ export default function Builder() {
         error instanceof Error ? error.message : "Failed to save schedule";
       console.error("Save schedule error:", error);
       toast.error(errorMessage, {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -297,7 +300,7 @@ export default function Builder() {
   const handleClearSchedule = () => {
     toast(
       <div className="flex flex-col gap-2">
-        <p className="font-inter text-white text-xs lg:text-sm">
+        <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
           Clear all classes from schedule?
         </p>
         <div className="flex gap-2">
@@ -308,7 +311,7 @@ export default function Builder() {
               clearDraft();
               toast.dismiss();
               toast.success("Schedule cleared", {
-                style: { ...toastStyle },
+                style: { ...appToastStyle },
                 duration: 2000,
                 icon: <Trash2 className="h-5 w-5 text-green-500" />,
               });
@@ -330,7 +333,7 @@ export default function Builder() {
         </div>
       </div>,
       {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: Infinity,
         icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
       },
@@ -361,7 +364,7 @@ export default function Builder() {
       // No saved schedule to revert to - just clear the draft
       clearDraft();
       toast.info("Draft cleared", {
-        style: { ...toastStyle },
+        style: { ...appToastStyle },
         duration: 2000,
         icon: <Undo2 className="h-5 w-5 text-blue-400" />,
       });
@@ -374,7 +377,7 @@ export default function Builder() {
     // Sync the permutation index to match the saved schedule
     syncPermutationIndex(savedClasses);
     toast.success("Reverted to last saved state", {
-      style: { ...toastStyle },
+      style: { ...appToastStyle },
       duration: 2000,
       icon: <Undo2 className="h-5 w-5 text-green-500" />,
     });
@@ -407,7 +410,7 @@ export default function Builder() {
             <Button
               onClick={handleLogout}
               variant="secondary"
-              className="font-dmsans cursor-pointer text-xs lg:text-sm px-3 lg:px-4 py-2"
+              className="cursor-pointer border border-slate-300 bg-slate-200 px-3 py-2 font-dmsans text-xs text-slate-900 hover:bg-slate-300 dark:border-transparent dark:bg-secondary dark:text-secondary-foreground lg:px-4 lg:text-sm"
             >
               Logout
             </Button>
@@ -532,7 +535,7 @@ export default function Builder() {
                   <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
                     <Button
                       onClick={handleRevertChanges}
-                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
                       disabled={schedulesMatch || isSaving}
                     >
                       <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
@@ -540,7 +543,7 @@ export default function Builder() {
                     </Button>
                     <Button
                       onClick={handleSaveSchedule}
-                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
                       disabled={isSaving || schedulesMatch}
                     >
                       {isSaving ? (

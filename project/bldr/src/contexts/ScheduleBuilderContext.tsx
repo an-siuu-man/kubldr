@@ -17,8 +17,9 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import toastStyle from "@/components/ui/toastStyle";
+import { getToastStyle } from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   clearPermutationsFromStorage,
@@ -36,6 +37,8 @@ const ScheduleBuilderContext = createContext<any>(undefined);
 
 export const ScheduleBuilderProvider = ({ children }: any) => {
   const { user, loading } = useAuth();
+  const { theme } = useAppSettings();
+  const appToastStyle = getToastStyle(theme);
 
   // Track the previous user ID to detect user changes
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
@@ -342,7 +345,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         toast.error(
           "No valid schedule combinations fit around your busy blocks",
           {
-            style: toastStyle,
+            style: appToastStyle,
             duration: 3000,
             icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
           },
@@ -373,6 +376,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     permutations.length,
     fetchAllSectionsForClass,
     findPermutationIndex,
+    appToastStyle,
   ]);
 
   // Trigger permutation generation when draft schedule changes
@@ -492,7 +496,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
         if (!response.ok) {
           toast.error("Failed to create schedule. Please try again.", {
-            style: toastStyle,
+            style: appToastStyle,
             duration: 2000,
             icon: <AlertCircle className="h-5 w-5" />,
           });
@@ -517,7 +521,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       } catch (error) {
         console.error("Error creating schedule:", error);
         toast.error("Failed to create schedule. Please try again.", {
-          style: toastStyle,
+          style: appToastStyle,
           duration: 2000,
           icon: <AlertCircle className="h-5 w-5" />,
         });
@@ -534,7 +538,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       toast.error(
         `Section #${classItem.classID} of ${classItem.dept} ${classItem.code} (${classItem.component}) is already in the schedule`,
         {
-          style: toastStyle,
+          style: appToastStyle,
           duration: 2000,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
@@ -556,7 +560,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       toast.error(
         `Time conflict with ${conflicting.dept} ${conflicting.code} (${conflicting.component})`,
         {
-          style: toastStyle,
+          style: appToastStyle,
           duration: 2000,
           icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
         },
@@ -577,7 +581,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       toast.success(
         `Replaced ${oldClass.component} #${oldClass.classID} with #${classItem.classID}`,
         {
-          style: toastStyle,
+          style: appToastStyle,
           duration: 2000,
           icon: <Repeat className="h-5 w-5 text-blue-500" />,
         },
@@ -601,7 +605,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     toast.success(
       `Added ${classItem.dept} ${classItem.code} (${classItem.component}) #${classItem.classID} to schedule`,
       {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <Check className="h-5 w-5 text-green-500" />,
       },
@@ -628,7 +632,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         schedule
       </div>,
       {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <Trash2 className="h-5 w-5 text-red-500" />,
       },
@@ -654,7 +658,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
               {item.component}) #{item.classID}
             </div>,
             {
-              style: toastStyle,
+              style: appToastStyle,
               duration: 2000,
               icon: <Pin className="h-5 w-5 text-blue-400" />,
             },
@@ -683,7 +687,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     toast.error(
       `This time overlaps a pinned class (${pinnedOverlap.dept} ${pinnedOverlap.code})`,
       {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
       },
@@ -745,7 +749,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         prev.filter((b: BusyBlock) => b.uuid !== tempUuid),
       );
       toast.error("Failed to save busy block. Please try again.", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5" />,
       });
@@ -802,7 +806,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         prev.map((b: BusyBlock) => (b.uuid === uuid ? current : b)),
       );
       toast.error("Failed to save busy block. Please try again.", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5" />,
       });
@@ -823,7 +827,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     );
 
     toast(<div>Removed busy block from schedule</div>, {
-      style: toastStyle,
+      style: appToastStyle,
       duration: 2000,
       icon: <Trash2 className="h-5 w-5 text-red-500" />,
     });
@@ -843,7 +847,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       console.error("Error removing busy block:", error);
       setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, removed]);
       toast.error("Failed to remove busy block. Please try again.", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5" />,
       });

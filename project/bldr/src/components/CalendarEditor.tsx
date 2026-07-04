@@ -713,7 +713,7 @@ const CalendarEditor = ({
 
                               return (
                                 <ContextMenu key={block.uuid}>
-                                  <ContextMenuTrigger>
+                                  <ContextMenuTrigger asChild>
                                     <motion.div
                                       data-block
                                       initial={{ opacity: 0, scale: 0.8 }}
@@ -770,7 +770,7 @@ const CalendarEditor = ({
                                   <ContextMenuContent className="border-slate-200 bg-white dark:border-[#404040] dark:bg-[#2a2a2a]">
                                     <ContextMenuItem
                                       className="cursor-pointer font-dmsans text-destructive focus:bg-slate-100 focus:text-destructive dark:focus:bg-[#404040]"
-                                      onClick={() =>
+                                      onSelect={() =>
                                         removeBusyBlockFromDraft(block.uuid)
                                       }
                                     >

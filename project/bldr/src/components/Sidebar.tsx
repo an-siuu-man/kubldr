@@ -60,8 +60,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import toastStyle from "@/components/ui/toastStyle";
+import { getToastStyle } from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -150,6 +151,8 @@ const scheduleItemVariants: Variants = {
 export function Sidebar() {
   // Authentication context for user info and session
   const { user, session } = useAuth();
+  const { theme } = useAppSettings();
+  const appToastStyle = getToastStyle(theme);
 
   // Check if we're on mobile
   const isMobile = useIsMobile();
@@ -311,7 +314,7 @@ export function Sidebar() {
     } catch (error) {
       console.error("Error creating schedule:", error);
       toast.error("Failed to create schedule", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -330,7 +333,7 @@ export function Sidebar() {
   const handleRenameSchedule = async (scheduleId: string, newName: string) => {
     if (!newName.trim()) {
       toast.error("Schedule name cannot be empty", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -339,7 +342,7 @@ export function Sidebar() {
 
     if (!session?.access_token) {
       toast.error("You must be logged in to rename schedules", {
-        style: toastStyle,
+        style: appToastStyle,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -372,7 +375,7 @@ export function Sidebar() {
       }
 
       toast.success("Schedule renamed successfully", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <Check className="h-5 w-5 text-green-500" />,
       });
@@ -381,7 +384,7 @@ export function Sidebar() {
       toast.error(
         err instanceof Error ? err.message : "Failed to rename schedule",
         {
-          style: toastStyle,
+          style: appToastStyle,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -420,14 +423,14 @@ export function Sidebar() {
     try {
       await navigator.clipboard.writeText(getPublicScheduleUrl(schedule.id));
       toast.success("Share link copied", {
-        style: toastStyle,
+        style: appToastStyle,
         duration: 2000,
         icon: <Copy className="h-5 w-5 text-green-500" />,
       });
     } catch (error) {
       console.error("Error copying share link:", error);
       toast.error("Failed to copy share link", {
-        style: toastStyle,
+        style: appToastStyle,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     }
@@ -436,7 +439,7 @@ export function Sidebar() {
   const handleToggleShare = async (schedule: Schedule, isPublic: boolean) => {
     if (!session?.access_token) {
       toast.error("You must be logged in to share schedules", {
-        style: toastStyle,
+        style: appToastStyle,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -469,7 +472,7 @@ export function Sidebar() {
           ? "Schedule sharing enabled"
           : "Schedule sharing disabled",
         {
-          style: toastStyle,
+          style: appToastStyle,
           duration: 2000,
           icon: <Share2 className="h-5 w-5 text-green-500" />,
         },
@@ -479,7 +482,7 @@ export function Sidebar() {
       toast.error(
         err instanceof Error ? err.message : "Failed to update sharing",
         {
-          style: toastStyle,
+          style: appToastStyle,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -498,7 +501,7 @@ export function Sidebar() {
   const handleDeleteSchedule = (scheduleId: string) => {
     if (!session?.access_token) {
       toast.error("You must be logged in to delete schedules", {
-        style: toastStyle,
+        style: appToastStyle,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -537,7 +540,7 @@ export function Sidebar() {
       clearDraft();
       toast.success("Schedule deleted", {
         duration: 2000,
-        style: toastStyle,
+        style: appToastStyle,
         icon: <Trash2 className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
@@ -545,7 +548,7 @@ export function Sidebar() {
       toast.error(
         err instanceof Error ? err.message : "Failed to delete schedule",
         {
-          style: toastStyle,
+          style: appToastStyle,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -679,7 +682,7 @@ export function Sidebar() {
                               handleCreateSchedule(newScheduleName);
                               setMobileMenuOpen(false);
                             }}
-                            className="h-9 cursor-pointer bg-slate-950 px-3 font-dmsans text-xs text-white hover:bg-slate-800 dark:bg-[#fafafa] dark:text-[#1a1a1a] dark:hover:bg-[#e0e0e0]"
+                            className="h-9 cursor-pointer bg-slate-700 px-3 font-dmsans text-xs text-white hover:bg-slate-600 dark:bg-[#fafafa] dark:text-[#1a1a1a] dark:hover:bg-[#e0e0e0]"
                           >
                             {loading ? (
                               <Spinner className="h-3 w-3" />
@@ -962,7 +965,7 @@ export function Sidebar() {
                               onClick={() => {
                                 handleCreateSchedule(newScheduleName);
                               }}
-                              className="h-9 cursor-pointer rounded-lg bg-slate-950 px-3 font-dmsans text-xs font-medium text-white shadow-sm transition-all hover:bg-slate-800 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-white/90"
+                              className="h-9 cursor-pointer rounded-lg bg-slate-700 px-3 font-dmsans text-xs font-medium text-white shadow-sm transition-all hover:bg-slate-600 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-white/90"
                             >
                               {loading ? (
                                 <Spinner className="h-3 w-3" />
