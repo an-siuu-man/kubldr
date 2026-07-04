@@ -11,12 +11,11 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import toastStyle from "@/components/ui/toastStyle";
+import { useAppToast } from "@/hooks/use-app-toast";
 import { createClient } from "@/lib/supabase/client";
 
 export default function UpgradeAccount() {
@@ -28,6 +27,7 @@ export default function UpgradeAccount() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
   const supabase = createClient();
+  const appToast = useAppToast();
 
   // Check if user is a guest
   useEffect(() => {
@@ -47,8 +47,8 @@ export default function UpgradeAccount() {
           setIsGuest(true);
         } else {
           // Already has a real account, redirect to builder
-          toast.success("You already have an account!", {
-            style: toastStyle,
+          appToast.success("You already have an account!", {
+            action: "account",
             duration: 2000,
             icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
           });
@@ -63,14 +63,14 @@ export default function UpgradeAccount() {
     };
 
     checkUser();
-  }, [router, supabase.auth]);
+  }, [appToast, router, supabase.auth]);
 
   const handleUpgrade = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (password !== confirmPassword) {
-      toast("Passwords do not match", {
-        style: toastStyle,
+      appToast.warning("Passwords do not match", {
+        action: "account",
         description: "Please ensure both password fields match.",
         duration: 3000,
         icon: <XCircle className="h-5 w-5 text-yellow-500" />,
@@ -79,8 +79,8 @@ export default function UpgradeAccount() {
     }
 
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long", {
-        style: toastStyle,
+      appToast.error("Password must be at least 6 characters long", {
+        action: "account",
         duration: 3000,
         icon: <Lock className="h-5 w-5 text-red-500" />,
       });
@@ -97,8 +97,8 @@ export default function UpgradeAccount() {
       });
 
       if (error) {
-        toast.error("Upgrade Failed", {
-          style: toastStyle,
+        appToast.error("Upgrade Failed", {
+          action: "account",
           description: error.message,
           duration: 3000,
           icon: <XCircle className="h-5 w-5 text-red-500" />,
@@ -107,8 +107,8 @@ export default function UpgradeAccount() {
       }
 
       if (data.user) {
-        toast.success("Account Created!", {
-          style: toastStyle,
+        appToast.success("Account Created!", {
+          action: "account",
           description:
             "Please check your email to verify your account, then log in.",
           duration: 5000,
@@ -122,8 +122,8 @@ export default function UpgradeAccount() {
       }
     } catch (error) {
       console.error("Upgrade error:", error);
-      toast.error("Error", {
-        style: toastStyle,
+      appToast.error("Error", {
+        action: "account",
         description: "An unexpected error occurred",
         duration: 3000,
         icon: <AlertTriangle className="h-5 w-5 text-red-500" />,

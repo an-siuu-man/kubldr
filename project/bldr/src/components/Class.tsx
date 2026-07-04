@@ -24,7 +24,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { formatDisplayTimeRange } from "@/lib/timeUtils";
 import type {
   ClassData,
   ClassInfoResponse,
@@ -66,6 +68,7 @@ const componentBadgeClass = (component?: string) => {
 export default function Class(props: ClassProps) {
   // Access the schedule builder context to add classes
   const { addClassToDraft } = useScheduleBuilder();
+  const { timeFormat } = useAppSettings();
 
   // Local state for tracking selected classes (for UI feedback)
   const [_selectedClasses, _setSelectedClasses] = useState<any>({});
@@ -142,13 +145,13 @@ export default function Class(props: ClassProps) {
             duration: 0.18,
             ease: "easeOut",
           }}
-          className="flex flex-col p-1.5 lg:p-2 mb-3 lg:mb-4 rounded-md text-[#fafafa] border-2 max-w-full border-[#404040] shadow-md justify-start items-center"
+          className="mb-3 flex max-w-full flex-col items-center justify-start rounded-md border-2 border-slate-200 bg-white p-1.5 text-slate-950 shadow-sm dark:border-[#404040] dark:bg-transparent dark:text-[#fafafa] lg:mb-4 lg:p-2"
         >
           <h1 className="font-dmsans text-xs lg:text-sm font-bold self-start leading-tight">
             {classInfo.data[0].dept} {classInfo.data[0].code}:{" "}
             {classInfo.data[0].title}
           </h1>
-          <p className="text-[10px] lg:text-xs text-[#b0b0b0] font-inter self-start line-clamp-2">
+          <p className="self-start line-clamp-2 font-inter text-[10px] text-slate-600 dark:text-[#b0b0b0] lg:text-xs">
             {classInfo.data[0].description || "No description available."}
           </p>
           <div className="flex flex-col gap-2 mt-2 w-full">
@@ -160,7 +163,7 @@ export default function Class(props: ClassProps) {
                   `${toKeyPart(section.classID, "class")}-${toKeyPart(section.component, "comp")}-${toKeyPart(section.days, "days")}-${toKeyPart(section.starttime, "start")}-${toKeyPart(section.endtime, "end")}-${index}`
                 }
                 onClick={() => handleSectionClick(section, classInfo.data[0])}
-                className={`w-full font-inter rounded-md bg-[#181818] hover:bg-[#232323] transition duration-100 p-2 border border-[#404040] text-left cursor-pointer`}
+                className="w-full cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 text-left font-inter transition duration-100 hover:bg-slate-100 dark:border-[#404040] dark:bg-[#181818] dark:hover:bg-[#232323]"
               >
                 <div className="flex flex-row w-full justify-between gap-1 sm:gap-2 items-start">
                   <div className="flex flex-row gap-2 items-start">
@@ -175,18 +178,21 @@ export default function Class(props: ClassProps) {
                       </span>
                     </div>
                     <div className="flex flex-col justify-start items-start font-inter">
-                      <span className="text-xs lg:text-sm text-[#fafafa] break-words">
+                      <span className="break-words text-xs text-slate-950 dark:text-[#fafafa] lg:text-sm">
                         {section.days}{" "}
-                        {section.starttime && section.endtime
-                          ? `${section.starttime} - ${section.endtime}`
-                          : section.starttime || section.endtime || ""}
+                        {formatDisplayTimeRange(
+                          section.starttime,
+                          section.endtime,
+                          timeFormat,
+                          "",
+                        )}
                       </span>
                       {section.instructor ? (
-                        <span className="text-[10px] lg:text-xs text-[#a8a8a8] truncate max-w-[90px] sm:max-w-[120px] lg:max-w-[150px]">
+                        <span className="max-w-[90px] truncate text-[10px] text-slate-600 dark:text-[#a8a8a8] sm:max-w-[120px] lg:max-w-[150px] lg:text-xs">
                           {section.instructor}
                         </span>
                       ) : (
-                        <span className="text-[10px] lg:text-xs text-[#a8a8a8]">
+                        <span className="text-[10px] text-slate-600 dark:text-[#a8a8a8] lg:text-xs">
                           Instructor TBA
                         </span>
                       )}
@@ -220,7 +226,7 @@ export default function Class(props: ClassProps) {
           transition={{ duration: 0.14, ease: "easeOut" }}
         >
           <Loader />
-          <p className="mx-2 text-[10px] lg:text-xs font-inter text-[#b0b0b0]">
+          <p className="mx-2 font-inter text-[10px] text-slate-600 dark:text-[#b0b0b0] lg:text-xs">
             Loading {props.dept} {props.classcode}...
           </p>
         </motion.div>

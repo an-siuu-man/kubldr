@@ -16,10 +16,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
-import toastStyle from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppToast } from "@/hooks/use-app-toast";
 import {
   clearPermutationsFromStorage,
   createDraftHash,
@@ -36,6 +35,7 @@ const ScheduleBuilderContext = createContext<any>(undefined);
 
 export const ScheduleBuilderProvider = ({ children }: any) => {
   const { user, loading } = useAuth();
+  const appToast = useAppToast();
 
   // Track the previous user ID to detect user changes
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
@@ -339,10 +339,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       // Busy blocks are a hard constraint, so they can make the schedule
       // unsatisfiable — tell the user instead of failing silently
       if (newPermutations.length === 0 && draftBusyBlocks.length > 0) {
-        toast.error(
+        appToast.error(
           "No valid schedule combinations fit around your busy blocks",
           {
-            style: toastStyle,
+            action: "permutations",
             duration: 3000,
             icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
           },
@@ -373,6 +373,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     permutations.length,
     fetchAllSectionsForClass,
     findPermutationIndex,
+    appToast,
   ]);
 
   // Trigger permutation generation when draft schedule changes
@@ -491,8 +492,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         });
 
         if (!response.ok) {
-          toast.error("Failed to create schedule. Please try again.", {
-            style: toastStyle,
+          appToast.error("Failed to create schedule. Please try again.", {
+            action: "scheduleCreate",
             duration: 2000,
             icon: <AlertCircle className="h-5 w-5" />,
           });
@@ -516,8 +517,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         console.error("Error creating schedule:", error);
-        toast.error("Failed to create schedule. Please try again.", {
-          style: toastStyle,
+        appToast.error("Failed to create schedule. Please try again.", {
+          action: "scheduleCreate",
           duration: 2000,
           icon: <AlertCircle className="h-5 w-5" />,
         });
@@ -531,10 +532,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     );
     if (exists) {
       // Show toast notification for duplicate
-      toast.error(
+      appToast.error(
         `Section #${classItem.classID} of ${classItem.dept} ${classItem.code} (${classItem.component}) is already in the schedule`,
         {
-          style: toastStyle,
+          action: "classAdd",
           duration: 2000,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
@@ -553,10 +554,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     if (conflictCheck.conflict) {
       // Show toast notification for conflict
       const conflicting = conflictCheck.conflictingClass;
-      toast.error(
+      appToast.error(
         `Time conflict with ${conflicting.dept} ${conflicting.code} (${conflicting.component})`,
         {
-          style: toastStyle,
+          action: "conflict",
           duration: 2000,
           icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
         },
@@ -574,10 +575,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       );
 
       // Show toast notification for replacement
-      toast.success(
+      appToast.success(
         `Replaced ${oldClass.component} #${oldClass.classID} with #${classItem.classID}`,
         {
-          style: toastStyle,
+          action: "classAdd",
           duration: 2000,
           icon: <Repeat className="h-5 w-5 text-blue-500" />,
         },
@@ -598,10 +599,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     }
 
     // Show toast notification for new class addition
-    toast.success(
+    appToast.success(
       `Added ${classItem.dept} ${classItem.code} (${classItem.component}) #${classItem.classID} to schedule`,
       {
-        style: toastStyle,
+        action: "classAdd",
         duration: 2000,
         icon: <Check className="h-5 w-5 text-green-500" />,
       },
@@ -621,14 +622,15 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     });
 
     // Trigger the toast after the state update
-    toast(
+    appToast.custom(
       <div>
         Removed {draftSchedule[index].dept} {draftSchedule[index].code} (
         {draftSchedule[index].component}) #{draftSchedule[index].classID} from
         schedule
       </div>,
       {
-        style: toastStyle,
+        type: "success",
+        action: "classRemove",
         duration: 2000,
         icon: <Trash2 className="h-5 w-5 text-red-500" />,
       },
@@ -648,13 +650,14 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
           const section = { ...item, pinned: newPinned };
 
           // Show toast notification
-          toast(
+          appToast.custom(
             <div>
               {newPinned ? "Pinned" : "Unpinned"} {item.dept} {item.code} (
               {item.component}) #{item.classID}
             </div>,
             {
-              style: toastStyle,
+              type: "info",
+              action: "classPin",
               duration: 2000,
               icon: <Pin className="h-5 w-5 text-blue-400" />,
             },
@@ -680,10 +683,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     );
 
   const showPinnedBusyBlockOverlapToast = (pinnedOverlap: ClassSection) => {
-    toast.error(
+    appToast.error(
       `This time overlaps a pinned class (${pinnedOverlap.dept} ${pinnedOverlap.code})`,
       {
-        style: toastStyle,
+        action: "busyBlock",
         duration: 2000,
         icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
       },
@@ -744,8 +747,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       setDraftBusyBlocks((prev: BusyBlock[]) =>
         prev.filter((b: BusyBlock) => b.uuid !== tempUuid),
       );
-      toast.error("Failed to save busy block. Please try again.", {
-        style: toastStyle,
+      appToast.error("Failed to save busy block. Please try again.", {
+        action: "busyBlock",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5" />,
       });
@@ -801,8 +804,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       setDraftBusyBlocks((prev: BusyBlock[]) =>
         prev.map((b: BusyBlock) => (b.uuid === uuid ? current : b)),
       );
-      toast.error("Failed to save busy block. Please try again.", {
-        style: toastStyle,
+      appToast.error("Failed to save busy block. Please try again.", {
+        action: "busyBlock",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5" />,
       });
@@ -822,8 +825,9 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       prev.filter((b: BusyBlock) => b.uuid !== uuid),
     );
 
-    toast(<div>Removed busy block from schedule</div>, {
-      style: toastStyle,
+    appToast.custom(<div>Removed busy block from schedule</div>, {
+      type: "success",
+      action: "busyBlock",
       duration: 2000,
       icon: <Trash2 className="h-5 w-5 text-red-500" />,
     });
@@ -842,8 +846,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     } catch (error) {
       console.error("Error removing busy block:", error);
       setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, removed]);
-      toast.error("Failed to remove busy block. Please try again.", {
-        style: toastStyle,
+      appToast.error("Failed to remove busy block. Please try again.", {
+        action: "busyBlock",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5" />,
       });

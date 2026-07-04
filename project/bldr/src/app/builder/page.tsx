@@ -17,7 +17,6 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import CalendarEditor from "@/components/CalendarEditor";
 import ClassSearch from "@/components/ClassSearch";
 import CurrentlySelected from "@/components/CurrentlySelected";
@@ -26,14 +25,15 @@ import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import toastStyle from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { useAppToast } from "@/hooks/use-app-toast";
 import type { ClassSection } from "@/types";
 
 export default function Builder() {
   const { user, session, loading, signOut } = useAuth();
+  const appToast = useAppToast();
   const {
     clearDraft,
     draftSchedule,
@@ -144,8 +144,8 @@ export default function Builder() {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Logged out successfully", {
-        style: { ...toastStyle },
+      appToast.success("Logged out successfully", {
+        action: "auth",
         duration: 2000,
         icon: <LogOut className="h-5 w-5 text-green-500" />,
       });
@@ -153,8 +153,8 @@ export default function Builder() {
       router.refresh();
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Failed to logout", {
-        style: { ...toastStyle },
+      appToast.error("Failed to logout", {
+        action: "auth",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -163,8 +163,8 @@ export default function Builder() {
 
   const handleSaveSchedule = async () => {
     if (!session?.access_token) {
-      toast.error("You must be logged in to save schedules", {
-        style: { ...toastStyle },
+      appToast.error("You must be logged in to save schedules", {
+        action: "scheduleSave",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -172,8 +172,8 @@ export default function Builder() {
     }
 
     if (!draftScheduleName || !draftSemester || !draftYear) {
-      toast.error("Please fill in schedule name, semester, and year", {
-        style: { ...toastStyle },
+      appToast.error("Please fill in schedule name, semester, and year", {
+        action: "scheduleSave",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -181,8 +181,8 @@ export default function Builder() {
     }
 
     // if (draftSchedule.length === 0) {
-    //   toast.error("Cannot save an empty schedule", {
-    //     style: { ...toastStyle },
+    //   appToast.error("Cannot save an empty schedule", {
+    //     action: "scheduleSave",
     //     duration: 3000,
     //     icon: <AlertCircle className="h-5 w-5" />,
     //   });
@@ -232,8 +232,8 @@ export default function Builder() {
       if (existingScheduleId) {
         // Update existing schedule
         updateScheduleInList(existingScheduleId, savedSchedule);
-        toast.success("Schedule updated successfully!", {
-          style: { ...toastStyle },
+        appToast.success("Schedule updated successfully!", {
+          action: "scheduleSave",
           duration: 3000,
           icon: <Check className="h-5 w-5 text-green-500" />,
         });
@@ -242,8 +242,8 @@ export default function Builder() {
         addScheduleToList(savedSchedule);
         setIsEditingExisting(true);
         setExistingScheduleId(data.scheduleId);
-        toast.success("Schedule saved successfully!", {
-          style: { ...toastStyle },
+        appToast.success("Schedule saved successfully!", {
+          action: "scheduleSave",
           duration: 3000,
           icon: <Check className="h-5 w-5 text-green-500" />,
         });
@@ -252,9 +252,9 @@ export default function Builder() {
       // Show reminder for guest users after successful save
       if (isGuest) {
         setTimeout(() => {
-          toast(
+          appToast.custom(
             <div className="flex flex-col gap-2">
-              <p className="font-inter text-white text-xs lg:text-sm">
+              <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
                 Schedule saved! Create an account to keep it permanently.
               </p>
               <Link href="/upgrade">
@@ -262,7 +262,7 @@ export default function Builder() {
                   size="sm"
                   variant="secondary"
                   className="font-dmsans cursor-pointer text-xs px-3 py-1"
-                  onClick={() => toast.dismiss()}
+                  onClick={() => appToast.dismiss()}
                 >
                   <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
                   Upgrade Account
@@ -270,7 +270,8 @@ export default function Builder() {
               </Link>
             </div>,
             {
-              style: { ...toastStyle },
+              type: "warning",
+              action: "account",
               duration: 6000,
               icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
             },
@@ -284,8 +285,8 @@ export default function Builder() {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to save schedule";
       console.error("Save schedule error:", error);
-      toast.error(errorMessage, {
-        style: { ...toastStyle },
+      appToast.error(errorMessage, {
+        action: "scheduleSave",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -295,9 +296,9 @@ export default function Builder() {
   };
 
   const handleClearSchedule = () => {
-    toast(
+    appToast.custom(
       <div className="flex flex-col gap-2">
-        <p className="font-inter text-white text-xs lg:text-sm">
+        <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
           Clear all classes from schedule?
         </p>
         <div className="flex gap-2">
@@ -306,9 +307,9 @@ export default function Builder() {
             variant="destructive"
             onClick={() => {
               clearDraft();
-              toast.dismiss();
-              toast.success("Schedule cleared", {
-                style: { ...toastStyle },
+              appToast.dismiss();
+              appToast.success("Schedule cleared", {
+                action: "scheduleClear",
                 duration: 2000,
                 icon: <Trash2 className="h-5 w-5 text-green-500" />,
               });
@@ -321,7 +322,7 @@ export default function Builder() {
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => toast.dismiss()}
+            onClick={() => appToast.dismiss()}
             className="font-dmsans cursor-pointer text-xs px-3 py-1"
           >
             <X className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
@@ -330,7 +331,8 @@ export default function Builder() {
         </div>
       </div>,
       {
-        style: { ...toastStyle },
+        type: "warning",
+        action: "scheduleClear",
         duration: Infinity,
         icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
       },
@@ -344,7 +346,9 @@ export default function Builder() {
           <h2 className="text-2xl flex gap-2 items-center font-dmsans mb-2">
             <Spinner className="h-6 w-6" /> Loading...
           </h2>
-          <p className="text-[#A8A8A8] font-inter">Please wait</p>
+          <p className="font-inter text-slate-500 dark:text-[#A8A8A8]">
+            Please wait
+          </p>
         </div>
       </div>
     );
@@ -358,8 +362,8 @@ export default function Builder() {
     if (!activeSchedule) {
       // No saved schedule to revert to - just clear the draft
       clearDraft();
-      toast.info("Draft cleared", {
-        style: { ...toastStyle },
+      appToast.info("Draft cleared", {
+        action: "scheduleClear",
         duration: 2000,
         icon: <Undo2 className="h-5 w-5 text-blue-400" />,
       });
@@ -371,15 +375,15 @@ export default function Builder() {
     setDraftSchedule(savedClasses);
     // Sync the permutation index to match the saved schedule
     syncPermutationIndex(savedClasses);
-    toast.success("Reverted to last saved state", {
-      style: { ...toastStyle },
+    appToast.success("Reverted to last saved state", {
+      action: "scheduleClear",
       duration: 2000,
       icon: <Undo2 className="h-5 w-5 text-green-500" />,
     });
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen max-h-screen overflow-hidden bg-[#080808]">
+    <div className="flex h-screen max-h-screen flex-col overflow-hidden bg-slate-100 dark:bg-[#080808] md:flex-row">
       {/* Sidebar */}
       <Sidebar />
 
@@ -391,21 +395,21 @@ export default function Builder() {
             <div>
               <h1 className="text-xl lg:text-2xl xl:text-3xl font-figtree font-semibold mb-1">
                 <span className="font-dmsans font-bold">
-                  <span className="text-white">b</span>
+                  <span className="text-slate-950 dark:text-white">b</span>
                   <span className="text-red-500">l</span>
                   <span className="text-blue-600">d</span>
                   <span className="text-yellow-300">r</span>
                 </span>{" "}
                 Schedule Builder
               </h1>
-              <p className="text-xs lg:text-sm text-[#A8A8A8] font-inter">
+              <p className="font-inter text-xs text-slate-600 dark:text-[#A8A8A8] lg:text-sm">
                 Welcome back, {user.is_anonymous ? "Guest" : user.email}!
               </p>
             </div>
             <Button
               onClick={handleLogout}
               variant="secondary"
-              className="font-dmsans cursor-pointer text-xs lg:text-sm px-3 lg:px-4 py-2"
+              className="cursor-pointer border border-slate-300 bg-slate-200 px-3 py-2 font-dmsans text-xs text-slate-900 hover:bg-slate-300 dark:border-transparent dark:bg-secondary dark:text-secondary-foreground lg:px-4 lg:text-sm"
             >
               Logout
             </Button>
@@ -417,12 +421,12 @@ export default function Builder() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="mb-2 lg:mb-4 bg-blue-900/40 border mt-2 lg:mt-3 border-blue-600/50 rounded-lg p-2 lg:p-3 flex items-center justify-between"
+              className="mb-2 mt-2 flex items-center justify-between rounded-lg border border-blue-300 bg-blue-50 p-2 dark:border-blue-600/50 dark:bg-blue-900/40 lg:mb-4 lg:mt-3 lg:p-3"
             >
               <div className="flex items-center gap-2">
-                <Info className="h-3 w-3 lg:h-4 lg:w-4 text-white shrink-0" />
+                <Info className="h-3 w-3 shrink-0 text-blue-700 dark:text-white lg:h-4 lg:w-4" />
                 <div>
-                  <p className="text-blue-200 font-inter text-[10px] lg:text-xs">
+                  <p className="font-inter text-[10px] text-blue-800 dark:text-blue-200 lg:text-xs">
                     <span className="font-figtree">
                       This app is still in{" "}
                       <span className="font-mono">beta</span>. We're
@@ -434,10 +438,10 @@ export default function Builder() {
             </motion.div>
             <div
               key="instructor-warning"
-              className="mb-2 lg:mb-4 bg-orange-900/40 border border-orange-600/50 rounded-lg p-2 lg:p-3 flex items-start gap-2"
+              className="mb-2 flex items-start gap-2 rounded-lg border border-orange-300 bg-orange-50 p-2 dark:border-orange-600/50 dark:bg-orange-900/40 lg:mb-4 lg:p-3"
             >
               <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0 mt-0.5" />
-              <p className="text-orange-100 font-inter text-[10px] lg:text-xs">
+              <p className="font-inter text-[10px] text-orange-900 dark:text-orange-100 lg:text-xs">
                 We are facing some difficulties fetching accurate Instructor and
                 Room information for the classes. The data you see in the
                 builder may not be accurate.
@@ -450,12 +454,12 @@ export default function Builder() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="mb-2 lg:mb-4 bg-yellow-900/40 border border-yellow-600/50 rounded-lg p-2 lg:p-3 flex items-center justify-between"
+                className="mb-2 flex items-center justify-between rounded-lg border border-yellow-300 bg-yellow-50 p-2 dark:border-yellow-600/50 dark:bg-yellow-900/40 lg:mb-4 lg:p-3"
               >
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-500 shrink-0" />
                   <div>
-                    <p className="text-yellow-200 font-figtree text-[10px] lg:text-xs">
+                    <p className="font-figtree text-[10px] text-yellow-900 dark:text-yellow-200 lg:text-xs">
                       <span className="font-semibold">Guest mode.</span>{" "}
                       Schedules will be lost when you close this tab.{" "}
                       <Link
@@ -480,7 +484,7 @@ export default function Builder() {
               </div>
               {activeSchedule && (
                 <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
-                  <div className="flex-1 basis-0 text-[10px] lg:text-xs flex flex-wrap gap-1.5 lg:gap-2 items-center text-[#A8A8A8] font-inter justify-start">
+                  <div className="flex flex-1 basis-0 flex-wrap items-center justify-start gap-1.5 font-inter text-[10px] text-slate-600 dark:text-[#A8A8A8] lg:gap-2 lg:text-xs">
                     <motion.div
                       layout
                       initial={false}
@@ -530,7 +534,7 @@ export default function Builder() {
                   <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
                     <Button
                       onClick={handleRevertChanges}
-                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
                       disabled={schedulesMatch || isSaving}
                     >
                       <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
@@ -538,7 +542,7 @@ export default function Builder() {
                     </Button>
                     <Button
                       onClick={handleSaveSchedule}
-                      className="font-dmsans cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                      className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
                       disabled={isSaving || schedulesMatch}
                     >
                       {isSaving ? (
@@ -583,10 +587,10 @@ export default function Builder() {
                 className="w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex flex-col gap-0 overflow-hidden"
                 style={{ height: `${calendarHeight}px` }}
               >
-                <TabsList className="relative isolate w-full bg-[#181818] border border-[#303030] rounded-t-lg rounded-b-none mb-0">
+                <TabsList className="relative isolate mb-0 w-full rounded-b-none rounded-t-lg border border-slate-200 bg-slate-50 dark:border-[#303030] dark:bg-[#181818]">
                   <TabsTrigger
                     value="search"
-                    className="relative z-10 flex-1 bg-transparent border-transparent shadow-none text-xs lg:text-sm font-figtree text-[#A8A8A8] data-[state=active]:text-green-400 dark:data-[state=active]:text-green-400 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:border-transparent dark:data-[state=active]:border-transparent data-[state=active]:shadow-none"
+                    className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-green-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-green-400 lg:text-sm"
                   >
                     {activeTab === "search" && (
                       <motion.span
@@ -596,14 +600,14 @@ export default function Builder() {
                           stiffness: 420,
                           damping: 34,
                         }}
-                        className="absolute inset-0 rounded-md bg-[#2b2b2b]"
+                        className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
                       />
                     )}
                     <span className="relative z-10">Search</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="selected"
-                    className="relative z-10 flex-1 bg-transparent border-transparent shadow-none text-xs lg:text-sm font-figtree text-[#A8A8A8] data-[state=active]:text-purple-400 dark:data-[state=active]:text-purple-400 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:border-transparent dark:data-[state=active]:border-transparent data-[state=active]:shadow-none"
+                    className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-purple-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-purple-400 lg:text-sm"
                   >
                     {activeTab === "selected" && (
                       <motion.span
@@ -613,7 +617,7 @@ export default function Builder() {
                           stiffness: 420,
                           damping: 34,
                         }}
-                        className="absolute inset-0 rounded-md bg-[#2b2b2b]"
+                        className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
                       />
                     )}
                     <span className="relative z-10 inline-flex items-center gap-1.5">

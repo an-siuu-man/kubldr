@@ -32,6 +32,7 @@ import {
   Loader2,
   Menu,
   MoreHorizontal,
+  Settings,
   Share2,
   Sidebar as SidebarIcon,
   Trash2,
@@ -41,7 +42,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { AppSettingsDialog } from "@/components/AppSettingsDialog";
 import {
   Accordion,
   AccordionContent,
@@ -58,10 +59,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import toastStyle from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { useAppToast } from "@/hooks/use-app-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Schedule } from "@/types";
 import { Button } from "./ui/button";
@@ -148,6 +149,7 @@ const scheduleItemVariants: Variants = {
 export function Sidebar() {
   // Authentication context for user info and session
   const { user, session } = useAuth();
+  const appToast = useAppToast();
 
   // Check if we're on mobile
   const isMobile = useIsMobile();
@@ -174,6 +176,7 @@ export function Sidebar() {
   const [open, setOpen] = useState(true);
   const [isSidebarWide, setIsSidebarWide] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Loading state for async operations (e.g., creating schedules)
@@ -307,8 +310,8 @@ export function Sidebar() {
       setNewScheduleName("");
     } catch (error) {
       console.error("Error creating schedule:", error);
-      toast.error("Failed to create schedule", {
-        style: toastStyle,
+      appToast.error("Failed to create schedule", {
+        action: "scheduleCreate",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -326,8 +329,8 @@ export function Sidebar() {
    */
   const handleRenameSchedule = async (scheduleId: string, newName: string) => {
     if (!newName.trim()) {
-      toast.error("Schedule name cannot be empty", {
-        style: toastStyle,
+      appToast.error("Schedule name cannot be empty", {
+        action: "scheduleRename",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -335,8 +338,8 @@ export function Sidebar() {
     }
 
     if (!session?.access_token) {
-      toast.error("You must be logged in to rename schedules", {
-        style: toastStyle,
+      appToast.error("You must be logged in to rename schedules", {
+        action: "scheduleRename",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -368,17 +371,17 @@ export function Sidebar() {
         });
       }
 
-      toast.success("Schedule renamed successfully", {
-        style: toastStyle,
+      appToast.success("Schedule renamed successfully", {
+        action: "scheduleRename",
         duration: 2000,
         icon: <Check className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
       console.error("Error renaming schedule:", err);
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to rename schedule",
         {
-          style: toastStyle,
+          action: "scheduleRename",
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -416,15 +419,15 @@ export function Sidebar() {
   const copyPublicScheduleLink = async (schedule: Schedule) => {
     try {
       await navigator.clipboard.writeText(getPublicScheduleUrl(schedule.id));
-      toast.success("Share link copied", {
-        style: toastStyle,
+      appToast.success("Share link copied", {
+        action: "scheduleShare",
         duration: 2000,
         icon: <Copy className="h-5 w-5 text-green-500" />,
       });
     } catch (error) {
       console.error("Error copying share link:", error);
-      toast.error("Failed to copy share link", {
-        style: toastStyle,
+      appToast.error("Failed to copy share link", {
+        action: "scheduleShare",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     }
@@ -432,8 +435,8 @@ export function Sidebar() {
 
   const handleToggleShare = async (schedule: Schedule, isPublic: boolean) => {
     if (!session?.access_token) {
-      toast.error("You must be logged in to share schedules", {
-        style: toastStyle,
+      appToast.error("You must be logged in to share schedules", {
+        action: "scheduleShare",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -461,22 +464,22 @@ export function Sidebar() {
       };
       updateScheduleInList(schedule.id, updatedSchedule);
 
-      toast.success(
+      appToast.success(
         data.isPublic
           ? "Schedule sharing enabled"
           : "Schedule sharing disabled",
         {
-          style: toastStyle,
+          action: "scheduleShare",
           duration: 2000,
           icon: <Share2 className="h-5 w-5 text-green-500" />,
         },
       );
     } catch (err: unknown) {
       console.error("Error updating schedule sharing:", err);
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to update sharing",
         {
-          style: toastStyle,
+          action: "scheduleShare",
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -494,8 +497,8 @@ export function Sidebar() {
    */
   const handleDeleteSchedule = (scheduleId: string) => {
     if (!session?.access_token) {
-      toast.error("You must be logged in to delete schedules", {
-        style: toastStyle,
+      appToast.error("You must be logged in to delete schedules", {
+        action: "scheduleDelete",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -532,17 +535,17 @@ export function Sidebar() {
       setActiveSchedule(null);
       setActiveSemester("");
       clearDraft();
-      toast.success("Schedule deleted", {
+      appToast.success("Schedule deleted", {
+        action: "scheduleDelete",
         duration: 2000,
-        style: toastStyle,
         icon: <Trash2 className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
       console.error("Error deleting schedule:", err);
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to delete schedule",
         {
-          style: toastStyle,
+          action: "scheduleDelete",
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -561,12 +564,12 @@ export function Sidebar() {
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 z-50">
           {/* Mobile Header Bar */}
-          <div className="bg-[#1a1a1a] border-b border-[#2a2a2a] px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-[#2a2a2a] dark:bg-[#1a1a1a]">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={toggleMobileMenu}
-                className="p-1.5 rounded-md hover:bg-[#333] transition cursor-pointer"
+                className="cursor-pointer rounded-md p-1.5 transition hover:bg-slate-100 dark:hover:bg-[#333]"
               >
                 <Menu
                   size={22}
@@ -575,7 +578,7 @@ export function Sidebar() {
                   }`}
                 />
               </button>
-              <span className="font-figtree font-bold text-sm text-gray-300">
+              <span className="font-figtree text-sm font-bold text-slate-700 dark:text-gray-300">
                 {activeSchedule?.name || draftScheduleName || "Schedules"}
               </span>
             </div>
@@ -594,13 +597,21 @@ export function Sidebar() {
               )}
               <Link
                 href="/profile"
-                className="flex items-center gap-1.5 text-xs text-gray-400 rounded-md hover:bg-white/8 px-1.5 py-1 transition-colors"
+                className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-slate-600 transition-colors hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/8"
               >
                 <User className="h-4 w-4" />
                 <span className="font-figtree truncate max-w-20">
                   {user?.is_anonymous ? "Guest" : user?.email?.split("@")[0]}
                 </span>
               </Link>
+              <button
+                type="button"
+                aria-label="Open settings"
+                onClick={() => setSettingsDialogOpen(true)}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -623,11 +634,11 @@ export function Sidebar() {
                   animate="visible"
                   exit="exit"
                   variants={mobileDropdownVariants}
-                  className="relative bg-[#1a1a1a] border-b border-[#333] shadow-2xl z-50 overflow-hidden"
+                  className="relative z-50 overflow-hidden border-b border-slate-200 bg-white shadow-2xl dark:border-[#333] dark:bg-[#1a1a1a]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 max-h-[70vh] overflow-y-auto">
-                    <h2 className="text-base font-bold text-gray-300 mb-3 font-figtree">
+                    <h2 className="mb-3 font-figtree text-base font-bold text-slate-800 dark:text-gray-300">
                       Your Schedules
                     </h2>
 
@@ -642,7 +653,7 @@ export function Sidebar() {
                       <div className="pl-4">
                         <Label
                           htmlFor="mobile-schedule-name"
-                          className="text-xs font-dmsans mb-1 text-[#888888]"
+                          className="mb-1 font-dmsans text-xs text-slate-600 dark:text-[#888888]"
                         >
                           Make new schedule
                         </Label>
@@ -659,7 +670,7 @@ export function Sidebar() {
                               }
                             }}
                             placeholder="Schedule name"
-                            className="font-inter border-[#404040] border placeholder:text-xs selection:bg-blue-400 text-xs h-9 flex-1"
+                            className="h-9 flex-1 border border-slate-300 font-inter text-xs selection:bg-blue-400 placeholder:text-xs dark:border-[#404040]"
                           />
                           <Button
                             type="submit"
@@ -668,7 +679,7 @@ export function Sidebar() {
                               handleCreateSchedule(newScheduleName);
                               setMobileMenuOpen(false);
                             }}
-                            className="bg-[#fafafa] text-xs text-[#1a1a1a] hover:bg-[#e0e0e0] cursor-pointer font-dmsans px-3 h-9"
+                            className="h-9 cursor-pointer bg-slate-700 px-3 font-dmsans text-xs text-white hover:bg-slate-600 dark:bg-[#fafafa] dark:text-[#1a1a1a] dark:hover:bg-[#e0e0e0]"
                           >
                             {loading ? (
                               <Spinner className="h-3 w-3" />
@@ -686,7 +697,7 @@ export function Sidebar() {
                               <span className="text-xs">Loading...</span>
                             </div>
                           ) : userSchedules.length === 0 ? (
-                            <p className="text-xs text-gray-400 py-2">
+                            <p className="py-2 text-xs text-slate-500 dark:text-gray-400">
                               No schedules found.
                             </p>
                           ) : (
@@ -704,8 +715,8 @@ export function Sidebar() {
                                   variants={scheduleItemVariants}
                                   className={`flex items-center justify-between rounded-lg text-sm font-inter ${
                                     activeSchedule?.id === schedule.id
-                                      ? "bg-[#444] font-semibold"
-                                      : "bg-[#252525] hover:bg-[#333]"
+                                      ? "bg-slate-200 font-semibold dark:bg-[#444]"
+                                      : "bg-slate-100 hover:bg-slate-200 dark:bg-[#252525] dark:hover:bg-[#333]"
                                   } transition`}
                                 >
                                   {renamingScheduleId === schedule.id ? (
@@ -728,7 +739,7 @@ export function Sidebar() {
                                         }}
                                         autoFocus
                                         disabled={isRenamingSaving}
-                                        className="h-8 text-xs border-[#404040] bg-[#2a2a2a] flex-1 disabled:opacity-50"
+                                        className="h-8 flex-1 border-slate-300 bg-white text-xs disabled:opacity-50 dark:border-[#404040] dark:bg-[#2a2a2a]"
                                       />
                                       {isRenamingSaving ? (
                                         <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
@@ -742,14 +753,14 @@ export function Sidebar() {
                                                 renameValue,
                                               )
                                             }
-                                            className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                            className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
                                           >
                                             <Check className="h-4 w-4 text-green-500" />
                                           </button>
                                           <button
                                             type="button"
                                             onClick={cancelRenaming}
-                                            className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                            className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
                                           >
                                             <X className="h-4 w-4 text-red-500" />
                                           </button>
@@ -788,7 +799,7 @@ export function Sidebar() {
                                           disabled={
                                             sharingScheduleId === schedule.id
                                           }
-                                          className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                          className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-[#555]"
                                           title={
                                             schedule.isPublic
                                               ? "Disable sharing"
@@ -802,7 +813,7 @@ export function Sidebar() {
                                               className={`h-4 w-4 ${
                                                 schedule.isPublic
                                                   ? "text-green-400"
-                                                  : "text-gray-400"
+                                                  : "text-slate-500 dark:text-gray-400"
                                               }`}
                                             />
                                           )}
@@ -813,10 +824,10 @@ export function Sidebar() {
                                             onClick={() =>
                                               copyPublicScheduleLink(schedule)
                                             }
-                                            className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                            className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
                                             title="Copy share link"
                                           >
-                                            <Copy className="h-4 w-4 text-gray-400" />
+                                            <Copy className="h-4 w-4 text-slate-500 dark:text-gray-400" />
                                           </button>
                                         )}
                                         <button
@@ -824,16 +835,16 @@ export function Sidebar() {
                                           onClick={() =>
                                             startRenaming(schedule)
                                           }
-                                          className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                          className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
                                         >
-                                          <Edit2 className="h-4 w-4 text-gray-400" />
+                                          <Edit2 className="h-4 w-4 text-slate-500 dark:text-gray-400" />
                                         </button>
                                         <button
                                           type="button"
                                           onClick={() =>
                                             handleDeleteSchedule(schedule.id)
                                           }
-                                          className="p-1.5 hover:bg-[#555] rounded transition cursor-pointer"
+                                          className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
                                         >
                                           <Trash2 className="h-4 w-4 text-red-400" />
                                         </button>
@@ -868,7 +879,7 @@ export function Sidebar() {
           <div
             className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed top-0 left-0 h-screen transition-all duration-300 ease-out ${
               isSidebarWide
-                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-[#151515] shadow-2xl shadow-black/50"
+                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-white shadow-2xl shadow-slate-300/60 dark:bg-[#151515] dark:shadow-black/50"
                 : "bg-transparent min-w-[70px] max-w-[70px]"
             } overflow-hidden p-4 lg:p-5`}
           >
@@ -878,13 +889,15 @@ export function Sidebar() {
                 <button
                   type="button"
                   className={`p-2 rounded-xl transition-all duration-300 cursor-pointer ${
-                    open ? "hover:bg-white/5" : "hover:bg-white/10"
+                    open
+                      ? "hover:bg-slate-100 dark:hover:bg-white/5"
+                      : "hover:bg-slate-100 dark:hover:bg-white/10"
                   }`}
                   onClick={toggleSidebar}
                 >
                   <SidebarIcon
                     size={22}
-                    className={`transition-transform duration-500 ease-out text-gray-400 ${
+                    className={`text-slate-600 transition-transform duration-500 ease-out dark:text-gray-400 ${
                       open ? "" : "rotate-180"
                     }`}
                   />
@@ -903,7 +916,7 @@ export function Sidebar() {
                     variants={sidebarContentVariants}
                     className="flex flex-col h-full overflow-hidden w-[calc(min(280px,25vw)-2rem)] lg:w-[calc(min(280px,25vw)-2.5rem)] shrink-0"
                   >
-                    <h1 className="text-lg lg:text-xl font-semibold text-gray-200 mb-3 lg:mb-4 font-figtree tracking-tight">
+                    <h1 className="mb-3 font-figtree text-lg font-semibold tracking-tight text-slate-800 dark:text-gray-200 lg:mb-4 lg:text-xl">
                       Your Schedules
                     </h1>
 
@@ -916,14 +929,14 @@ export function Sidebar() {
                         value="spring-2026"
                         className="border-b-0 flex flex-col flex-1 min-h-0"
                       >
-                        <AccordionTrigger className="text-sm lg:text-base text-emerald-400 hover:no-underline hover:cursor-pointer hover:bg-white/5 font-semibold py-2 transition-colors shrink-0">
+                        <AccordionTrigger className="shrink-0 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:cursor-pointer hover:bg-slate-100 hover:no-underline dark:text-emerald-400 dark:hover:bg-white/5 lg:text-base">
                           Spring 2026
                         </AccordionTrigger>
                         <AccordionContent className="font-inter flex flex-col">
                           {/* New schedule input */}
                           <Label
                             htmlFor="schedule-name"
-                            className="text-xs lg:text-sm font-dmsans mb-1 text-[#888888] shrink-0"
+                            className="mb-1 shrink-0 font-dmsans text-xs text-slate-600 dark:text-[#888888] lg:text-sm"
                           >
                             Make new schedule
                           </Label>
@@ -941,7 +954,7 @@ export function Sidebar() {
                                 }
                               }}
                               placeholder="Schedule name"
-                              className="font-inter bg-white/5 border-white/10 border rounded-lg placeholder:text-xs focus:border-emerald-500/50 focus:ring-emerald-500/20 selection:bg-emerald-400 text-xs h-9 transition-colors"
+                              className="h-9 rounded-lg border border-slate-300 bg-white font-inter text-xs transition-colors selection:bg-emerald-400 placeholder:text-xs focus:border-emerald-500/50 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-white/5"
                             />
                             <Button
                               type="submit"
@@ -949,7 +962,7 @@ export function Sidebar() {
                               onClick={() => {
                                 handleCreateSchedule(newScheduleName);
                               }}
-                              className="bg-white text-xs text-[#1a1a1a] hover:bg-white/90 cursor-pointer font-dmsans font-medium px-3 h-9 rounded-lg shadow-sm transition-all"
+                              className="h-9 cursor-pointer rounded-lg bg-slate-700 px-3 font-dmsans text-xs font-medium text-white shadow-sm transition-all hover:bg-slate-600 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-white/90"
                             >
                               {loading ? (
                                 <Spinner className="h-3 w-3" />
@@ -968,12 +981,12 @@ export function Sidebar() {
                               {isLoadingSchedules ? (
                                 <div className="flex items-center justify-center gap-2 py-6">
                                   <Spinner className="size-4 text-emerald-400" />
-                                  <span className="text-xs text-gray-400">
+                                  <span className="text-xs text-slate-500 dark:text-gray-400">
                                     Loading...
                                   </span>
                                 </div>
                               ) : userSchedules.length === 0 ? (
-                                <p className="text-xs text-white/30 font-inter px-4 py-4">
+                                <p className="px-4 py-4 font-inter text-xs text-slate-500 dark:text-white/30">
                                   No schedules found.
                                 </p>
                               ) : (
@@ -1017,7 +1030,7 @@ export function Sidebar() {
                                             }}
                                             autoFocus
                                             disabled={isRenamingSaving}
-                                            className="h-7 text-xs border-white/10 bg-white/5 flex-1 disabled:opacity-50"
+                                            className="h-7 flex-1 border-slate-300 bg-white text-xs disabled:opacity-50 dark:border-white/10 dark:bg-white/5"
                                           />
                                           {isRenamingSaving ? (
                                             <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
@@ -1031,14 +1044,14 @@ export function Sidebar() {
                                                     renameValue,
                                                   )
                                                 }
-                                                className="p-1 hover:bg-white/10 rounded transition cursor-pointer"
+                                                className="cursor-pointer rounded p-1 transition hover:bg-slate-100 dark:hover:bg-white/10"
                                               >
                                                 <Check className="h-4 w-4 text-emerald-400" />
                                               </button>
                                               <button
                                                 type="button"
                                                 onClick={cancelRenaming}
-                                                className="p-1 hover:bg-white/10 rounded transition cursor-pointer"
+                                                className="cursor-pointer rounded p-1 transition hover:bg-slate-100 dark:hover:bg-white/10"
                                               >
                                                 <X className="h-4 w-4 text-red-400" />
                                               </button>
@@ -1049,8 +1062,8 @@ export function Sidebar() {
                                         <div
                                           className={`flex items-center w-full rounded-lg transition-colors duration-150 ${
                                             activeSchedule?.id === schedule.id
-                                              ? "bg-white/8"
-                                              : "hover:bg-white/5"
+                                              ? "bg-slate-100 dark:bg-white/8"
+                                              : "hover:bg-slate-50 dark:hover:bg-white/5"
                                           }`}
                                         >
                                           <span
@@ -1075,8 +1088,8 @@ export function Sidebar() {
                                                 className={`truncate font-dmsans text-xs ${
                                                   activeSchedule?.id ===
                                                   schedule.id
-                                                    ? "font-semibold text-white"
-                                                    : "text-white/55"
+                                                    ? "font-semibold text-slate-950 dark:text-white"
+                                                    : "text-slate-600 dark:text-white/55"
                                                 }`}
                                               >
                                                 {schedule.name}
@@ -1093,12 +1106,12 @@ export function Sidebar() {
                                                   type="button"
                                                   className="flex items-center z-50 cursor-pointer"
                                                 >
-                                                  <MoreHorizontal className="h-4 w-4 mr-2 text-white/40" />
+                                                  <MoreHorizontal className="mr-2 h-4 w-4 text-slate-500 dark:text-white/40" />
                                                 </button>
                                               </PopoverTrigger>
-                                              <PopoverContent className="bg-[#2a2a2a] border rounded-md border-[#404040] p-2 w-fit">
+                                              <PopoverContent className="w-fit rounded-md border border-slate-200 bg-white p-2 dark:border-[#404040] dark:bg-[#2a2a2a]">
                                                 <div className="flex flex-col items-start justify-between gap-1 text-sm">
-                                                  <div className="flex w-full items-center justify-between gap-4 rounded-md p-2 font-inter text-white">
+                                                  <div className="flex w-full items-center justify-between gap-4 rounded-md p-2 font-inter text-slate-800 dark:text-white">
                                                     <span className="flex items-center gap-2">
                                                       <Share2 className="h-4 w-4" />
                                                       Share
@@ -1125,7 +1138,7 @@ export function Sidebar() {
                                                   {schedule.isPublic && (
                                                     <button
                                                       type="button"
-                                                      className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-white"
+                                                      className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-slate-800 transition hover:bg-slate-100 dark:text-white dark:hover:bg-[#444]"
                                                       onClick={() =>
                                                         copyPublicScheduleLink(
                                                           schedule,
@@ -1136,10 +1149,10 @@ export function Sidebar() {
                                                       Copy link
                                                     </button>
                                                   )}
-                                                  <hr className="w-full border-t border-[#606060]" />
+                                                  <hr className="w-full border-t border-slate-200 dark:border-[#606060]" />
                                                   <button
                                                     type="button"
-                                                    className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-white"
+                                                    className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-slate-800 transition hover:bg-slate-100 dark:text-white dark:hover:bg-[#444]"
                                                     onClick={() =>
                                                       startRenaming(schedule)
                                                     }
@@ -1147,10 +1160,10 @@ export function Sidebar() {
                                                     <Edit2 className="h-4 w-4" />
                                                     Rename
                                                   </button>
-                                                  <hr className="w-full border-t border-[#606060]" />
+                                                  <hr className="w-full border-t border-slate-200 dark:border-[#606060]" />
                                                   <button
                                                     type="button"
-                                                    className="p-2 rounded-md w-full flex flex-row items-center justify-start gap-2 font-inter cursor-pointer hover:bg-[#444] transition text-red-500"
+                                                    className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-red-600 transition hover:bg-red-50 dark:text-red-500 dark:hover:bg-[#444]"
                                                     onClick={() =>
                                                       handleDeleteSchedule(
                                                         schedule.id,
@@ -1177,10 +1190,10 @@ export function Sidebar() {
                               )}
                             </ul>
                             {showTopShadow && (
-                              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-[#151515] to-transparent" />
+                              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-white to-transparent dark:from-[#151515]" />
                             )}
                             {showBottomShadow && (
-                              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-[#151515] to-transparent" />
+                              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-white to-transparent dark:from-[#151515]" />
                             )}
                           </div>
                         </AccordionContent>
@@ -1192,7 +1205,7 @@ export function Sidebar() {
             </div>
 
             {/* Bottom Section */}
-            <div className="flex flex-col w-full gap-3 shrink-0 mt-4 pt-4 border-t border-white/15">
+            <div className="mt-4 flex w-full shrink-0 flex-col gap-3 border-t border-slate-200 pt-4 dark:border-white/15">
               {/* Upgrade button for guest users */}
               <AnimatePresence initial={false}>
                 {open && user?.is_anonymous && (
@@ -1217,48 +1230,63 @@ export function Sidebar() {
               </AnimatePresence>
 
               {/* User info — links to profile page */}
-              <Link
-                href="/profile"
-                className="flex flex-row w-full items-center justify-start gap-1.5 lg:gap-2 rounded-md hover:bg-white/8 px-1 py-1 transition-colors"
-              >
-                <User className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />
-                <AnimatePresence initial={false}>
-                  {open && (
-                    <motion.div
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      variants={sidebarContentVariants}
-                      key={user?.email || "guest"}
-                      className="font-figtree text-xs lg:text-sm truncate min-w-[min(280px,25vw)]"
-                    >
-                      {user?.is_anonymous ? "Guest" : user?.email}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Link>
+              <div className="flex w-full flex-row items-center gap-1">
+                <Link
+                  href="/profile"
+                  className="flex min-w-0 flex-1 flex-row items-center justify-start gap-1.5 rounded-md px-1 py-1 transition-colors hover:bg-slate-100 dark:hover:bg-white/8 lg:gap-2"
+                >
+                  <User className="h-4 w-4 shrink-0 lg:h-5 lg:w-5" />
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={sidebarContentVariants}
+                        key={user?.email || "guest"}
+                        className="min-w-0 truncate font-figtree text-xs lg:text-sm"
+                      >
+                        {user?.is_anonymous ? "Guest" : user?.email}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Link>
+                <button
+                  type="button"
+                  aria-label="Open settings"
+                  onClick={() => setSettingsDialogOpen(true)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      <AppSettingsDialog
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
+      />
 
       {/* Delete Confirmation AlertDialog */}
       <AlertDialog
         open={deletingScheduleId !== null}
         onOpenChange={(open) => !open && setDeletingScheduleId(null)}
       >
-        <AlertDialogContent className="bg-[#1a1a1a] border-[#404040]">
+        <AlertDialogContent className="border-slate-200 bg-white dark:border-[#404040] dark:bg-[#1a1a1a]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#fafafa] font-figtree">
+            <AlertDialogTitle className="font-figtree text-slate-950 dark:text-[#fafafa]">
               Delete Schedule?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#888888] font-inter">
+            <AlertDialogDescription className="font-inter text-slate-600 dark:text-[#888888]">
               This action cannot be undone. This will permanently delete this
               schedule from your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="font-dmsans bg-[#2a2a2a] border-[#404040] text-white hover:bg-[#333333]">
+            <AlertDialogCancel className="border-slate-200 bg-white font-dmsans text-slate-800 hover:bg-slate-100 dark:border-[#404040] dark:bg-[#2a2a2a] dark:text-white dark:hover:bg-[#333333]">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

@@ -5,12 +5,11 @@ import { AlertTriangle, CheckCircle2, UserCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import toastStyle from "@/components/ui/toastStyle";
+import { useAppToast } from "@/hooks/use-app-toast";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -20,6 +19,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGuestLoading, setIsGuestLoading] = useState(false);
   const supabase = createClient();
+  const appToast = useAppToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,8 +32,8 @@ export default function LoginPage() {
       });
 
       if (error) {
-        toast.error("Login Failed", {
-          style: toastStyle,
+        appToast.error("Login Failed", {
+          action: "auth",
           description: error.message,
           duration: 3000,
           icon: <XCircle className="h-5 w-5 text-red-500" />,
@@ -42,8 +42,8 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        toast.success("Login Successful", {
-          style: toastStyle,
+        appToast.success("Login Successful", {
+          action: "auth",
           description: "Redirecting to builder...",
           duration: 2000,
           icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
@@ -53,8 +53,8 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Error", {
-        style: toastStyle,
+      appToast.error("Error", {
+        action: "auth",
         description: "An unexpected error occurred",
         duration: 3000,
         icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -71,8 +71,8 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signInAnonymously();
 
       if (error) {
-        toast.error("Guest Login Failed", {
-          style: toastStyle,
+        appToast.error("Guest Login Failed", {
+          action: "auth",
           description: error.message,
           duration: 3000,
           icon: <XCircle className="h-5 w-5 text-red-500" />,
@@ -81,8 +81,8 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        toast.success("Welcome, Guest!", {
-          style: toastStyle,
+        appToast.success("Welcome, Guest!", {
+          action: "auth",
           description: "Redirecting to builder...",
           duration: 2000,
           icon: <UserCircle className="h-5 w-5 text-green-500" />,
@@ -92,8 +92,8 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Guest login error:", error);
-      toast.error("Error", {
-        style: toastStyle,
+      appToast.error("Error", {
+        action: "auth",
         description: "An unexpected error occurred",
         duration: 3000,
         icon: <AlertTriangle className="h-5 w-5 text-red-500" />,

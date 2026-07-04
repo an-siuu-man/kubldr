@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateDuration,
+  decimalToTimeString,
+  formatDisplayTime,
+  formatDisplayTimeRange,
   mapDayAbbreviation,
   parseDays,
   timeToDecimal,
@@ -40,6 +43,42 @@ describe("timeToDecimal", () => {
   it("handles zero minutes correctly", () => {
     expect(timeToDecimal("9:00")).toBe(9);
     expect(timeToDecimal("9:00 AM")).toBe(9);
+  });
+});
+
+// ─── display formatting ──────────────────────────────────────────────────────
+
+describe("timeUtils display formatting", () => {
+  it("normalizes daily times in 24 hour format", () => {
+    expect(formatDisplayTime("9:00", "24h")).toBe("09:00");
+    expect(formatDisplayTime("14:30", "24h")).toBe("14:30");
+  });
+
+  it("formats daily times in 12 hour format", () => {
+    expect(formatDisplayTime("00:00", "12h")).toBe("12:00 AM");
+    expect(formatDisplayTime("09:00", "12h")).toBe("9:00 AM");
+    expect(formatDisplayTime("12:15", "12h")).toBe("12:15 PM");
+    expect(formatDisplayTime("14:30", "12h")).toBe("2:30 PM");
+  });
+
+  it("formats time ranges without changing source values", () => {
+    expect(formatDisplayTimeRange("09:00", "10:15", "24h")).toBe(
+      "09:00 - 10:15",
+    );
+    expect(formatDisplayTimeRange("09:00", "14:30", "12h")).toBe(
+      "9:00 AM - 2:30 PM",
+    );
+  });
+
+  it("preserves parsing and persistence helpers separately", () => {
+    expect(timeToDecimal("2:30 PM")).toBe(14.5);
+    expect(decimalToTimeString(14.5)).toBe("14:30");
+  });
+
+  it("uses a fallback for missing display times", () => {
+    expect(formatDisplayTime("", "12h")).toBe("TBA");
+    expect(formatDisplayTimeRange("", "", "24h")).toBe("TBA");
+    expect(formatDisplayTimeRange("09:00", "", "12h")).toBe("9:00 AM");
   });
 });
 
