@@ -567,8 +567,8 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
     // Block classes that overlap a busy block — the user has marked that
     // time as unavailable, so it shouldn't be schedulable.
-    const busyBlockConflict = (draftBusyBlocks as BusyBlock[]).find(
-      (block) => hasBusyBlockConflict(classItem, [block]),
+    const busyBlockConflict = (draftBusyBlocks as BusyBlock[]).find((block) =>
+      hasBusyBlockConflict(classItem, [block]),
     );
     if (busyBlockConflict) {
       appToast.error(
@@ -710,15 +710,14 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
     );
   };
 
-  const addBusyBlockToDraft = async (block: {
+  const addBusyBlockToDraft = (block: {
     day: string;
     starttime: string;
     endtime: string;
     label?: string;
   }) => {
-    const tempUuid = `temp-${crypto.randomUUID()}`;
-    const optimistic: BusyBlock = {
-      uuid: tempUuid,
+    const newBlock: BusyBlock = {
+      uuid: `temp-${crypto.randomUUID()}`,
       day: block.day,
       starttime: block.starttime,
       endtime: block.endtime,
@@ -727,49 +726,16 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
 
     // Pinned sections can't be moved by permutations, so a busy block over
     // one would make the schedule immediately unsatisfiable — reject it
-    const pinnedOverlap = findPinnedBusyBlockOverlap(optimistic);
+    const pinnedOverlap = findPinnedBusyBlockOverlap(newBlock);
     if (pinnedOverlap) {
       showPinnedBusyBlockOverlapToast(pinnedOverlap);
       return;
     }
 
-    setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, optimistic]);
-
-    // Draft isn't persisted yet — the block is saved with the schedule save
-    if (!existingScheduleId) return;
-
-    try {
-      const response = await fetch("/api/addBusyBlock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scheduleid: existingScheduleId,
-          day: optimistic.day,
-          starttime: optimistic.starttime,
-          endtime: optimistic.endtime,
-          label: optimistic.label,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to add busy block");
-
-      const data = await response.json();
-      setDraftBusyBlocks((prev: BusyBlock[]) =>
-        prev.map((b: BusyBlock) =>
-          b.uuid === tempUuid ? { ...b, uuid: data.added.uuid } : b,
-        ),
-      );
-    } catch (error) {
-      console.error("Error adding busy block:", error);
-      setDraftBusyBlocks((prev: BusyBlock[]) =>
-        prev.filter((b: BusyBlock) => b.uuid !== tempUuid),
-      );
-      appToast.error("Failed to save busy block. Please try again.", {
-        action: "busyBlock",
-        duration: 2000,
-        icon: <AlertCircle className="h-5 w-5" />,
-      });
-    }
+    // Busy blocks live in the draft like classes do — they're written to the
+    // database only when the user saves the schedule, which enables the
+    // Undo/Save controls in the meantime.
+    setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, newBlock]);
   };
 
   /**
@@ -779,7 +745,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
    * @param starttime - New start time in HH:MM format
    * @param endtime - New end time in HH:MM format
    */
-  const updateBusyBlockInDraft = async (
+  const updateBusyBlockInDraft = (
     uuid: string,
     starttime: string,
     endtime: string,
@@ -796,37 +762,10 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       return;
     }
 
+    // Draft-only until the schedule is saved (see addBusyBlockToDraft).
     setDraftBusyBlocks((prev: BusyBlock[]) =>
       prev.map((b: BusyBlock) => (b.uuid === uuid ? updated : b)),
     );
-
-    // Draft-only or temp blocks are persisted later when the schedule is saved
-    if (!existingScheduleId || uuid.startsWith("temp-")) return;
-
-    try {
-      const response = await fetch("/api/updateBusyBlock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scheduleid: existingScheduleId,
-          uuid,
-          starttime,
-          endtime,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update busy block");
-    } catch (error) {
-      console.error("Error updating busy block:", error);
-      setDraftBusyBlocks((prev: BusyBlock[]) =>
-        prev.map((b: BusyBlock) => (b.uuid === uuid ? current : b)),
-      );
-      appToast.error("Failed to save busy block. Please try again.", {
-        action: "busyBlock",
-        duration: 2000,
-        icon: <AlertCircle className="h-5 w-5" />,
-      });
-    }
   };
 
   /**
@@ -834,10 +773,11 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
    * on the server (re-adding it locally if the delete fails).
    * @param uuid - The uuid of the busy block to remove
    */
-  const removeBusyBlockFromDraft = async (uuid: string) => {
+  const removeBusyBlockFromDraft = (uuid: string) => {
     const removed = draftBusyBlocks.find((b: BusyBlock) => b.uuid === uuid);
     if (!removed) return;
 
+    // Draft-only until the schedule is saved (see addBusyBlockToDraft).
     setDraftBusyBlocks((prev: BusyBlock[]) =>
       prev.filter((b: BusyBlock) => b.uuid !== uuid),
     );
@@ -848,27 +788,6 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       duration: 2000,
       icon: <Trash2 className="h-5 w-5 text-red-500" />,
     });
-
-    // Blocks with a temp uuid were never persisted; nothing to delete
-    if (!existingScheduleId || uuid.startsWith("temp-")) return;
-
-    try {
-      const response = await fetch("/api/removeBusyBlock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scheduleid: existingScheduleId, uuid }),
-      });
-
-      if (!response.ok) throw new Error("Failed to remove busy block");
-    } catch (error) {
-      console.error("Error removing busy block:", error);
-      setDraftBusyBlocks((prev: BusyBlock[]) => [...prev, removed]);
-      appToast.error("Failed to remove busy block. Please try again.", {
-        action: "busyBlock",
-        duration: 2000,
-        icon: <AlertCircle className="h-5 w-5" />,
-      });
-    }
   };
 
   const clearDraft = () => {
@@ -911,6 +830,7 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
         removeClassFromDraft,
         togglePinSection,
         draftBusyBlocks,
+        setDraftBusyBlocks,
         addBusyBlockToDraft,
         updateBusyBlockInDraft,
         removeBusyBlockFromDraft,
