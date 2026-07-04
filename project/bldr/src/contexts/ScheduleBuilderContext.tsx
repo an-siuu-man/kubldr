@@ -565,6 +565,23 @@ export const ScheduleBuilderProvider = ({ children }: any) => {
       return;
     }
 
+    // Block classes that overlap a busy block — the user has marked that
+    // time as unavailable, so it shouldn't be schedulable.
+    const busyBlockConflict = (draftBusyBlocks as BusyBlock[]).find(
+      (block) => hasBusyBlockConflict(classItem, [block]),
+    );
+    if (busyBlockConflict) {
+      appToast.error(
+        `Time conflict with your "${busyBlockConflict.label}" block (${busyBlockConflict.starttime}–${busyBlockConflict.endtime})`,
+        {
+          action: "conflict",
+          duration: 2000,
+          icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+        },
+      );
+      return;
+    }
+
     if (sameComponentExists) {
       // Find the old class being replaced for the toast notification
       const oldClass = draftSchedule.find(
