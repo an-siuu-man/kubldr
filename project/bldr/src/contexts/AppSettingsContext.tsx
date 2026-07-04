@@ -11,6 +11,13 @@ import {
   useState,
 } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  type NotificationAction,
+  type NotificationPreferences,
+  type NotificationType,
+  normalizeNotificationPreferences,
+} from "@/lib/notificationPreferences";
 
 export type AppTheme = "dark" | "light";
 export type TimeFormat = "12h" | "24h";
@@ -18,16 +25,27 @@ export type TimeFormat = "12h" | "24h";
 type AppSettings = {
   theme: AppTheme;
   timeFormat: TimeFormat;
+  notificationPreferences: NotificationPreferences;
 };
 
 type AppSettingsContextType = AppSettings & {
   setThemePreference: (theme: AppTheme) => void;
   setTimeFormat: (timeFormat: TimeFormat) => void;
+  setNotificationsEnabled: (enabled: boolean) => void;
+  setNotificationTypePreference: (
+    type: NotificationType,
+    enabled: boolean,
+  ) => void;
+  setNotificationActionPreference: (
+    action: NotificationAction,
+    enabled: boolean,
+  ) => void;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
   theme: "dark",
   timeFormat: "24h",
+  notificationPreferences: DEFAULT_NOTIFICATION_PREFERENCES,
 };
 
 const APP_SETTINGS_STORAGE_PREFIX = "bldr:app-settings";
@@ -58,6 +76,9 @@ const readStoredSettings = (storageKey: string): AppSettings => {
       timeFormat: isTimeFormat(parsed.timeFormat)
         ? parsed.timeFormat
         : DEFAULT_SETTINGS.timeFormat,
+      notificationPreferences: normalizeNotificationPreferences(
+        parsed.notificationPreferences,
+      ),
     };
   } catch (_error) {
     return DEFAULT_SETTINGS;
@@ -100,13 +121,65 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
     setSettings((current) => ({ ...current, timeFormat }));
   }, []);
 
+  const setNotificationsEnabled = useCallback((enabled: boolean) => {
+    setSettings((current) => ({
+      ...current,
+      notificationPreferences: {
+        ...current.notificationPreferences,
+        enabled,
+      },
+    }));
+  }, []);
+
+  const setNotificationTypePreference = useCallback(
+    (type: NotificationType, enabled: boolean) => {
+      setSettings((current) => ({
+        ...current,
+        notificationPreferences: {
+          ...current.notificationPreferences,
+          types: {
+            ...current.notificationPreferences.types,
+            [type]: enabled,
+          },
+        },
+      }));
+    },
+    [],
+  );
+
+  const setNotificationActionPreference = useCallback(
+    (action: NotificationAction, enabled: boolean) => {
+      setSettings((current) => ({
+        ...current,
+        notificationPreferences: {
+          ...current.notificationPreferences,
+          actions: {
+            ...current.notificationPreferences.actions,
+            [action]: enabled,
+          },
+        },
+      }));
+    },
+    [],
+  );
+
   const value = useMemo<AppSettingsContextType>(
     () => ({
       ...settings,
       setThemePreference,
       setTimeFormat,
+      setNotificationsEnabled,
+      setNotificationTypePreference,
+      setNotificationActionPreference,
     }),
-    [settings, setThemePreference, setTimeFormat],
+    [
+      settings,
+      setThemePreference,
+      setTimeFormat,
+      setNotificationsEnabled,
+      setNotificationTypePreference,
+      setNotificationActionPreference,
+    ],
   );
 
   return (

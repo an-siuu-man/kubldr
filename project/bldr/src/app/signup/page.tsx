@@ -10,11 +10,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import toastStyle from "@/components/ui/toastStyle";
+import { useAppToast } from "@/hooks/use-app-toast";
 import { createClient } from "@/lib/supabase/client";
 
 export default function Signup() {
@@ -24,13 +23,14 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
+  const appToast = useAppToast();
 
   const handleClick = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (password !== confirmPassword) {
-      toast("Passwords do not match", {
-        style: toastStyle,
+      appToast.warning("Passwords do not match", {
+        action: "account",
         description: "Please ensure both password fields match.",
         duration: 3000,
         icon: <XCircle className="h-5 w-5 text-yellow-500" />,
@@ -39,8 +39,8 @@ export default function Signup() {
     }
 
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long", {
-        style: toastStyle,
+      appToast.error("Password must be at least 6 characters long", {
+        action: "account",
         duration: 3000,
         icon: <Lock className="h-5 w-5 text-red-500" />,
       });
@@ -59,8 +59,8 @@ export default function Signup() {
       });
 
       if (error) {
-        toast.error("Signup Failed", {
-          style: toastStyle,
+        appToast.error("Signup Failed", {
+          action: "account",
           description: error.message,
           duration: 3000,
           icon: <XCircle className="h-5 w-5 text-red-500" />,
@@ -71,16 +71,16 @@ export default function Signup() {
       if (data.user) {
         // Check if email confirmation is required
         if (data.user.identities && data.user.identities.length === 0) {
-          toast.error("User already exists", {
-            style: toastStyle,
+          appToast.error("User already exists", {
+            action: "account",
             duration: 3000,
             icon: <AlertCircle className="h-5 w-5 text-red-500" />,
           });
           return;
         }
 
-        toast.success("Account Created", {
-          style: toastStyle,
+        appToast.success("Account Created", {
+          action: "account",
           description: data.session
             ? "Redirecting to builder..."
             : "Please check your email to confirm your account.",
@@ -101,8 +101,8 @@ export default function Signup() {
       }
     } catch (error) {
       console.error("Signup error:", error);
-      toast.error("Error", {
-        style: toastStyle,
+      appToast.error("Error", {
+        action: "account",
         description: "An unexpected error occurred",
         duration: 3000,
         icon: <AlertTriangle className="h-5 w-5 text-red-500" />,

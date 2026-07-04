@@ -17,14 +17,12 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { getToastStyle } from "@/components/ui/toastStyle";
-import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppToast } from "@/hooks/use-app-toast";
 
 type ScheduleSummary = {
   id: string;
@@ -41,8 +39,7 @@ type ScheduleSummary = {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, session, loading, signOut } = useAuth();
-  const { theme } = useAppSettings();
-  const appToastStyle = getToastStyle(theme);
+  const appToast = useAppToast();
 
   const [schedules, setSchedules] = useState<ScheduleSummary[]>([]);
   const [schedulesLoading, setSchedulesLoading] = useState(false);
@@ -87,14 +84,14 @@ export default function ProfilePage() {
         );
       })
       .catch(() => {
-        toast.error("Failed to load schedules", {
-          style: { ...appToastStyle },
+        appToast.error("Failed to load schedules", {
+          action: "scheduleShare",
           duration: 3000,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         });
       })
       .finally(() => setSchedulesLoading(false));
-  }, [session?.access_token, appToastStyle]);
+  }, [session?.access_token, appToast]);
 
   const getShareUrl = (scheduleId: string) =>
     `${window.location.origin}/s/${scheduleId}`;
@@ -102,14 +99,14 @@ export default function ProfilePage() {
   const handleCopyLink = async (schedule: ScheduleSummary) => {
     try {
       await navigator.clipboard.writeText(getShareUrl(schedule.id));
-      toast.success("Share link copied", {
-        style: { ...appToastStyle },
+      appToast.success("Share link copied", {
+        action: "scheduleShare",
         duration: 2000,
         icon: <Copy className="h-5 w-5 text-green-500" />,
       });
     } catch {
-      toast.error("Failed to copy link", {
-        style: { ...appToastStyle },
+      appToast.error("Failed to copy link", {
+        action: "scheduleShare",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -134,16 +131,16 @@ export default function ProfilePage() {
       setSchedules((prev) =>
         prev.map((s) => (s.id === schedule.id ? { ...s, isPublic: false } : s)),
       );
-      toast.success("Public link revoked", {
-        style: { ...appToastStyle },
+      appToast.success("Public link revoked", {
+        action: "scheduleShare",
         duration: 2000,
         icon: <Link2Off className="h-5 w-5 text-green-500" />,
       });
     } catch (err) {
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to revoke link",
         {
-          style: { ...appToastStyle },
+          action: "scheduleShare",
           duration: 3000,
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
@@ -207,20 +204,20 @@ export default function ProfilePage() {
           for (const id of deleted) next.delete(id);
           return next;
         });
-        toast.success(
+        appToast.success(
           `Deleted ${deleted.length} schedule${deleted.length > 1 ? "s" : ""}`,
           {
-            style: { ...appToastStyle },
+            action: "scheduleDelete",
             duration: 2000,
             icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
           },
         );
       }
       if (failed.length > 0) {
-        toast.error(
+        appToast.error(
           `Failed to delete ${failed.length} schedule${failed.length > 1 ? "s" : ""}`,
           {
-            style: { ...appToastStyle },
+            action: "scheduleDelete",
             duration: 3000,
             icon: <AlertCircle className="h-5 w-5 text-red-500" />,
           },
@@ -234,16 +231,16 @@ export default function ProfilePage() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Signed out successfully", {
-        style: { ...appToastStyle },
+      appToast.success("Signed out successfully", {
+        action: "auth",
         duration: 2000,
         icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
       });
       router.push("/login");
       router.refresh();
     } catch {
-      toast.error("Failed to sign out", {
-        style: { ...appToastStyle },
+      appToast.error("Failed to sign out", {
+        action: "auth",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });

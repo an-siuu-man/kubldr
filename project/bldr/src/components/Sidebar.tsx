@@ -42,7 +42,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { AppSettingsDialog } from "@/components/AppSettingsDialog";
 import {
   Accordion,
@@ -60,11 +59,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { getToastStyle } from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
-import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { useAppToast } from "@/hooks/use-app-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Schedule } from "@/types";
 import { Button } from "./ui/button";
@@ -151,8 +149,7 @@ const scheduleItemVariants: Variants = {
 export function Sidebar() {
   // Authentication context for user info and session
   const { user, session } = useAuth();
-  const { theme } = useAppSettings();
-  const appToastStyle = getToastStyle(theme);
+  const appToast = useAppToast();
 
   // Check if we're on mobile
   const isMobile = useIsMobile();
@@ -313,8 +310,8 @@ export function Sidebar() {
       setNewScheduleName("");
     } catch (error) {
       console.error("Error creating schedule:", error);
-      toast.error("Failed to create schedule", {
-        style: appToastStyle,
+      appToast.error("Failed to create schedule", {
+        action: "scheduleCreate",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -332,8 +329,8 @@ export function Sidebar() {
    */
   const handleRenameSchedule = async (scheduleId: string, newName: string) => {
     if (!newName.trim()) {
-      toast.error("Schedule name cannot be empty", {
-        style: appToastStyle,
+      appToast.error("Schedule name cannot be empty", {
+        action: "scheduleRename",
         duration: 2000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -341,8 +338,8 @@ export function Sidebar() {
     }
 
     if (!session?.access_token) {
-      toast.error("You must be logged in to rename schedules", {
-        style: appToastStyle,
+      appToast.error("You must be logged in to rename schedules", {
+        action: "scheduleRename",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -374,17 +371,17 @@ export function Sidebar() {
         });
       }
 
-      toast.success("Schedule renamed successfully", {
-        style: appToastStyle,
+      appToast.success("Schedule renamed successfully", {
+        action: "scheduleRename",
         duration: 2000,
         icon: <Check className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
       console.error("Error renaming schedule:", err);
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to rename schedule",
         {
-          style: appToastStyle,
+          action: "scheduleRename",
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -422,15 +419,15 @@ export function Sidebar() {
   const copyPublicScheduleLink = async (schedule: Schedule) => {
     try {
       await navigator.clipboard.writeText(getPublicScheduleUrl(schedule.id));
-      toast.success("Share link copied", {
-        style: appToastStyle,
+      appToast.success("Share link copied", {
+        action: "scheduleShare",
         duration: 2000,
         icon: <Copy className="h-5 w-5 text-green-500" />,
       });
     } catch (error) {
       console.error("Error copying share link:", error);
-      toast.error("Failed to copy share link", {
-        style: appToastStyle,
+      appToast.error("Failed to copy share link", {
+        action: "scheduleShare",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
     }
@@ -438,8 +435,8 @@ export function Sidebar() {
 
   const handleToggleShare = async (schedule: Schedule, isPublic: boolean) => {
     if (!session?.access_token) {
-      toast.error("You must be logged in to share schedules", {
-        style: appToastStyle,
+      appToast.error("You must be logged in to share schedules", {
+        action: "scheduleShare",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -467,22 +464,22 @@ export function Sidebar() {
       };
       updateScheduleInList(schedule.id, updatedSchedule);
 
-      toast.success(
+      appToast.success(
         data.isPublic
           ? "Schedule sharing enabled"
           : "Schedule sharing disabled",
         {
-          style: appToastStyle,
+          action: "scheduleShare",
           duration: 2000,
           icon: <Share2 className="h-5 w-5 text-green-500" />,
         },
       );
     } catch (err: unknown) {
       console.error("Error updating schedule sharing:", err);
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to update sharing",
         {
-          style: appToastStyle,
+          action: "scheduleShare",
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );
@@ -500,8 +497,8 @@ export function Sidebar() {
    */
   const handleDeleteSchedule = (scheduleId: string) => {
     if (!session?.access_token) {
-      toast.error("You must be logged in to delete schedules", {
-        style: appToastStyle,
+      appToast.error("You must be logged in to delete schedules", {
+        action: "scheduleDelete",
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
       return;
@@ -538,17 +535,17 @@ export function Sidebar() {
       setActiveSchedule(null);
       setActiveSemester("");
       clearDraft();
-      toast.success("Schedule deleted", {
+      appToast.success("Schedule deleted", {
+        action: "scheduleDelete",
         duration: 2000,
-        style: appToastStyle,
         icon: <Trash2 className="h-5 w-5 text-green-500" />,
       });
     } catch (err: unknown) {
       console.error("Error deleting schedule:", err);
-      toast.error(
+      appToast.error(
         err instanceof Error ? err.message : "Failed to delete schedule",
         {
-          style: appToastStyle,
+          action: "scheduleDelete",
           icon: <AlertCircle className="h-5 w-5 text-red-500" />,
         },
       );

@@ -17,7 +17,6 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import CalendarEditor from "@/components/CalendarEditor";
 import ClassSearch from "@/components/ClassSearch";
 import CurrentlySelected from "@/components/CurrentlySelected";
@@ -26,16 +25,15 @@ import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getToastStyle } from "@/components/ui/toastStyle";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
-import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { useAppToast } from "@/hooks/use-app-toast";
 import type { ClassSection } from "@/types";
 
 export default function Builder() {
   const { user, session, loading, signOut } = useAuth();
-  const { theme } = useAppSettings();
+  const appToast = useAppToast();
   const {
     clearDraft,
     draftSchedule,
@@ -63,7 +61,6 @@ export default function Builder() {
   const calendarContainerRef = useRef<HTMLDivElement | null>(null);
   const [calendarHeight, setCalendarHeight] = useState(500);
   const [activeTab, setActiveTab] = useState<"search" | "selected">("search");
-  const appToastStyle = getToastStyle(theme);
 
   // Check if user is a guest (anonymous)
   const isGuest = user?.is_anonymous === true;
@@ -147,8 +144,8 @@ export default function Builder() {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Logged out successfully", {
-        style: { ...appToastStyle },
+      appToast.success("Logged out successfully", {
+        action: "auth",
         duration: 2000,
         icon: <LogOut className="h-5 w-5 text-green-500" />,
       });
@@ -156,8 +153,8 @@ export default function Builder() {
       router.refresh();
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Failed to logout", {
-        style: { ...appToastStyle },
+      appToast.error("Failed to logout", {
+        action: "auth",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -166,8 +163,8 @@ export default function Builder() {
 
   const handleSaveSchedule = async () => {
     if (!session?.access_token) {
-      toast.error("You must be logged in to save schedules", {
-        style: { ...appToastStyle },
+      appToast.error("You must be logged in to save schedules", {
+        action: "scheduleSave",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -175,8 +172,8 @@ export default function Builder() {
     }
 
     if (!draftScheduleName || !draftSemester || !draftYear) {
-      toast.error("Please fill in schedule name, semester, and year", {
-        style: { ...appToastStyle },
+      appToast.error("Please fill in schedule name, semester, and year", {
+        action: "scheduleSave",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -184,8 +181,8 @@ export default function Builder() {
     }
 
     // if (draftSchedule.length === 0) {
-    //   toast.error("Cannot save an empty schedule", {
-    //     style: { ...appToastStyle },
+    //   appToast.error("Cannot save an empty schedule", {
+    //     action: "scheduleSave",
     //     duration: 3000,
     //     icon: <AlertCircle className="h-5 w-5" />,
     //   });
@@ -235,8 +232,8 @@ export default function Builder() {
       if (existingScheduleId) {
         // Update existing schedule
         updateScheduleInList(existingScheduleId, savedSchedule);
-        toast.success("Schedule updated successfully!", {
-          style: { ...appToastStyle },
+        appToast.success("Schedule updated successfully!", {
+          action: "scheduleSave",
           duration: 3000,
           icon: <Check className="h-5 w-5 text-green-500" />,
         });
@@ -245,8 +242,8 @@ export default function Builder() {
         addScheduleToList(savedSchedule);
         setIsEditingExisting(true);
         setExistingScheduleId(data.scheduleId);
-        toast.success("Schedule saved successfully!", {
-          style: { ...appToastStyle },
+        appToast.success("Schedule saved successfully!", {
+          action: "scheduleSave",
           duration: 3000,
           icon: <Check className="h-5 w-5 text-green-500" />,
         });
@@ -255,7 +252,7 @@ export default function Builder() {
       // Show reminder for guest users after successful save
       if (isGuest) {
         setTimeout(() => {
-          toast(
+          appToast.custom(
             <div className="flex flex-col gap-2">
               <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
                 Schedule saved! Create an account to keep it permanently.
@@ -265,7 +262,7 @@ export default function Builder() {
                   size="sm"
                   variant="secondary"
                   className="font-dmsans cursor-pointer text-xs px-3 py-1"
-                  onClick={() => toast.dismiss()}
+                  onClick={() => appToast.dismiss()}
                 >
                   <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
                   Upgrade Account
@@ -273,7 +270,8 @@ export default function Builder() {
               </Link>
             </div>,
             {
-              style: { ...appToastStyle },
+              type: "warning",
+              action: "account",
               duration: 6000,
               icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
             },
@@ -287,8 +285,8 @@ export default function Builder() {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to save schedule";
       console.error("Save schedule error:", error);
-      toast.error(errorMessage, {
-        style: { ...appToastStyle },
+      appToast.error(errorMessage, {
+        action: "scheduleSave",
         duration: 3000,
         icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       });
@@ -298,7 +296,7 @@ export default function Builder() {
   };
 
   const handleClearSchedule = () => {
-    toast(
+    appToast.custom(
       <div className="flex flex-col gap-2">
         <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
           Clear all classes from schedule?
@@ -309,9 +307,9 @@ export default function Builder() {
             variant="destructive"
             onClick={() => {
               clearDraft();
-              toast.dismiss();
-              toast.success("Schedule cleared", {
-                style: { ...appToastStyle },
+              appToast.dismiss();
+              appToast.success("Schedule cleared", {
+                action: "scheduleClear",
                 duration: 2000,
                 icon: <Trash2 className="h-5 w-5 text-green-500" />,
               });
@@ -324,7 +322,7 @@ export default function Builder() {
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => toast.dismiss()}
+            onClick={() => appToast.dismiss()}
             className="font-dmsans cursor-pointer text-xs px-3 py-1"
           >
             <X className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
@@ -333,7 +331,8 @@ export default function Builder() {
         </div>
       </div>,
       {
-        style: { ...appToastStyle },
+        type: "warning",
+        action: "scheduleClear",
         duration: Infinity,
         icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
       },
@@ -363,8 +362,8 @@ export default function Builder() {
     if (!activeSchedule) {
       // No saved schedule to revert to - just clear the draft
       clearDraft();
-      toast.info("Draft cleared", {
-        style: { ...appToastStyle },
+      appToast.info("Draft cleared", {
+        action: "scheduleClear",
         duration: 2000,
         icon: <Undo2 className="h-5 w-5 text-blue-400" />,
       });
@@ -376,8 +375,8 @@ export default function Builder() {
     setDraftSchedule(savedClasses);
     // Sync the permutation index to match the saved schedule
     syncPermutationIndex(savedClasses);
-    toast.success("Reverted to last saved state", {
-      style: { ...appToastStyle },
+    appToast.success("Reverted to last saved state", {
+      action: "scheduleClear",
       duration: 2000,
       icon: <Undo2 className="h-5 w-5 text-green-500" />,
     });
