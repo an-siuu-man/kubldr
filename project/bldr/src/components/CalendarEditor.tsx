@@ -654,8 +654,8 @@ const CalendarEditor = ({
                                           className="font-figtree select-text p-0"
                                           side="top"
                                           style={{
-                                            borderTopWidth: "2px",
-                                            borderColor: colors[colorIndex],
+                                            borderTopWidth: "3px",
+                                            borderTopColor: colors[colorIndex],
                                           }}
                                         >
                                           <div className="w-80 max-w-[calc(100vw-2rem)]">
