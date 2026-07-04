@@ -22,7 +22,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
+import { formatDisplayTimeRange } from "@/lib/timeUtils";
 import type { ClassSection } from "@/types";
 
 const MISSING_COMPONENTS_NOTE_STORAGE_KEY = "missingComponentsNoteCollapsed";
@@ -66,6 +68,7 @@ const layoutSpring = {
 export default function CurrentlySelected() {
   const { draftSchedule, removeClassFromDraft, fetchAllSectionsForClass } =
     useScheduleBuilder();
+  const { timeFormat } = useAppSettings();
   const typedDraftSchedule = draftSchedule as ClassSection[];
 
   const [missingComponentsByClass, setMissingComponentsByClass] = useState<
@@ -212,7 +215,7 @@ export default function CurrentlySelected() {
       <motion.div
         layout
         transition={{ layout: layoutSpring }}
-        className="flex flex-col justify-start items-center w-full h-full overflow-hidden bg-[#111111] transition-all duration-150 border-2 border-[#303030] rounded-b-[10px] rounded-t-none"
+        className="flex h-full w-full flex-col items-center justify-start overflow-hidden rounded-b-[10px] rounded-t-none border-2 border-slate-200 bg-white transition-all duration-150 dark:border-[#303030] dark:bg-[#111111]"
       >
         <motion.div
           layout
@@ -304,10 +307,10 @@ export default function CurrentlySelected() {
 
           <div className="relative flex-1 min-h-0 w-full">
             {showTopShadow && (
-              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-[#080808] to-transparent" />
+              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-white to-transparent dark:from-[#080808]" />
             )}
             {showBottomShadow && (
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-[#080808] to-transparent" />
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-white to-transparent dark:from-[#080808]" />
             )}
             <motion.section
               ref={listRef}
@@ -317,7 +320,7 @@ export default function CurrentlySelected() {
               aria-label="Currently selected classes"
             >
               {typedDraftSchedule.length === 0 ? (
-                <div className="text-xs lg:text-sm text-[#888888] font-figtree">
+                <div className="font-figtree text-xs text-slate-500 dark:text-[#888888] lg:text-sm">
                   No classes added
                 </div>
               ) : (
@@ -331,10 +334,10 @@ export default function CurrentlySelected() {
                       layout
                       transition={{ layout: layoutSpring }}
                       key={`${toKeyPart(classGroup.classKey, "class")}-${groupIndex}`}
-                      className="bg-[#181818] rounded-md p-3 mb-2 border-2 border-[#303030]"
+                      className="mb-2 rounded-md border-2 border-slate-200 bg-slate-50 p-3 dark:border-[#303030] dark:bg-[#181818]"
                     >
                       <div className="mb-4 flex items-start justify-between gap-2">
-                        <div className="font-bold text-white text-xs lg:text-sm font-inter">
+                        <div className="font-inter text-xs font-bold text-slate-950 dark:text-white lg:text-sm">
                           {classGroup.dept} {classGroup.code}:{" "}
                           {classGroup.title}
                         </div>
@@ -361,7 +364,7 @@ export default function CurrentlySelected() {
                         {classGroup.sections.map((section) => (
                           <div
                             key={section.originalIndex}
-                            className="relative group rounded-md bg-[#101010] p-2 border border-[#404040]"
+                            className="group relative rounded-md border border-slate-200 bg-white p-2 dark:border-[#404040] dark:bg-[#101010]"
                           >
                             <div className="flex flex-col gap-1">
                               <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-purple-400 font-inter">
@@ -375,12 +378,16 @@ export default function CurrentlySelected() {
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
-                                {section.days} | {section.starttime} -{" "}
-                                {section.endtime}
+                              <div className="font-inter text-[10px] text-slate-600 dark:text-[#888888] lg:text-xs">
+                                {section.days} |{" "}
+                                {formatDisplayTimeRange(
+                                  section.starttime,
+                                  section.endtime,
+                                  timeFormat,
+                                )}
                               </div>
                               {section.instructor && (
-                                <div className="text-[10px] lg:text-xs text-[#888888] font-inter">
+                                <div className="font-inter text-[10px] text-slate-600 dark:text-[#888888] lg:text-xs">
                                   {section.instructor}
                                 </div>
                               )}

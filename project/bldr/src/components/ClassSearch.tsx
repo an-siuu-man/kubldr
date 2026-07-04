@@ -227,12 +227,12 @@ export default function ClassSearch() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden bg-[#111111] border border-white/10 rounded-b-[20px]">
+    <div className="flex h-full w-full flex-col overflow-hidden rounded-b-[20px] border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111111]">
       {/* Search header */}
-      <div className="border-b border-white/8 bg-[#0f0f0f] px-4 py-3 shrink-0">
+      <div className="shrink-0 border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/8 dark:bg-[#0f0f0f]">
         <div
           ref={wrapperRef}
-          className="class-search-form flex items-center gap-2 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2"
+          className="class-search-form flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-[#1a1a1a]"
           tabIndex={-1}
           onFocus={() => setDropdownOpen(true)}
           onBlur={(e) => {
@@ -242,7 +242,7 @@ export default function ClassSearch() {
           }}
         >
           <Search
-            className="h-4 w-4 shrink-0 text-white/30"
+            className="h-4 w-4 shrink-0 text-slate-400 dark:text-white/30"
             aria-hidden="true"
           />
           <input
@@ -278,7 +278,7 @@ export default function ClassSearch() {
               }
             }}
             placeholder="Search by dept, code, or title…"
-            className="flex-1 bg-transparent font-inter text-sm text-white/90 placeholder:text-white/25 outline-none selection:bg-blue-400"
+            className="flex-1 bg-transparent font-inter text-sm text-slate-900 outline-none selection:bg-blue-400 placeholder:text-slate-400 dark:text-white/90 dark:placeholder:text-white/25"
           />
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function ClassSearch() {
               dropdownRef.current = el;
             }}
             key="dropdown"
-            className="rounded-xl border border-white/10 bg-[#111111] shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-y-auto divide-y divide-white/5"
+            className="overflow-y-auto divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white shadow-[0_8px_32px_rgba(15,23,42,0.16)] dark:divide-white/5 dark:border-white/10 dark:bg-[#111111] dark:shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
             style={{ position: strategy, left: x ?? 0, top: y ?? 0 }}
             tabIndex={-1}
             aria-label="Search results"
@@ -301,7 +301,7 @@ export default function ClassSearch() {
                 <Loader />
               </li>
             ) : classes.length === 0 ? (
-              <li className="px-4 py-3 font-inter text-xs text-white/40 text-center">
+              <li className="px-4 py-3 text-center font-inter text-xs text-slate-500 dark:text-white/40">
                 No results found
               </li>
             ) : (
@@ -322,19 +322,19 @@ export default function ClassSearch() {
                     aria-selected={index === highlightedIndex}
                     className={`flex items-center justify-between gap-3 px-4 py-3 cursor-pointer transition-colors ${
                       index === highlightedIndex
-                        ? "bg-white/5"
-                        : "hover:bg-white/3"
+                        ? "bg-slate-100 dark:bg-white/5"
+                        : "hover:bg-slate-50 dark:hover:bg-white/3"
                     }`}
                   >
                     <div className="min-w-0">
-                      <p className="font-dmsans text-sm font-semibold text-white/90">
+                      <p className="font-dmsans text-sm font-semibold text-slate-950 dark:text-white/90">
                         {c.dept} {c.code}
                       </p>
-                      <p className="font-inter text-xs text-white/45 truncate">
+                      <p className="truncate font-inter text-xs text-slate-500 dark:text-white/45">
                         {c.title}
                       </p>
                     </div>
-                    <div className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-dmsans text-xs text-white/60">
+                    <div className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-dmsans text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
                       Add
                     </div>
                   </motion.li>
@@ -348,7 +348,7 @@ export default function ClassSearch() {
       {/* Searched section */}
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3   shrink-0">
-          <p className="font-dmsans text-xs font-semibold uppercase tracking-widest text-white/40">
+          <p className="font-dmsans text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-white/40">
             Searched
           </p>
           {selectedClasses.length > 0 && (
@@ -366,14 +366,14 @@ export default function ClassSearch() {
         </div>
         <div className="relative flex-1 min-h-0">
           {showTopShadow && (
-            <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-[#111111] to-transparent" />
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-white to-transparent dark:from-[#111111]" />
           )}
           {showBottomShadow && (
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-[#111111] to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-white to-transparent dark:from-[#111111]" />
           )}
           <div
             ref={searchedListRef}
-            className="font-inter p-2 h-full overflow-y-auto scrollbar-hidden divide-y divide-white/5"
+            className="h-full overflow-y-auto scrollbar-hidden divide-y divide-slate-100 p-2 font-inter dark:divide-white/5"
             role="region"
             aria-label="Searched classes list"
           >
@@ -419,7 +419,7 @@ export default function ClassSearch() {
                         ),
                       )
                     }
-                    className="absolute top-3 right-3 cursor-pointer rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#111111]/80 hover:bg-[#1a1a1a]"
+                    className="absolute top-3 right-3 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/90 opacity-0 transition-opacity duration-200 hover:bg-slate-100 group-hover:opacity-100 dark:bg-[#111111]/80 dark:hover:bg-[#1a1a1a]"
                     title="Remove from searched"
                   >
                     <Trash2 className="h-4 w-4 text-red-500" />
@@ -433,7 +433,7 @@ export default function ClassSearch() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="px-4 py-6 text-xs text-white/30 font-inter text-center"
+                  className="px-4 py-6 text-center font-inter text-xs text-slate-400 dark:text-white/30"
                 >
                   No classes searched
                 </motion.div>
