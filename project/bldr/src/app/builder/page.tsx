@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Check,
   CheckCheck,
-  Info,
   LogOut,
   Save,
   Trash2,
@@ -61,6 +60,8 @@ export default function Builder() {
   const [showGuestBanner, _setShowGuestBanner] = useState(true);
   const calendarContainerRef = useRef<HTMLDivElement | null>(null);
   const [calendarHeight, setCalendarHeight] = useState(500);
+  const bannerRef = useRef<HTMLDivElement | null>(null);
+  const [bannerHeight, setBannerHeight] = useState(40);
   const [activeTab, setActiveTab] = useState<"search" | "selected">("search");
 
   // Check if user is a guest (anonymous)
@@ -123,6 +124,26 @@ export default function Builder() {
 
     const resizeObserver = new ResizeObserver(updateHeight);
     resizeObserver.observe(calendarContainer);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Measure the instructor-warning banner so the sidebar's fixed panels and
+  // the page's own height can leave exactly enough room for it.
+  useEffect(() => {
+    const bannerEl = bannerRef.current;
+    if (!bannerEl) return;
+
+    const updateBannerHeight = () => {
+      const nextHeight = Math.round(bannerEl.getBoundingClientRect().height);
+      if (nextHeight > 0) {
+        setBannerHeight(nextHeight);
+      }
+    };
+
+    updateBannerHeight();
+
+    const resizeObserver = new ResizeObserver(updateBannerHeight);
+    resizeObserver.observe(bannerEl);
     return () => resizeObserver.disconnect();
   }, []);
 
@@ -398,279 +419,259 @@ export default function Builder() {
   };
 
   return (
-    <div className="flex h-screen max-h-screen flex-col overflow-hidden bg-slate-100 dark:bg-[#080808] md:flex-row">
-      {/* Sidebar */}
-      <Sidebar />
+    <>
+      {/* Instructor data warning — full-viewport-width banner pinned to the
+          absolute top of the screen, above the sidebar and page content. */}
+      <div
+        ref={bannerRef}
+        className="flex items-center justify-center gap-2 border-b border-orange-300 bg-orange-50 px-4 py-2 text-center dark:border-orange-600/50 dark:bg-orange-900/40"
+      >
+        <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0" />
+        <p className="font-inter text-[10px] text-orange-900 dark:text-orange-100 lg:text-xs">
+          We are facing some difficulties fetching accurate Instructor and Room
+          information for the classes. The data you see in the builder may not
+          be accurate.
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto pt-[60px] md:pt-2 lg:pt-4 xl:pt-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl lg:text-2xl xl:text-3xl font-figtree font-semibold mb-1">
-                <span className="font-dmsans font-bold">
-                  <span className="text-slate-950 dark:text-white">b</span>
-                  <span className="text-red-500">l</span>
-                  <span className="text-blue-600">d</span>
-                  <span className="text-yellow-300">r</span>
-                </span>{" "}
-                Schedule Builder
-              </h1>
-              <p className="font-inter text-xs text-slate-600 dark:text-[#A8A8A8] lg:text-sm">
-                Welcome back, {user.is_anonymous ? "Guest" : user.email}!
-              </p>
-            </div>
-            <Button
-              onClick={handleLogout}
-              variant="secondary"
-              className="cursor-pointer border border-slate-300 bg-slate-200 px-3 py-2 font-dmsans text-xs text-slate-900 hover:bg-slate-300 dark:border-transparent dark:bg-secondary dark:text-secondary-foreground lg:px-4 lg:text-sm"
-            >
-              Logout
-            </Button>
-          </div>
-          <AnimatePresence>
-            <motion.div
-              key="beta-note"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="mb-2 mt-2 flex items-center justify-between rounded-lg border border-blue-300 bg-blue-50 p-2 dark:border-blue-600/50 dark:bg-blue-900/40 lg:mb-4 lg:mt-3 lg:p-3"
-            >
-              <div className="flex items-center gap-2">
-                <Info className="h-3 w-3 shrink-0 text-blue-700 dark:text-white lg:h-4 lg:w-4" />
-                <div>
-                  <p className="font-inter text-[10px] text-blue-800 dark:text-blue-200 lg:text-xs">
-                    <span className="font-figtree">
-                      This app is still in{" "}
-                      <span className="font-mono">beta</span>. We're
-                      continuously improving!
-                    </span>
-                  </p>
-                </div>
+      <div
+        className="flex flex-col overflow-hidden bg-slate-100 dark:bg-[#080808] md:flex-row"
+        style={{ height: `calc(100vh - ${bannerHeight}px)` }}
+      >
+        {/* Sidebar */}
+        <Sidebar onSignOut={handleLogout} topOffset={bannerHeight} />
+
+        {/* Main Content */}
+        <div className="flex-1 p-2 lg:p-4 xl:p-6 overflow-y-auto pt-[60px] md:pt-2 lg:pt-4 xl:pt-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-xl lg:text-2xl xl:text-3xl font-figtree font-semibold mb-1">
+                  <span className="font-dmsans font-bold">
+                    <span className="text-slate-950 dark:text-white">b</span>
+                    <span className="text-red-500">l</span>
+                    <span className="text-blue-600">d</span>
+                    <span className="text-yellow-300">r</span>
+                  </span>{" "}
+                  Schedule Builder
+                </h1>
+                <p className="font-inter text-xs text-slate-600 dark:text-[#A8A8A8] lg:text-sm">
+                  Welcome back, {user.is_anonymous ? "Guest" : user.email}!
+                </p>
               </div>
-            </motion.div>
-            <div
-              key="instructor-warning"
-              className="mb-2 flex items-start gap-2 rounded-lg border border-orange-300 bg-orange-50 p-2 dark:border-orange-600/50 dark:bg-orange-900/40 lg:mb-4 lg:p-3"
-            >
-              <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0 mt-0.5" />
-              <p className="font-inter text-[10px] text-orange-900 dark:text-orange-100 lg:text-xs">
-                We are facing some difficulties fetching accurate Instructor and
-                Room information for the classes. The data you see in the
-                builder may not be accurate.
-              </p>
             </div>
-            {isGuest && showGuestBanner && (
-              <motion.div
-                key="guest-mode-warning"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="mb-2 flex items-center justify-between rounded-lg border border-yellow-300 bg-yellow-50 p-2 dark:border-yellow-600/50 dark:bg-yellow-900/40 lg:mb-4 lg:p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-500 shrink-0" />
-                  <div>
-                    <p className="font-figtree text-[10px] text-yellow-900 dark:text-yellow-200 lg:text-xs">
-                      <span className="font-semibold">Guest mode.</span>{" "}
-                      Schedules will be lost when you close this tab.{" "}
-                      <Link
-                        href="/upgrade"
-                        className="underline hover:bg-yellow-900/20 rounded-sm font-medium"
-                      >
-                        Create an account
-                      </Link>{" "}
-                      to save them permanently.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(280px,380px)] gap-2 lg:gap-4">
-            {/* Calendar Section */}
-            <div className="flex flex-col items-center w-full">
-              <div ref={calendarContainerRef} className="w-full">
-                <CalendarEditor />
-              </div>
-              {activeSchedule && (
-                <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
-                  <div className="flex flex-1 basis-0 flex-wrap items-center justify-start gap-1.5 font-inter text-[10px] text-slate-600 dark:text-[#A8A8A8] lg:gap-2 lg:text-xs">
-                    <motion.div
-                      layout
-                      initial={false}
-                      transition={{
-                        layout: { duration: 0.22, ease: "easeOut" },
-                      }}
-                      className="bg-white text-gray-950 rounded-full py-0.5 lg:py-1 px-2 inline-flex items-center"
-                    >
-                      <span className="whitespace-nowrap text-[10px] lg:text-xs">
-                        Credits:
-                      </span>
-                      <b className="ml-1">{creditHours}</b>
-                    </motion.div>
-
-                    <AnimatePresence mode="wait">
-                      {schedulesMatch && (
-                        <motion.div
-                          key="saved-badge"
-                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                          transition={{ duration: 0.22 }}
-                          className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-0.5 lg:py-1 px-2 text-[10px] lg:text-xs"
-                        >
-                          Saved
-                        </motion.div>
-                      )}
-
-                      {!schedulesMatch && (
-                        <motion.div
-                          key="unsaved-badge"
-                          initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                          transition={{ duration: 0.22 }}
-                          className="rounded-full py-0.5 lg:py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-[10px] lg:text-xs"
-                        >
-                          Unsaved
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                  {/* Permutation Browser - appears when multiple combinations are available */}
-                  <div className="flex-1 basis-0 flex justify-center">
-                    <PermutationBrowser />
-                  </div>
-                  <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
-                    <Button
-                      onClick={handleRevertChanges}
-                      className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
-                      disabled={schedulesMatch || isSaving}
-                    >
-                      <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
-                      <span className="hidden sm:inline">Undo</span>
-                    </Button>
-                    <Button
-                      onClick={handleSaveSchedule}
-                      className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
-                      disabled={isSaving || schedulesMatch}
-                    >
-                      {isSaving ? (
-                        <>
-                          <Spinner className="h-3 w-3" />
-                          <span className="hidden sm:inline">Saving...</span>
-                        </>
-                      ) : !schedulesMatch ? (
-                        <>
-                          <Save className="h-3 w-3 mr-0.5 lg:mr-1" />
-                          <span className="hidden sm:inline">Save</span>
-                        </>
-                      ) : (
-                        <>
-                          <CheckCheck className="text-green-600 h-3 w-3" />
-                          <span className="hidden sm:inline">Synced</span>
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={handleClearSchedule}
-                      className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
-                      disabled={draftSchedule.length === 0}
-                    >
-                      <Trash2 className="h-3 w-3 mr-0.5 lg:mr-1" />
-                      <span className="hidden sm:inline">Clear</span>
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tabbed Side Panel: Search + Currently Selected */}
-            <div className="flex items-start justify-center xl:justify-end">
-              <Tabs
-                value={activeTab}
-                onValueChange={(value) => {
-                  if (value === "search" || value === "selected") {
-                    setActiveTab(value);
-                  }
-                }}
-                className="w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex flex-col gap-0 overflow-hidden"
-                style={{ height: `${calendarHeight}px` }}
-              >
-                <TabsList className="relative isolate mb-0 w-full rounded-b-none rounded-t-lg border border-slate-200 bg-slate-50 dark:border-[#303030] dark:bg-[#181818]">
-                  <TabsTrigger
-                    value="search"
-                    className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-green-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-green-400 lg:text-sm"
-                  >
-                    {activeTab === "search" && (
-                      <motion.span
-                        layoutId="builder-active-tab-pill"
-                        transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 34,
-                        }}
-                        className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
-                      />
-                    )}
-                    <span className="relative z-10">Search</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="selected"
-                    className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-purple-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-purple-400 lg:text-sm"
-                  >
-                    {activeTab === "selected" && (
-                      <motion.span
-                        layoutId="builder-active-tab-pill"
-                        transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 34,
-                        }}
-                        className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
-                      />
-                    )}
-                    <span className="relative z-10 inline-flex items-center gap-1.5">
-                      <span>Selected</span>
-                      {draftSchedule.length > 0 && (
-                        <span className="inline-flex h-4 min-w-4 items-center justify-center bg-purple-900/60 text-purple-300 border border-purple-700/50 rounded-full text-[10px] px-1.5 leading-none">
-                          {draftSchedule.length}
-                        </span>
-                      )}
-                    </span>
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent
-                  value={activeTab}
-                  className="mt-0 min-h-0 overflow-hidden"
+            <AnimatePresence>
+              {isGuest && showGuestBanner && (
+                <motion.div
+                  key="guest-mode-warning"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-2 flex items-center justify-between rounded-lg border border-yellow-300 bg-yellow-50 p-2 dark:border-yellow-600/50 dark:bg-yellow-900/40 lg:mb-4 lg:p-3"
                 >
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={activeTab}
-                      initial={{ y: 18, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -8, opacity: 0 }}
-                      transition={{ duration: 0.24, ease: "easeOut" }}
-                      className="h-full"
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-500 shrink-0" />
+                    <div>
+                      <p className="font-figtree text-[10px] text-yellow-900 dark:text-yellow-200 lg:text-xs">
+                        <span className="font-semibold">Guest mode.</span>{" "}
+                        Schedules will be lost when you close this tab.{" "}
+                        <Link
+                          href="/upgrade"
+                          className="underline hover:bg-yellow-900/20 rounded-sm font-medium"
+                        >
+                          Create an account
+                        </Link>{" "}
+                        to save them permanently.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {/* Main Grid Layout */}
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(280px,380px)] gap-2 lg:gap-4">
+              {/* Calendar Section */}
+              <div className="flex flex-col items-center w-full">
+                <div ref={calendarContainerRef} className="w-full">
+                  <CalendarEditor />
+                </div>
+                {activeSchedule && (
+                  <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
+                    <div className="flex flex-1 basis-0 flex-wrap items-center justify-start gap-1.5 font-inter text-[10px] text-slate-600 dark:text-[#A8A8A8] lg:gap-2 lg:text-xs">
+                      <motion.div
+                        layout
+                        initial={false}
+                        transition={{
+                          layout: { duration: 0.22, ease: "easeOut" },
+                        }}
+                        className="bg-white text-gray-950 rounded-full py-0.5 lg:py-1 px-2 inline-flex items-center"
+                      >
+                        <span className="whitespace-nowrap text-[10px] lg:text-xs">
+                          Credits:
+                        </span>
+                        <b className="ml-1">{creditHours}</b>
+                      </motion.div>
+
+                      <AnimatePresence mode="wait">
+                        {schedulesMatch && (
+                          <motion.div
+                            key="saved-badge"
+                            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                            transition={{ duration: 0.22 }}
+                            className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-0.5 lg:py-1 px-2 text-[10px] lg:text-xs"
+                          >
+                            Saved
+                          </motion.div>
+                        )}
+
+                        {!schedulesMatch && (
+                          <motion.div
+                            key="unsaved-badge"
+                            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                            transition={{ duration: 0.22 }}
+                            className="rounded-full py-0.5 lg:py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-[10px] lg:text-xs"
+                          >
+                            Unsaved
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    {/* Permutation Browser - appears when multiple combinations are available */}
+                    <div className="flex-1 basis-0 flex justify-center">
+                      <PermutationBrowser />
+                    </div>
+                    <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
+                      <Button
+                        onClick={handleRevertChanges}
+                        className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
+                        disabled={schedulesMatch || isSaving}
+                      >
+                        <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                        <span className="hidden sm:inline">Undo</span>
+                      </Button>
+                      <Button
+                        onClick={handleSaveSchedule}
+                        className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
+                        disabled={isSaving || schedulesMatch}
+                      >
+                        {isSaving ? (
+                          <>
+                            <Spinner className="h-3 w-3" />
+                            <span className="hidden sm:inline">Saving...</span>
+                          </>
+                        ) : !schedulesMatch ? (
+                          <>
+                            <Save className="h-3 w-3 mr-0.5 lg:mr-1" />
+                            <span className="hidden sm:inline">Save</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCheck className="text-green-600 h-3 w-3" />
+                            <span className="hidden sm:inline">Synced</span>
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={handleClearSchedule}
+                        className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                        disabled={draftSchedule.length === 0}
+                      >
+                        <Trash2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                        <span className="hidden sm:inline">Clear</span>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tabbed Side Panel: Search + Currently Selected */}
+              <div className="flex items-start justify-center xl:justify-end">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) => {
+                    if (value === "search" || value === "selected") {
+                      setActiveTab(value);
+                    }
+                  }}
+                  className="w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex flex-col gap-0 overflow-hidden"
+                  style={{ height: `${calendarHeight}px` }}
+                >
+                  <TabsList className="relative isolate mb-0 w-full rounded-b-none rounded-t-lg border border-slate-200 bg-slate-50 dark:border-[#303030] dark:bg-[#181818]">
+                    <TabsTrigger
+                      value="search"
+                      className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-green-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-green-400 lg:text-sm"
                     >
-                      {activeTab === "search" ? (
-                        <ClassSearch />
-                      ) : (
-                        <CurrentlySelected />
+                      {activeTab === "search" && (
+                        <motion.span
+                          layoutId="builder-active-tab-pill"
+                          transition={{
+                            type: "spring",
+                            stiffness: 420,
+                            damping: 34,
+                          }}
+                          className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
+                        />
                       )}
-                    </motion.div>
-                  </AnimatePresence>
-                </TabsContent>
-              </Tabs>
+                      <span className="relative z-10">Search</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="selected"
+                      className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-purple-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-purple-400 lg:text-sm"
+                    >
+                      {activeTab === "selected" && (
+                        <motion.span
+                          layoutId="builder-active-tab-pill"
+                          transition={{
+                            type: "spring",
+                            stiffness: 420,
+                            damping: 34,
+                          }}
+                          className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
+                        />
+                      )}
+                      <span className="relative z-10 inline-flex items-center gap-1.5">
+                        <span>Selected</span>
+                        {draftSchedule.length > 0 && (
+                          <span className="inline-flex h-4 min-w-4 items-center justify-center bg-purple-900/60 text-purple-300 border border-purple-700/50 rounded-full text-[10px] px-1.5 leading-none">
+                            {draftSchedule.length}
+                          </span>
+                        )}
+                      </span>
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent
+                    value={activeTab}
+                    className="mt-0 min-h-0 overflow-hidden"
+                  >
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={activeTab}
+                        initial={{ y: 18, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -8, opacity: 0 }}
+                        transition={{ duration: 0.24, ease: "easeOut" }}
+                        className="h-full"
+                      >
+                        {activeTab === "search" ? (
+                          <ClassSearch />
+                        ) : (
+                          <CurrentlySelected />
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

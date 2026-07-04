@@ -30,6 +30,7 @@ import {
   Edit2,
   Link as LinkIcon,
   Loader2,
+  LogOut,
   Menu,
   MoreHorizontal,
   Settings,
@@ -59,6 +60,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
@@ -137,6 +144,13 @@ const scheduleItemVariants: Variants = {
   },
 };
 
+type SidebarProps = {
+  /** Vertical pixels to offset the sidebar's fixed panels by, e.g. to sit below a page-level banner. */
+  topOffset?: number;
+  /** Called when the user clicks the Sign Out button. */
+  onSignOut: () => void;
+};
+
 /**
  * Sidebar Component
  *
@@ -146,7 +160,7 @@ const scheduleItemVariants: Variants = {
  *
  * @returns {JSX.Element} The sidebar navigation panel
  */
-export function Sidebar() {
+export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
   // Authentication context for user info and session
   const { user, session } = useAuth();
   const appToast = useAppToast();
@@ -562,7 +576,7 @@ export function Sidebar() {
     <>
       {/* Mobile Top Bar */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 z-50">
+        <div className="fixed left-0 right-0 z-50" style={{ top: topOffset }}>
           {/* Mobile Header Bar */}
           <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-[#2a2a2a] dark:bg-[#1a1a1a]">
             <div className="flex items-center gap-3">
@@ -612,6 +626,21 @@ export function Sidebar() {
               >
                 <Settings className="h-4 w-4" />
               </button>
+              <TooltipProvider>
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Sign out"
+                      onClick={onSignOut}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Sign Out</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 
@@ -625,7 +654,8 @@ export function Sidebar() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.16, ease: sidebarExitEase }}
-                  className="fixed inset-0 bg-black/50 z-40 top-[52px]"
+                  className="fixed inset-0 bg-black/50 z-40"
+                  style={{ top: topOffset + 52 }}
                   onClick={toggleMobileMenu}
                 />
                 {/* Dropdown Panel */}
@@ -877,11 +907,12 @@ export function Sidebar() {
           } z-45 transition-all duration-300 ease-out`}
         >
           <div
-            className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed top-0 left-0 h-screen transition-all duration-300 ease-out ${
+            className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed left-0 transition-all duration-300 ease-out ${
               isSidebarWide
                 ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-white shadow-2xl shadow-slate-300/60 dark:bg-[#151515] dark:shadow-black/50"
                 : "bg-transparent min-w-[70px] max-w-[70px]"
             } overflow-hidden p-4 lg:p-5`}
+            style={{ top: topOffset, height: `calc(100vh - ${topOffset}px)` }}
           >
             {/* Top section */}
             <div>
@@ -1259,6 +1290,21 @@ export function Sidebar() {
                 >
                   <Settings className="h-4 w-4" />
                 </button>
+                <TooltipProvider>
+                  <Tooltip delayDuration={200}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Sign out"
+                        onClick={onSignOut}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">Sign Out</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
