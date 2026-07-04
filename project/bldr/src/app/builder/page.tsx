@@ -29,7 +29,7 @@ import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
 import { useAppToast } from "@/hooks/use-app-toast";
-import type { ClassSection } from "@/types";
+import type { BusyBlock, ClassSection } from "@/types";
 
 export default function Builder() {
   const { user, session, loading, signOut } = useAuth();
@@ -42,6 +42,7 @@ export default function Builder() {
     draftSemester,
     draftYear,
     draftBusyBlocks,
+    setDraftBusyBlocks,
     existingScheduleId,
     setIsEditingExisting,
     setExistingScheduleId,
@@ -82,10 +83,23 @@ export default function Builder() {
     return true;
   };
 
-  const schedulesMatch = areSchedulesEqual(
-    activeSchedule?.classes,
-    draftSchedule,
-  );
+  // Compare busy blocks by content (day/time/label) rather than uuid, since
+  // draft blocks carry temporary ids until the schedule is saved.
+  const areBusyBlocksEqual = (
+    a: BusyBlock[] | undefined,
+    b: BusyBlock[] | undefined,
+  ) => {
+    const key = (block: BusyBlock) =>
+      `${block.day}|${block.starttime}|${block.endtime}|${block.label}`;
+    const keysA = (a ?? []).map(key).sort();
+    const keysB = (b ?? []).map(key).sort();
+    if (keysA.length !== keysB.length) return false;
+    return keysA.every((k, i) => k === keysB[i]);
+  };
+
+  const schedulesMatch =
+    areSchedulesEqual(activeSchedule?.classes, draftSchedule) &&
+    areBusyBlocksEqual(activeSchedule?.busyBlocks, draftBusyBlocks);
 
   // Hydration check - ensures localStorage data is loaded
   useEffect(() => {
@@ -373,6 +387,7 @@ export default function Builder() {
     // Revert to the last saved state from activeSchedule
     const savedClasses = activeSchedule.classes || [];
     setDraftSchedule(savedClasses);
+    setDraftBusyBlocks(activeSchedule.busyBlocks || []);
     // Sync the permutation index to match the saved schedule
     syncPermutationIndex(savedClasses);
     appToast.success("Reverted to last saved state", {

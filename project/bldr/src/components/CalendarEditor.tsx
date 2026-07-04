@@ -80,6 +80,10 @@ type BusyDragCreateState = {
   day: string; // full day name of the column the drag started in
   anchor: number; // decimal hour where the drag started (snapped)
   current: number; // decimal hour under the cursor (snapped)
+  // Bounds the drag can extend to before it would overlap a neighboring
+  // busy block (or the edge of the grid). Computed once at drag start.
+  lowerBound: number;
+  upperBound: number;
 };
 
 type BusyDragMoveState = {
@@ -90,6 +94,10 @@ type BusyDragMoveState = {
   current: number; // decimal hour under the cursor (snapped)
   originalStart: number;
   originalEnd: number;
+  // Bounds the block can move within before it would overlap a neighboring
+  // busy block (or the edge of the grid). Computed once at drag start.
+  lowerBound: number;
+  upperBound: number;
 };
 
 type BusyDragResizeState = {
@@ -100,6 +108,10 @@ type BusyDragResizeState = {
   current: number; // decimal hour under the cursor (snapped)
   originalStart: number;
   originalEnd: number;
+  // Bounds the dragged edge can extend to before it would overlap a
+  // neighboring busy block (or the edge of the grid).
+  lowerBound: number;
+  upperBound: number;
 };
 
 type BusyDragState =
@@ -110,8 +122,8 @@ type BusyDragState =
 const getMovedTimes = (drag: BusyDragMoveState) => {
   const duration = drag.originalEnd - drag.originalStart;
   const rawDelta = snapToQuarterHour(drag.current - drag.anchor);
-  const minDelta = CAL_START_HOUR - drag.originalStart;
-  const maxDelta = CAL_END_HOUR - drag.originalEnd;
+  const minDelta = drag.lowerBound - drag.originalStart;
+  const maxDelta = drag.upperBound - drag.originalEnd;
   const delta = clamp(rawDelta, minDelta, maxDelta);
 
   return {
@@ -127,7 +139,7 @@ const getResizedTimes = (drag: BusyDragResizeState) => {
     return {
       start: clamp(
         drag.originalStart + delta,
-        CAL_START_HOUR,
+        drag.lowerBound,
         drag.originalEnd - 0.25,
       ),
       end: drag.originalEnd,
@@ -139,7 +151,7 @@ const getResizedTimes = (drag: BusyDragResizeState) => {
     end: clamp(
       drag.originalEnd + delta,
       drag.originalStart + 0.25,
-      CAL_END_HOUR,
+      drag.upperBound,
     ),
   };
 };
@@ -195,6 +207,43 @@ const CalendarEditor = ({
   };
 
   /**
+   * Finds how far a busy block may extend up and down in a day column
+   * before it would touch a neighboring busy block (or the edge of the
+   * grid). `referenceStart`/`referenceEnd` describe the range currently
+   * occupying free space — a single point (the drag anchor) when creating,
+   * or the block's own current range when moving/resizing it — and
+   * `excludeUuid` skips the block being moved/resized so it doesn't box
+   * itself in.
+   */
+  const getNeighborBounds = (
+    day: string,
+    excludeUuid: string | null,
+    referenceStart: number,
+    referenceEnd: number,
+  ) => {
+    let lowerBound = CAL_START_HOUR;
+    let upperBound = CAL_END_HOUR;
+
+    for (const block of draftBusyBlocks as BusyBlock[]) {
+      if (excludeUuid && block.uuid === excludeUuid) continue;
+      if (mapDayAbbreviation(block.day) !== day) continue;
+      const blockStart = timeToDecimal(block.starttime);
+      const blockEnd = timeToDecimal(block.endtime);
+
+      // Block sits above the reference range: it caps how far up we can extend
+      if (blockEnd <= referenceStart) {
+        lowerBound = Math.max(lowerBound, blockEnd);
+      }
+      // Block sits below the reference range: it caps how far down we can extend
+      else if (blockStart >= referenceEnd) {
+        upperBound = Math.min(upperBound, blockStart);
+      }
+    }
+
+    return { lowerBound, upperBound };
+  };
+
+  /**
    * Starts a busy block drag from an empty spot in a day column.
    * Drags that begin on an existing class or busy block are ignored.
    */
@@ -204,7 +253,15 @@ const CalendarEditor = ({
     const time = timeFromClientY(e.clientY);
     if (time == null) return;
     e.preventDefault();
-    setBusyDrag({ mode: "create", day, anchor: time, current: time });
+    const { lowerBound, upperBound } = getNeighborBounds(day, null, time, time);
+    setBusyDrag({
+      mode: "create",
+      day,
+      anchor: time,
+      current: time,
+      lowerBound,
+      upperBound,
+    });
   };
 
   /**
@@ -219,14 +276,24 @@ const CalendarEditor = ({
 
     e.preventDefault();
     e.stopPropagation();
+    const originalStart = timeToDecimal(block.starttime);
+    const originalEnd = timeToDecimal(block.endtime);
+    const { lowerBound, upperBound } = getNeighborBounds(
+      day,
+      block.uuid,
+      originalStart,
+      originalEnd,
+    );
     setBusyDrag({
       mode: "move",
       uuid: block.uuid,
       day,
       anchor,
       current: anchor,
-      originalStart: timeToDecimal(block.starttime),
-      originalEnd: timeToDecimal(block.endtime),
+      originalStart,
+      originalEnd,
+      lowerBound,
+      upperBound,
     });
   };
 
@@ -246,14 +313,24 @@ const CalendarEditor = ({
 
     e.preventDefault();
     e.stopPropagation();
+    const originalStart = timeToDecimal(block.starttime);
+    const originalEnd = timeToDecimal(block.endtime);
+    const { lowerBound, upperBound } = getNeighborBounds(
+      day,
+      block.uuid,
+      originalStart,
+      originalEnd,
+    );
     setBusyDrag({
       mode,
       uuid: block.uuid,
       day,
       anchor: current,
       current,
-      originalStart: timeToDecimal(block.starttime),
-      originalEnd: timeToDecimal(block.endtime),
+      originalStart,
+      originalEnd,
+      lowerBound,
+      upperBound,
     });
   };
 
@@ -266,7 +343,18 @@ const CalendarEditor = ({
     const handleMove = (e: MouseEvent) => {
       const time = timeFromClientY(e.clientY);
       if (time == null) return;
-      setBusyDrag((prev) => (prev ? { ...prev, current: time } : prev));
+      setBusyDrag((prev) => {
+        if (!prev) return prev;
+        // While creating, stop the drag at the neighboring block's edge so
+        // the new block can never overlap an existing one.
+        if (prev.mode === "create") {
+          return {
+            ...prev,
+            current: clamp(time, prev.lowerBound, prev.upperBound),
+          };
+        }
+        return { ...prev, current: time };
+      });
     };
 
     const handleUp = () => {
