@@ -422,8 +422,11 @@ export default function Builder() {
     <>
       {/* Instructor data warning — full-viewport-width banner pinned to the
           absolute top of the screen, above the sidebar and page content. */}
-      <div
+      <motion.div
         ref={bannerRef}
+        initial={{ y: "-100%" }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="flex items-center justify-center gap-2 border-b border-orange-300 bg-orange-50 px-4 py-2 text-center dark:border-orange-600/50 dark:bg-orange-900/40"
       >
         <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0" />
@@ -432,7 +435,7 @@ export default function Builder() {
           information for the classes. The data you see in the builder may not
           be accurate.
         </p>
-      </div>
+      </motion.div>
 
       <div
         className="flex flex-col overflow-hidden bg-slate-100 dark:bg-[#080808] md:flex-row"

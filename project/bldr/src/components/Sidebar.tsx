@@ -1261,10 +1261,16 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
               </AnimatePresence>
 
               {/* User info — links to profile page */}
-              <div className="flex w-full flex-row items-center gap-1">
+              <div
+                className={`flex w-full flex-row items-center gap-1 ${
+                  open ? "" : "justify-center"
+                }`}
+              >
                 <Link
                   href="/profile"
-                  className="flex min-w-0 flex-1 flex-row items-center justify-start gap-1.5 rounded-md px-1 py-1 transition-colors hover:bg-slate-100 dark:hover:bg-white/8 lg:gap-2"
+                  className={`flex min-w-0 flex-row items-center gap-1.5 rounded-md px-1 py-1 transition-colors hover:bg-slate-100 dark:hover:bg-white/8 lg:gap-2 ${
+                    open ? "flex-1 justify-start" : "shrink-0 justify-center"
+                  }`}
                 >
                   <User className="h-4 w-4 shrink-0 lg:h-5 lg:w-5" />
                   <AnimatePresence initial={false}>
@@ -1282,29 +1288,33 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                     )}
                   </AnimatePresence>
                 </Link>
-                <button
-                  type="button"
-                  aria-label="Open settings"
-                  onClick={() => setSettingsDialogOpen(true)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
-                >
-                  <Settings className="h-4 w-4" />
-                </button>
-                <TooltipProvider>
-                  <Tooltip delayDuration={200}>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label="Sign out"
-                        onClick={onSignOut}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
-                      >
-                        <LogOut className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">Sign Out</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {open && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Open settings"
+                      onClick={() => setSettingsDialogOpen(true)}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </button>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="Sign out"
+                            onClick={onSignOut}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                          >
+                            <LogOut className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Sign Out</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </>
+                )}
               </div>
             </div>
           </div>
