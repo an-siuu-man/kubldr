@@ -83,7 +83,7 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.9",
-    "baseline-browser-mapping": "^2.8.32",
+    "baseline-browser-mapping": "^2.10.42",
     "jsdom": "^29.1.1",
     "svgo": "^4.0.1",
     "tailwindcss": "^4",
