@@ -252,8 +252,7 @@ export default function LandingPage() {
                 accent: "text-emerald-300",
                 surface: "from-emerald-500/12 to-emerald-500/3",
                 title: "Secure accounts and guest access",
-                quote:
-                  "I don't want to make an account just to try this out.",
+                quote: "I don't want to make an account just to try this out.",
                 response:
                   "Guest mode's got you — jump in now, sign up later (or never).",
               },
@@ -353,8 +352,7 @@ export default function LandingPage() {
                     Section details and seat visibility.
                   </h3>
                   <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
-                    "Who's even teaching this section, and is it already
-                    full?"
+                    "Who's even teaching this section, and is it already full?"
                   </p>
                   <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
                     Instructor, meeting times, and seats left — right there

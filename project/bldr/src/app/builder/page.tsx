@@ -425,7 +425,9 @@ export default function Builder() {
       }
 
       appToast.success(
-        data.isPublic ? "Schedule sharing enabled" : "Schedule sharing disabled",
+        data.isPublic
+          ? "Schedule sharing enabled"
+          : "Schedule sharing disabled",
         {
           action: "scheduleShare",
           duration: 2000,
@@ -569,7 +571,13 @@ export default function Builder() {
           The University of Kansas now requires the user to be logged in with
           SSO to access instructor and location info for classes. We have to
           respect that decision. To see that info, check out{" "}
-          <Link href="https://classes.ku.edu" target="_blank" className="text-primary border-b-1 cursor-pointer border-primary">classes.ku.edu</Link>
+          <Link
+            href="https://classes.ku.edu"
+            target="_blank"
+            className="text-primary border-b-1 cursor-pointer border-primary"
+          >
+            classes.ku.edu
+          </Link>
         </p>
       </motion.div>
 
