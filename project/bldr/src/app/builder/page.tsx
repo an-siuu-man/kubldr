@@ -484,6 +484,50 @@ export default function Builder() {
     return null;
   }
 
+  // Rendered above both the calendar and the tabbed side panel so the two
+  // stay height-aligned — see the invisible spacer clone above <Tabs>.
+  const shareControls = activeSchedule && (
+    <>
+      <Button
+        onClick={handleToggleShare}
+        disabled={
+          isTogglingShare || draftSchedule.length === 0 || !schedulesMatch
+        }
+        className={`h-auto cursor-pointer px-2 py-1 font-dmsans text-[10px] lg:px-3 lg:py-1.5 lg:text-xs ${
+          activeSchedule.isPublic
+            ? "bg-destructive/60 text-white hover:bg-destructive/70"
+            : "bg-slate-700 text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+        }`}
+      >
+        {isTogglingShare ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <Share2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+        )}
+        <span className="hidden sm:inline">
+          {activeSchedule.isPublic ? "Stop Sharing" : "Share"}
+        </span>
+      </Button>
+      {activeSchedule.isPublic && (
+        <TooltipProvider>
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="Copy share link"
+                onClick={handleCopyShareLink}
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:h-8 lg:w-8"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Copy share link</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </>
+  );
+
   const handleRevertChanges = () => {
     if (!activeSchedule) {
       // No saved schedule to revert to - just clear the draft
@@ -591,43 +635,7 @@ export default function Builder() {
               <div className="flex flex-col items-center w-full">
                 {activeSchedule && (
                   <div className="mb-1.5 flex w-full justify-end gap-1.5 lg:mb-2 lg:gap-2">
-                    <Button
-                      onClick={handleToggleShare}
-                      disabled={isTogglingShare}
-                      className={`h-auto cursor-pointer px-2 py-1 font-dmsans text-[10px] lg:px-3 lg:py-1.5 lg:text-xs ${
-                        activeSchedule.isPublic
-                          ? "bg-destructive/60 text-white hover:bg-destructive/70"
-                          : "bg-slate-700 text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                      }`}
-                    >
-                      {isTogglingShare ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Share2 className="h-3 w-3 mr-0.5 lg:mr-1" />
-                      )}
-                      <span className="hidden sm:inline">
-                        {activeSchedule.isPublic ? "Stop Sharing" : "Share"}
-                      </span>
-                    </Button>
-                    {activeSchedule.isPublic && (
-                      <TooltipProvider>
-                        <Tooltip delayDuration={200}>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              aria-label="Copy share link"
-                              onClick={handleCopyShareLink}
-                              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:h-8 lg:w-8"
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom">
-                            Copy share link
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
+                    {shareControls}
                   </div>
                 )}
                 <div ref={calendarContainerRef} className="w-full">
@@ -727,7 +735,15 @@ export default function Builder() {
               </div>
 
               {/* Tabbed Side Panel: Search + Currently Selected */}
-              <div className="flex items-start justify-center xl:justify-end">
+              <div className="flex flex-col items-center xl:items-end w-full">
+                {activeSchedule && (
+                  <div
+                    aria-hidden="true"
+                    className="invisible mb-1.5 flex w-full justify-end gap-1.5 lg:mb-2 lg:gap-2"
+                  >
+                    {shareControls}
+                  </div>
+                )}
                 <Tabs
                   value={activeTab}
                   onValueChange={(value) => {
