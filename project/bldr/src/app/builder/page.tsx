@@ -6,8 +6,11 @@ import {
   AlertTriangle,
   Check,
   CheckCheck,
+  Copy,
+  Loader2,
   LogOut,
   Save,
+  Share2,
   Trash2,
   Undo2,
   UserPlus,
@@ -24,6 +27,12 @@ import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useActiveSchedule } from "@/contexts/ActiveScheduleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useScheduleBuilder } from "@/contexts/ScheduleBuilderContext";
@@ -55,6 +64,7 @@ export default function Builder() {
   } = useActiveSchedule();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingShare, setIsTogglingShare] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
   const [showGuestBanner, _setShowGuestBanner] = useState(true);
@@ -374,6 +384,87 @@ export default function Builder() {
     );
   };
 
+  const getPublicScheduleUrl = (scheduleId: string) => {
+    if (typeof window === "undefined") return `/s/${scheduleId}`;
+    return `${window.location.origin}/s/${scheduleId}`;
+  };
+
+  const handleToggleShare = async () => {
+    const scheduleId = existingScheduleId || activeSchedule?.id;
+    if (!scheduleId || !session?.access_token) {
+      appToast.error("Save your schedule before sharing it", {
+        action: "scheduleShare",
+        duration: 3000,
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      });
+      return;
+    }
+
+    const nextIsPublic = !activeSchedule?.isPublic;
+    setIsTogglingShare(true);
+    try {
+      const res = await fetch("/api/shareSchedule", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ scheduleId, isPublic: nextIsPublic }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update sharing");
+      }
+
+      if (activeSchedule) {
+        updateScheduleInList(activeSchedule.id, {
+          ...activeSchedule,
+          isPublic: data.isPublic,
+        });
+      }
+
+      appToast.success(
+        data.isPublic ? "Schedule sharing enabled" : "Schedule sharing disabled",
+        {
+          action: "scheduleShare",
+          duration: 2000,
+          icon: <Share2 className="h-5 w-5 text-green-500" />,
+        },
+      );
+    } catch (err: unknown) {
+      console.error("Error updating schedule sharing:", err);
+      appToast.error(
+        err instanceof Error ? err.message : "Failed to update sharing",
+        {
+          action: "scheduleShare",
+          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        },
+      );
+    } finally {
+      setIsTogglingShare(false);
+    }
+  };
+
+  const handleCopyShareLink = async () => {
+    const scheduleId = existingScheduleId || activeSchedule?.id;
+    if (!scheduleId) return;
+    try {
+      await navigator.clipboard.writeText(getPublicScheduleUrl(scheduleId));
+      appToast.success("Share link copied", {
+        action: "scheduleShare",
+        duration: 2000,
+        icon: <Copy className="h-5 w-5 text-green-500" />,
+      });
+    } catch (error) {
+      console.error("Error copying share link:", error);
+      appToast.error("Failed to copy share link", {
+        action: "scheduleShare",
+        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -431,9 +522,10 @@ export default function Builder() {
       >
         <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0" />
         <p className="font-inter text-[10px] text-orange-900 dark:text-orange-100 lg:text-xs">
-          We are facing some difficulties fetching accurate Instructor and Room
-          information for the classes. The data you see in the builder may not
-          be accurate.
+          The University of Kansas now requires the user to be logged in with
+          SSO to access instructor and location info for classes. We have to
+          respect that decision. To see that info, check out{" "}
+          <Link href="https://classes.ku.edu" target="_blank" className="text-primary border-b-1 cursor-pointer border-primary">classes.ku.edu</Link>
         </p>
       </motion.div>
 
@@ -497,6 +589,47 @@ export default function Builder() {
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(280px,380px)] gap-2 lg:gap-4">
               {/* Calendar Section */}
               <div className="flex flex-col items-center w-full">
+                {activeSchedule && (
+                  <div className="mb-1.5 flex w-full justify-end gap-1.5 lg:mb-2 lg:gap-2">
+                    <Button
+                      onClick={handleToggleShare}
+                      disabled={isTogglingShare}
+                      className={`h-auto cursor-pointer px-2 py-1 font-dmsans text-[10px] lg:px-3 lg:py-1.5 lg:text-xs ${
+                        activeSchedule.isPublic
+                          ? "bg-destructive/60 text-white hover:bg-destructive/70"
+                          : "bg-slate-700 text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+                      }`}
+                    >
+                      {isTogglingShare ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Share2 className="h-3 w-3 mr-0.5 lg:mr-1" />
+                      )}
+                      <span className="hidden sm:inline">
+                        {activeSchedule.isPublic ? "Stop Sharing" : "Share"}
+                      </span>
+                    </Button>
+                    {activeSchedule.isPublic && (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={200}>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="Copy share link"
+                              onClick={handleCopyShareLink}
+                              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:h-8 lg:w-8"
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">
+                            Copy share link
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                )}
                 <div ref={calendarContainerRef} className="w-full">
                   <CalendarEditor />
                 </div>

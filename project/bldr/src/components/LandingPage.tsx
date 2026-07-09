@@ -7,7 +7,6 @@ import {
   FolderKanban,
   Info,
   Search,
-  Share2,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -17,7 +16,6 @@ import { FloatingTiles } from "@/components/landing/FloatingTiles";
 import {
   SearchPreview,
   SectionDetailPreview,
-  SharePreview,
   VersionsPreview,
 } from "@/components/landing/previews";
 import {
@@ -169,9 +167,9 @@ export default function LandingPage() {
 
             {/* Headline */}
             <h1 className="font-figtree text-5xl font-semibold leading-[1.08] tracking-tight text-white sm:text-7xl lg:text-[88px]">
-              Your semester,
+              Browse every schedule,
               <br />
-              finally in one view.
+              not just the first one.
             </h1>
 
             {/* Sub-copy */}
@@ -254,16 +252,19 @@ export default function LandingPage() {
                 accent: "text-emerald-300",
                 surface: "from-emerald-500/12 to-emerald-500/3",
                 title: "Secure accounts and guest access",
-                description:
-                  "Sign up with email or jump straight in as a guest. Your schedules are scoped to your account and private by default.",
+                quote:
+                  "I don't want to make an account just to try this out.",
+                response:
+                  "Guest mode's got you — jump in now, sign up later (or never).",
               },
               {
                 icon: CalendarDays,
                 accent: "text-amber-300",
                 surface: "from-amber-500/12 to-amber-500/3",
                 title: "Visual weekly calendar",
-                description:
-                  "See your full week on a Monday–Friday grid with color-coded blocks and time labels — before you commit to anything.",
+                quote: "Wait, does my 9am actually overlap with my lab?",
+                response:
+                  "One glance at the grid and you'll know before it's a problem.",
               },
             ].map((f) => {
               const Icon = f.icon;
@@ -278,8 +279,11 @@ export default function LandingPage() {
                   <h3 className="mt-5 font-figtree text-xl font-semibold text-white">
                     {f.title}
                   </h3>
-                  <p className="mt-3 font-inter text-sm leading-6 text-white/55">
-                    {f.description}
+                  <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
+                    "{f.quote}"
+                  </p>
+                  <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
+                    {f.response}
                   </p>
                 </div>
               );
@@ -298,10 +302,11 @@ export default function LandingPage() {
                   <h3 className="mt-6 font-figtree text-2xl font-semibold text-white sm:text-3xl">
                     Real-time class search.
                   </h3>
-                  <p className="mt-4 font-inter text-base leading-7 text-white/55">
-                    Search KU classes by department, code, or title. Add
-                    sections to your draft without taking your hands off the
-                    keys.
+                  <p className="mt-4 font-inter text-base italic leading-7 text-white/45">
+                    "Is EECS 448 even open right now?"
+                  </p>
+                  <p className="mt-2 font-inter text-base leading-7 text-white/70">
+                    Live seat counts, zero refreshing — just search and see.
                   </p>
                 </div>
                 {/* Preview side */}
@@ -323,13 +328,16 @@ export default function LandingPage() {
                   <h3 className="mt-5 font-figtree text-xl font-semibold text-white sm:text-2xl">
                     Multiple schedule versions.
                   </h3>
-                  <p className="mt-3 font-inter text-sm leading-6 text-white/55">
-                    Create and save alternate semester plans. Switch between
-                    versions before enrollment opens and keep every option
-                    intact.
+                  <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
+                    "What if my 8am doesn't get approved — do I lose my whole
+                    plan?"
+                  </p>
+                  <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
+                    Keep a backup semester (or five) without touching your
+                    favorite.
                   </p>
                 </div>
-                <div className="mt-auto border-t border-white/6 bg-[#0a0a0a] p-6">
+                <div className="mt-auto flex justify-center border-t border-white/6 bg-[#0a0a0a] p-6">
                   <VersionsPreview />
                 </div>
               </div>
@@ -344,38 +352,17 @@ export default function LandingPage() {
                   <h3 className="mt-5 font-figtree text-xl font-semibold text-white sm:text-2xl">
                     Section details and seat visibility.
                   </h3>
-                  <p className="mt-3 font-inter text-sm leading-6 text-white/55">
-                    Check instructor, meeting days, and live seat availability
-                    before adding a class to your draft.
+                  <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
+                    "Who's even teaching this section, and is it already
+                    full?"
+                  </p>
+                  <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
+                    Instructor, meeting times, and seats left — right there
+                    before you commit.
                   </p>
                 </div>
-                <div className="mt-auto border-t border-white/6 bg-[#0a0a0a] p-6">
+                <div className="mt-auto flex justify-center border-t border-white/6 bg-[#0a0a0a] p-6">
                   <SectionDetailPreview />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Block C: Shareable schedules (full-width reversed split) ── */}
-          <div>
-            <div className="overflow-hidden rounded-[24px] border border-white/8 bg-[#0f0f0f]">
-              <div className="grid gap-0 lg:grid-cols-2">
-                {/* Preview side (left on desktop) */}
-                <div className="flex items-center justify-center border-b border-white/6 bg-[#0a0a0a] p-8 lg:border-b-0 lg:border-r">
-                  <SharePreview />
-                </div>
-                {/* Copy side */}
-                <div className="flex flex-col justify-center p-8 lg:p-12">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/10 bg-[#1a1a1a]">
-                    <Share2 className="h-5 w-5 text-lime-300" />
-                  </div>
-                  <h3 className="mt-6 font-figtree text-2xl font-semibold text-white sm:text-3xl">
-                    Shareable read-only schedules.
-                  </h3>
-                  <p className="mt-4 font-inter text-base leading-7 text-white/55">
-                    Toggle on a public link for any saved schedule. Anyone with
-                    the link gets a read-only view — revoke access anytime.
-                  </p>
                 </div>
               </div>
             </div>

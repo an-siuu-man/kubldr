@@ -209,7 +209,7 @@ export default function CurrentlySelected() {
     0,
   );
   const showMissingComponentsReminder = missingClassCount > 0;
-
+  
   return (
     <TooltipProvider delayDuration={200}>
       <motion.div

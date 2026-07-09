@@ -1,113 +1,61 @@
 "use client";
 
+// Mirrors the real weekly grid rendered by CalendarEditor.tsx (dark theme):
+// same "Time" + day-abbreviation header row, hourly rows from 8am–8pm, and
+// the same course-block color palette / label format ("DEPT CODE (Comp)").
+
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
-// Compact time labels shown on the left spine (8am–6pm)
 const HOURS = [
-  "8am",
-  "9am",
-  "10am",
-  "11am",
-  "12pm",
-  "1pm",
-  "2pm",
-  "3pm",
-  "4pm",
-  "5pm",
+  "8 AM",
+  "9 AM",
+  "10 AM",
+  "11 AM",
+  "12 PM",
+  "1 PM",
+  "2 PM",
+  "3 PM",
+  "4 PM",
+  "5 PM",
+  "6 PM",
+  "7 PM",
+  "8 PM",
 ];
-const TOTAL_ROWS = HOURS.length; // 10 one-hour slots
+
+// Same 12-color palette CalendarEditor hashes course codes into
+const colors = [
+  "#f5d2d2", // soft pink
+  "#efd8c1", // peach
+  "#efefc1", // pastel yellow
+  "#d8efc1", // yellow-green
+  "#c1efc1", // mint
+  "#c1efd8", // aqua
+  "#c1efef", // light cyan
+  "#c1d8ef", // baby blue
+  "#c1c1ef", // periwinkle
+  "#d8c1ef", // lavender
+  "#efc1ef", // light magenta
+  "#efc1d8", // rose
+];
 
 type Block = {
   day: number; // 0=Mon … 4=Fri
-  start: number; // 0-indexed row offset within the 10 slots
-  span: number; // how many rows tall
+  start: number; // 0-indexed hour offset from 8am
   label: string;
-  sub: string;
-  color: string; // pastel bg
+  color: string;
 };
 
-// Fake but realistic-looking KU schedule
 const blocks: Block[] = [
-  {
-    day: 0,
-    start: 1,
-    span: 2,
-    label: "MATH 116",
-    sub: "Calculus I",
-    color: "#c1d8ef",
-  }, // baby blue
-  {
-    day: 0,
-    start: 5,
-    span: 2,
-    label: "EECS 168",
-    sub: "Programming I",
-    color: "#d8efc1",
-  }, // yellow-green
-  {
-    day: 1,
-    start: 0,
-    span: 2,
-    label: "ENGL 101",
-    sub: "Comp & Rhetoric",
-    color: "#f5d2d2",
-  }, // soft pink
-  {
-    day: 1,
-    start: 4,
-    span: 2,
-    label: "CHEM 184",
-    sub: "General Chem",
-    color: "#efd8c1",
-  }, // peach
-  {
-    day: 2,
-    start: 1,
-    span: 2,
-    label: "MATH 116",
-    sub: "Calculus I",
-    color: "#c1d8ef",
-  },
-  {
-    day: 2,
-    start: 5,
-    span: 2,
-    label: "EECS 168",
-    sub: "Programming I",
-    color: "#d8efc1",
-  },
-  {
-    day: 3,
-    start: 0,
-    span: 2,
-    label: "ENGL 101",
-    sub: "Comp & Rhetoric",
-    color: "#f5d2d2",
-  },
-  {
-    day: 3,
-    start: 4,
-    span: 2,
-    label: "CHEM 184",
-    sub: "General Chem",
-    color: "#efd8c1",
-  },
-  {
-    day: 4,
-    start: 2,
-    span: 2,
-    label: "HIST 128",
-    sub: "World History",
-    color: "#efc1d8",
-  }, // rose
-  {
-    day: 4,
-    start: 6,
-    span: 2,
-    label: "BIOL 150",
-    sub: "Principles Bio",
-    color: "#c1efef",
-  }, // light cyan
+  { day: 0, start: 1, label: "MATH 116 (LEC)", color: colors[7] },
+  { day: 0, start: 5, label: "EECS 168 (LEC)", color: colors[3] },
+  { day: 1, start: 0, label: "ENGL 101 (LEC)", color: colors[0] },
+  { day: 1, start: 4, label: "CHEM 184 (LAB)", color: colors[1] },
+  { day: 2, start: 1, label: "MATH 116 (LEC)", color: colors[7] },
+  { day: 2, start: 5, label: "EECS 168 (LEC)", color: colors[3] },
+  { day: 3, start: 0, label: "ENGL 101 (LEC)", color: colors[0] },
+  { day: 3, start: 4, label: "CHEM 184 (LAB)", color: colors[1] },
+  { day: 4, start: 2, label: "HIST 128 (LEC)", color: colors[11] },
+  { day: 4, start: 6, label: "BIOL 150 (LEC)", color: colors[6] },
 ];
 
 export function CalendarPreview() {
@@ -124,72 +72,56 @@ export function CalendarPreview() {
         </div>
       </div>
 
-      {/* Calendar body */}
-      <div className="overflow-hidden rounded-b-2xl bg-[#1e1e1e]">
-        {/* Day headers */}
-        <div
-          className="grid border-b border-[#404040]"
-          style={{ gridTemplateColumns: "44px repeat(5, 1fr)" }}
-        >
-          <div /> {/* time spine spacer */}
-          {DAYS.map((d) => (
-            <div
-              key={d}
-              className="py-2 text-center font-dmsans text-xs font-semibold uppercase tracking-widest text-white/40"
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        {/* Grid rows */}
-        <div
-          className="relative grid"
-          style={{
-            gridTemplateColumns: "44px repeat(5, 1fr)",
-            gridTemplateRows: `repeat(${TOTAL_ROWS}, 40px)`,
-          }}
-        >
-          {/* Hour labels + horizontal rules */}
-          {HOURS.map((h, rowIdx) => (
-            <div key={h} className="contents">
-              {/* time label */}
-              <div
-                className="flex items-start justify-end pr-2 pt-1 font-mono text-[10px] text-white/25"
-                style={{ gridColumn: 1, gridRow: rowIdx + 1 }}
-              >
-                {h}
-              </div>
-              {/* horizontal rule across all 5 day columns */}
-              {DAYS.map((day, colIdx) => (
-                <div
-                  key={`${h}-${day}`}
-                  className="border-t border-[#2e2e2e]"
-                  style={{ gridColumn: colIdx + 2, gridRow: rowIdx + 1 }}
-                />
+      {/* Calendar body — matches CalendarEditor's grid container */}
+      <div className="p-4">
+        <div className="relative rounded-[10px] border-2 border-[#404040] bg-[#2c2c2c] px-2 py-2 text-white">
+          <table className="w-full table-fixed border-collapse">
+            <thead>
+              <tr>
+                <th className="h-6 w-8 text-center font-figtree text-[10px] font-semibold lg:h-8 lg:w-10">
+                  Time
+                </th>
+                {DAYS.map((day) => (
+                  <th
+                    key={day}
+                    className="p-0.5 text-center font-figtree text-[10px] font-semibold lg:p-1"
+                  >
+                    {day}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {HOURS.map((h, rowIdx) => (
+                <tr
+                  key={h}
+                  className="relative h-[34px] border-t border-[#404040]"
+                >
+                  <td className="whitespace-nowrap pr-1 text-right align-top font-figtree text-[8px] text-white lg:text-[10px]">
+                    {h}
+                  </td>
+                  {DAYS.map((day, colIdx) => (
+                    <td key={`${h}-${day}`} className="relative w-[18%]">
+                      <div className="absolute top-1/2 z-0 w-full -translate-y-1/2 border-t border-dashed border-[#424242]" />
+                      {blocks
+                        .filter((b) => b.day === colIdx && b.start === rowIdx)
+                        .map((b) => (
+                          <div
+                            key={`${b.label}-${b.day}-${b.start}`}
+                            className="absolute left-0.5 right-0.5 top-0.5 z-10 m-0.5 overflow-hidden rounded-md p-1 text-[#333333] shadow-md"
+                            style={{ backgroundColor: b.color }}
+                          >
+                            <p className="truncate font-dmsans text-[9px] font-bold leading-tight">
+                              {b.label}
+                            </p>
+                          </div>
+                        ))}
+                    </td>
+                  ))}
+                </tr>
               ))}
-            </div>
-          ))}
-
-          {/* Class blocks */}
-          {blocks.map((b) => (
-            <div
-              key={`${b.label}-${b.day}-${b.start}`}
-              className="z-10 m-0.5 overflow-hidden rounded-md p-1 text-[#333333] shadow-sm"
-              style={{
-                gridColumn: b.day + 2,
-                gridRow: `${b.start + 1} / span ${b.span}`,
-                backgroundColor: b.color,
-              }}
-            >
-              <p className="truncate font-dmsans text-[9px] font-bold leading-tight">
-                {b.label}
-              </p>
-              <p className="truncate font-inter text-[8px] leading-tight opacity-75">
-                {b.sub}
-              </p>
-            </div>
-          ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
