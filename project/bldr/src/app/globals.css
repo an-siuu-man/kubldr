@@ -6,11 +6,24 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* One family across the app: Archivo (width axis does the voice changes). */
+  --font-sans: var(--font-archivo);
   --font-mono: var(--font-geist-mono);
-  --font-inter: var(--font-inter);
-  --font-dmsans: var(--font-dmsans);
-  --font-figtree: var(--font-figtree);
+  --font-inter: var(--font-archivo);
+  --font-dmsans: var(--font-archivo);
+  --font-figtree: var(--font-archivo);
+  --font-ballpoint: var(--font-ballpoint);
+  /* Worksheet palette, usable as bg-crimson, text-ballpoint, bg-canary... */
+  --color-crimson: var(--crimson);
+  --color-ballpoint: var(--ballpoint);
+  --color-canary: var(--canary);
+  --color-pink: var(--pink);
+  --color-paper: var(--paper);
+  --color-desk: var(--desk);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -40,79 +53,107 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Square, printed-form corners */
+  --radius-sm: 0px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.147 0.004 49.25);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.147 0.004 49.25);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.147 0.004 49.25);
-  --primary: oklch(0.216 0.006 56.043);
-  --primary-foreground: oklch(0.985 0.001 106.423);
-  --secondary: oklch(0.97 0.001 106.424);
-  --secondary-foreground: oklch(0.216 0.006 56.043);
-  --muted: oklch(0.97 0.001 106.424);
-  --muted-foreground: oklch(0.553 0.013 58.071);
-  --accent: oklch(0.97 0.001 106.424);
-  --accent-foreground: oklch(0.216 0.006 56.043);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.923 0.003 48.717);
-  --input: oklch(0.923 0.003 48.717);
-  --ring: oklch(0.709 0.01 56.259);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0.001 106.423);
-  --sidebar-foreground: oklch(0.147 0.004 49.25);
-  --sidebar-primary: oklch(0.216 0.006 56.043);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.97 0.001 106.424);
-  --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-border: oklch(0.923 0.003 48.717);
-  --sidebar-ring: oklch(0.709 0.01 56.259);
+  /* Paper worksheet (light, default) */
+  --radius: 2px;
+  --desk: #ece5d3;
+  --paper: #fbf8ef;
+  --crimson: #a6192e;
+  --ballpoint: #0b4fa3;
+  --canary: #f4d84f;
+  --pink: #f4c3cf;
+  --rule: rgb(166 25 46 / 0.2);
+  --rule-strong: rgb(166 25 46 / 0.55);
+  --success: #2f6b3c;
+  --warning: #8a5a00;
+
+  --background: #f3eee1;
+  --foreground: #2e2023;
+  --card: #fbf8ef;
+  --card-foreground: #2e2023;
+  --popover: #fbf8ef;
+  --popover-foreground: #2e2023;
+  --primary: #a6192e;
+  --primary-foreground: #ffffff;
+  --secondary: #ece5d3;
+  --secondary-foreground: #2e2023;
+  --muted: #ece5d3;
+  --muted-foreground: #6b4e52;
+  --accent: #f1e2d9;
+  --accent-foreground: #2e2023;
+  --destructive: #b3261e;
+  --border: #dcc6bf;
+  --input: #cfb3ac;
+  --ring: #0b4fa3;
+  --chart-1: #a6192e;
+  --chart-2: #0b4fa3;
+  --chart-3: #b8960f;
+  --chart-4: #c76a86;
+  --chart-5: #2f6b3c;
+  --sidebar: #f7f2e6;
+  --sidebar-foreground: #2e2023;
+  --sidebar-primary: #a6192e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ece2d6;
+  --sidebar-accent-foreground: #2e2023;
+  --sidebar-border: #dcc6bf;
+  --sidebar-ring: #0b4fa3;
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.923 0.003 48.717);
-  --primary-foreground: oklch(0.216 0.006 56.043);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.985 0.001 106.423);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.985 0.001 106.423);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.553 0.013 58.071);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.553 0.013 58.071);
+  /* Carbon sheet: blue-black carbon, paper-coloured impressions */
+  --desk: #0c111b;
+  --paper: #151b28;
+  --crimson: #f06a7e;
+  --ballpoint: #8fb4f2;
+  /* Copy stock fills whole regions, so it goes dim on carbon */
+  --canary: #3d3719;
+  --pink: #3f2630;
+  --rule: rgb(239 232 216 / 0.1);
+  --rule-strong: rgb(240 106 126 / 0.5);
+  --success: #7cc48c;
+  --warning: #e9cd45;
+
+  --background: #0f1420;
+  --foreground: #efe8d8;
+  --card: #151b28;
+  --card-foreground: #efe8d8;
+  --popover: #182030;
+  --popover-foreground: #efe8d8;
+  --primary: #c8283f;
+  --primary-foreground: #ffffff;
+  --secondary: #1c2333;
+  --secondary-foreground: #efe8d8;
+  --muted: #1c2333;
+  --muted-foreground: #b3ab9b;
+  --accent: #222a3c;
+  --accent-foreground: #efe8d8;
+  --destructive: #f0707a;
+  --border: #2a3245;
+  --input: #364055;
+  --ring: #8fb4f2;
+  --chart-1: #f06a7e;
+  --chart-2: #8fb4f2;
+  --chart-3: #e9cd45;
+  --chart-4: #eaa9ba;
+  --chart-5: #7cc48c;
+  --sidebar: #121826;
+  --sidebar-foreground: #efe8d8;
+  --sidebar-primary: #c8283f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e2636;
+  --sidebar-accent-foreground: #efe8d8;
+  --sidebar-border: #2a3245;
+  --sidebar-ring: #8fb4f2;
 }
 
 @layer base {
@@ -121,6 +162,17 @@
   }
   body {
     @apply bg-background text-foreground;
+    caret-color: var(--ballpoint);
+  }
+  ::selection {
+    background: var(--canary);
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline-color: var(--ring);
+  }
+  html {
+    scrollbar-color: var(--rule-strong) transparent;
   }
 }
 
@@ -136,5 +188,28 @@
   /* For IE and Edge */
   .scrollbar-hidden {
     -ms-overflow-style: none;
+  }
+}
+
+/* Worksheet primitives shared by app surfaces */
+@layer components {
+  .form-label {
+    font-size: 12px;
+    font-weight: 700;
+    font-stretch: 72%;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--crimson);
+  }
+  .ballpoint {
+    font-family: var(--font-ballpoint), cursive;
+    color: var(--ballpoint);
+  }
+  .display {
+    font-weight: 900;
+    font-stretch: 115%;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    color: var(--crimson);
   }
 }

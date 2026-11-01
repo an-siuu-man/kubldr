@@ -43,7 +43,7 @@ type AppSettingsContextType = AppSettings & {
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
-  theme: "dark",
+  theme: "light",
   timeFormat: "24h",
   notificationPreferences: DEFAULT_NOTIFICATION_PREFERENCES,
 };

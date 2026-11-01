@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { DM_Sans, Figtree, Geist, Geist_Mono, Inter } from "next/font/google";
+import {
+  Archivo,
+  DM_Sans,
+  Figtree,
+  Geist,
+  Geist_Mono,
+  Inter,
+  Reenie_Beanie,
+} from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { ActiveScheduleProvider } from "@/contexts/ActiveScheduleContext";
@@ -37,6 +45,18 @@ const figtree = Figtree({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const archivo = Archivo({
+  subsets: ["latin"],
+  variable: "--font-archivo",
+  axes: ["wdth"],
+});
+
+const reenieBeanie = Reenie_Beanie({
+  subsets: ["latin"],
+  variable: "--font-ballpoint",
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "bldr — College Schedule Builder",
   description:
@@ -68,7 +88,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${inter.variable} ${figtree.variable} ${dmsans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${inter.variable} ${figtree.variable} ${dmsans.variable} ${geistMono.variable} ${archivo.variable} ${reenieBeanie.variable} antialiased`}
       >
         <Script
           src={process.env.NEXT_PUBLIC_GOOGLE_MANAGER_URL}
@@ -84,7 +104,7 @@ export default function RootLayout({
 
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

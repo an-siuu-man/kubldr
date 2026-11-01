@@ -35,18 +35,18 @@ describe("AppSettingsProvider", () => {
   it("uses dark theme and 24 hour time by default", async () => {
     const { result } = renderHook(() => useAppSettings(), { wrapper });
 
-    expect(result.current.theme).toBe("dark");
+    expect(result.current.theme).toBe("light");
     expect(result.current.timeFormat).toBe("24h");
     expect(result.current.notificationPreferences).toEqual(
       DEFAULT_NOTIFICATION_PREFERENCES,
     );
 
     await waitFor(() => {
-      expect(mocks.setTheme).toHaveBeenCalledWith("dark");
+      expect(mocks.setTheme).toHaveBeenCalledWith("light");
       expect(
         JSON.parse(window.localStorage.getItem(storageKey) ?? "{}"),
       ).toEqual({
-        theme: "dark",
+        theme: "light",
         timeFormat: "24h",
         notificationPreferences: DEFAULT_NOTIFICATION_PREFERENCES,
       });
