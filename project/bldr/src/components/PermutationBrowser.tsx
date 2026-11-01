@@ -92,10 +92,10 @@ export default function PermutationBrowser() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1 dark:border-[#404040] dark:bg-[#2c2c2c]"
+        className="flex items-center gap-1.5 border-2 border-dashed border-rule-strong bg-card px-2 py-1"
       >
         <Spinner className="h-3 w-3" />
-        <span className="font-inter text-[10px] text-slate-600 dark:text-[#A8A8A8] lg:text-xs">
+        <span className="font-inter text-[10px] text-muted-foreground lg:text-xs">
           Finding...
         </span>
       </motion.div>
@@ -113,13 +113,13 @@ export default function PermutationBrowser() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
-        className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-1.5 py-1 dark:border-[#404040] dark:bg-[#2c2c2c] lg:gap-1.5 lg:px-2"
+        className="flex items-center gap-1 border-2 border-crimson bg-card px-1.5 py-1 lg:gap-1.5 lg:px-2"
       >
         <TooltipProvider>
           <Tooltip delayDuration={200}>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1 text-blue-400">
-                <Shuffle className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-crimson">
+                <Shuffle className="h-3.5 w-3.5" />
               </div>
             </TooltipTrigger>
             <TooltipContent side="top" className="font-inter">
@@ -134,10 +134,10 @@ export default function PermutationBrowser() {
           variant="ghost"
           size="sm"
           onClick={prevPermutation}
-          className="h-5 w-5 cursor-pointer p-0 hover:bg-slate-100 dark:hover:bg-[#404040] lg:h-6 lg:w-6"
+          className="h-6 w-6 cursor-pointer rounded-none p-0 text-crimson hover:bg-accent lg:h-7 lg:w-7"
           aria-label="Previous permutation"
         >
-          <ChevronLeft className="h-3 w-3 text-slate-900 dark:text-white lg:h-4 lg:w-4" />
+          <ChevronLeft className="h-4 w-4 text-crimson" strokeWidth={2.5} />
         </Button>
 
         <div className="flex items-center gap-0.5 min-w-10 lg:min-w-[50px] justify-center">
@@ -154,23 +154,21 @@ export default function PermutationBrowser() {
               }}
               onBlur={commitEdit}
               // Width matches the widest reasonable number so layout stays stable
-              className="w-7 border-b border-slate-400 bg-transparent text-center font-dmsans text-[10px] font-medium text-slate-950 outline-none [appearance:textfield] dark:border-[#A8A8A8] dark:text-white lg:w-8 lg:text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="w-9 border-b-2 border-ballpoint bg-transparent text-center text-[15px] font-black text-ballpoint tabular-nums lg:text-[18px] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               aria-label="Permutation number"
             />
           ) : (
             <button
               type="button"
               onClick={enterEditMode}
-              className="cursor-pointer font-dmsans text-[10px] font-medium text-slate-950 hover:underline dark:text-white lg:text-xs"
+              className="cursor-pointer text-[15px] font-black text-ballpoint tabular-nums [font-stretch:115%] hover:underline lg:text-[18px]"
               aria-label="Jump to a permutation number"
             >
               {permutationIndex + 1}
             </button>
           )}
-          <span className="font-inter text-[9px] text-slate-500 dark:text-[#A8A8A8] lg:text-[10px]">
-            /
-          </span>
-          <span className="font-dmsans text-[10px] font-medium text-slate-950 dark:text-white lg:text-xs">
+          <span className="form-label px-0.5">of</span>
+          <span className="text-[12px] font-extrabold text-crimson tabular-nums lg:text-[13px]">
             {permutations.length}
           </span>
         </div>
@@ -179,10 +177,10 @@ export default function PermutationBrowser() {
           variant="ghost"
           size="sm"
           onClick={nextPermutation}
-          className="h-5 w-5 cursor-pointer p-0 hover:bg-slate-100 dark:hover:bg-[#404040] lg:h-6 lg:w-6"
+          className="h-5 w-5 cursor-pointer p-0 hover:bg-muted lg:h-6 lg:w-6"
           aria-label="Next permutation"
         >
-          <ChevronRight className="h-3 w-3 text-slate-900 dark:text-white lg:h-4 lg:w-4" />
+          <ChevronRight className="h-4 w-4 text-crimson" strokeWidth={2.5} />
         </Button>
       </motion.div>
     </AnimatePresence>

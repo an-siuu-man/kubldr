@@ -53,17 +53,17 @@ export function AppSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[min(720px,92vh)] overflow-hidden border-slate-200 bg-white p-0 text-slate-950 shadow-2xl shadow-slate-950/10 dark:border-[#404040] dark:bg-[#171717] dark:text-[#fafafa] dark:shadow-black/40 sm:max-w-[520px]">
-        <DialogHeader className="border-b border-slate-200 bg-slate-50 px-5 py-4 text-left dark:border-white/10 dark:bg-[#1f1f1f]">
+      <DialogContent className="max-h-[min(720px,92vh)] overflow-hidden border-border bg-card p-0 text-foreground shadow-2xl sm:max-w-[520px]">
+        <DialogHeader className="border-b border-border bg-secondary px-5 py-4 text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-foreground shadow-sm">
               <MonitorCog className="h-4 w-4" />
             </div>
             <div>
-              <DialogTitle className="font-figtree text-base font-semibold text-slate-950 dark:text-[#fafafa]">
+              <DialogTitle className="font-figtree text-base font-semibold text-foreground">
                 Settings
               </DialogTitle>
-              <DialogDescription className="mt-0.5 font-inter text-xs text-slate-600 dark:text-[#a1a1a1]">
+              <DialogDescription className="mt-0.5 font-inter text-xs text-muted-foreground">
                 Manage app preferences.
               </DialogDescription>
             </div>
@@ -71,10 +71,10 @@ export function AppSettingsDialog({
         </DialogHeader>
 
         <div className="max-h-[calc(min(720px,92vh)-82px)] space-y-3 overflow-y-auto p-5">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700 dark:bg-white/8 dark:text-[#d4d4d4]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
                   {theme === "light" ? (
                     <Sun className="h-4 w-4" />
                   ) : (
@@ -82,10 +82,10 @@ export function AppSettingsDialog({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="font-figtree text-sm font-medium text-slate-950 dark:text-[#fafafa]">
+                  <div className="font-figtree text-sm font-medium text-foreground">
                     Theme
                   </div>
-                  <p className="mt-0.5 font-inter text-xs text-slate-500 dark:text-[#888888]">
+                  <p className="mt-0.5 font-inter text-xs text-muted-foreground">
                     Choose the builder appearance.
                   </p>
                 </div>
@@ -94,20 +94,20 @@ export function AppSettingsDialog({
                 type="single"
                 value={theme}
                 onValueChange={handleThemeChange}
-                className="grid grid-cols-2 rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-[#222222]"
+                className="grid grid-cols-2 rounded-lg border border-border bg-muted p-1"
                 aria-label="Theme"
               >
                 <ToggleGroupItem
                   value="light"
                   aria-label="Use light theme"
-                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-slate-600 shadow-none hover:bg-white/70 hover:text-slate-950 data-[state=on]:bg-white data-[state=on]:text-slate-950 data-[state=on]:shadow-sm dark:text-[#d4d4d4] dark:hover:bg-white/10 dark:hover:text-white dark:data-[state=on]:bg-white dark:data-[state=on]:text-[#111111]"
+                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-muted-foreground shadow-none hover:bg-accent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
                 >
                   Light
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="dark"
                   aria-label="Use dark theme"
-                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-slate-600 shadow-none hover:bg-white/70 hover:text-slate-950 data-[state=on]:bg-white data-[state=on]:text-slate-950 data-[state=on]:shadow-sm dark:text-[#d4d4d4] dark:hover:bg-white/10 dark:hover:text-white dark:data-[state=on]:bg-white dark:data-[state=on]:text-[#111111]"
+                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-muted-foreground shadow-none hover:bg-accent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
                 >
                   Dark
                 </ToggleGroupItem>
@@ -115,17 +115,17 @@ export function AppSettingsDialog({
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700 dark:bg-white/8 dark:text-[#d4d4d4]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
                   <Clock3 className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <div className="font-figtree text-sm font-medium text-slate-950 dark:text-[#fafafa]">
+                  <div className="font-figtree text-sm font-medium text-foreground">
                     Time format
                   </div>
-                  <p className="mt-0.5 font-inter text-xs text-slate-500 dark:text-[#888888]">
+                  <p className="mt-0.5 font-inter text-xs text-muted-foreground">
                     Set how daily times are displayed.
                   </p>
                 </div>
@@ -134,20 +134,20 @@ export function AppSettingsDialog({
                 type="single"
                 value={timeFormat}
                 onValueChange={handleTimeFormatChange}
-                className="grid grid-cols-2 rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-white/10 dark:bg-[#222222]"
+                className="grid grid-cols-2 rounded-lg border border-border bg-muted p-1"
                 aria-label="Time format"
               >
                 <ToggleGroupItem
                   value="12h"
                   aria-label="Use 12 hour time"
-                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-slate-600 shadow-none hover:bg-white/70 hover:text-slate-950 data-[state=on]:bg-white data-[state=on]:text-slate-950 data-[state=on]:shadow-sm dark:text-[#d4d4d4] dark:hover:bg-white/10 dark:hover:text-white dark:data-[state=on]:bg-white dark:data-[state=on]:text-[#111111]"
+                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-muted-foreground shadow-none hover:bg-accent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
                 >
                   12H
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="24h"
                   aria-label="Use 24 hour time"
-                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-slate-600 shadow-none hover:bg-white/70 hover:text-slate-950 data-[state=on]:bg-white data-[state=on]:text-slate-950 data-[state=on]:shadow-sm dark:text-[#d4d4d4] dark:hover:bg-white/10 dark:hover:text-white dark:data-[state=on]:bg-white dark:data-[state=on]:text-[#111111]"
+                  className="h-8 min-w-20 rounded-md px-3 font-dmsans text-xs text-muted-foreground shadow-none hover:bg-accent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
                 >
                   24H
                 </ToggleGroupItem>
@@ -155,26 +155,26 @@ export function AppSettingsDialog({
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700 dark:bg-white/8 dark:text-[#d4d4d4]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
                 <Bell className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-figtree text-sm font-medium text-slate-950 dark:text-[#fafafa]">
+                <div className="font-figtree text-sm font-medium text-foreground">
                   Notifications
                 </div>
-                <p className="mt-0.5 font-inter text-xs text-slate-500 dark:text-[#888888]">
+                <p className="mt-0.5 font-inter text-xs text-muted-foreground">
                   A toast appears only when notifications, its type, and its
                   action are enabled.
                 </p>
 
-                <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-[#222222]">
+                <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary px-3 py-2">
                   <div>
-                    <span className="font-inter text-xs font-medium text-slate-800 dark:text-[#fafafa]">
+                    <span className="font-inter text-xs font-medium text-foreground">
                       Show notifications
                     </span>
-                    <p className="mt-0.5 font-inter text-[11px] text-slate-500 dark:text-[#888888]">
+                    <p className="mt-0.5 font-inter text-[11px] text-muted-foreground">
                       Turn all notifications on or off.
                     </p>
                   </div>
@@ -186,16 +186,16 @@ export function AppSettingsDialog({
                 </div>
 
                 <div className="mt-4">
-                  <p className="mb-2 font-dmsans text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#888888]">
+                  <p className="mb-2 font-dmsans text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     By type
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {NOTIFICATION_TYPES.map((type) => (
                       <div
                         key={type}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-[#222222]"
+                        className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary px-3 py-2"
                       >
-                        <span className="font-inter text-xs text-slate-700 dark:text-[#d4d4d4]">
+                        <span className="font-inter text-xs text-foreground">
                           {NOTIFICATION_TYPE_LABELS[type]}
                         </span>
                         <Switch
@@ -211,21 +211,21 @@ export function AppSettingsDialog({
                 </div>
 
                 <div className="mt-4 space-y-3">
-                  <p className="font-dmsans text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-[#888888]">
+                  <p className="font-dmsans text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     By action
                   </p>
                   {NOTIFICATION_ACTION_GROUPS.map((group) => (
                     <div key={group.title}>
-                      <p className="mb-2 font-inter text-xs font-medium text-slate-600 dark:text-[#a1a1a1]">
+                      <p className="mb-2 font-inter text-xs font-medium text-muted-foreground">
                         {group.title}
                       </p>
                       <div className="space-y-2">
                         {group.actions.map((action) => (
                           <div
                             key={action}
-                            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-white/10 dark:bg-[#222222]"
+                            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-secondary px-3 py-2"
                           >
-                            <span className="font-inter text-xs text-slate-700 dark:text-[#d4d4d4]">
+                            <span className="font-inter text-xs text-foreground">
                               {NOTIFICATION_ACTION_LABELS[action]}
                             </span>
                             <Switch

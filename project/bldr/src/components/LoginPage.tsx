@@ -1,10 +1,13 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2, UserCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import AuthSheet, {
+  authInputClass,
+  authLabelClass,
+} from "@/components/AuthSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,184 +107,99 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#080808] text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(250,204,21,0.12),_transparent_26%),radial-gradient(circle_at_bottom_left,_rgba(239,68,68,0.1),_transparent_28%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-20" />
-
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="flex w-full max-w-[28rem] flex-col items-center"
-        >
-          {/* Brand */}
-          <Link href="/" className="mb-8 flex flex-col items-center gap-3">
-            <img
-              src="/logo.svg"
-              alt="bldr logo"
-              className="h-16 w-auto"
-              draggable={false}
-            />
-            <div className="text-center">
-              <p className="font-figtree text-xl font-semibold tracking-tight">
-                Flagship Schedule Builder
-              </p>
-              <p className="font-inter text-sm text-[#A8A8A8]">
-                University of Kansas schedule planning
-              </p>
-            </div>
-          </Link>
-
-          {/* Form card */}
-          <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{
-              duration: 0.55,
-              delay: 0.08,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="w-full"
-          >
-            <div className="w-full rounded-[28px] border border-white/10 bg-[#111111]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur sm:p-8">
-              <div className="mb-2 flex flex-col items-start">
-                <h2 className="font-dmsans text-3xl font-bold text-white">
-                  Log in
-                </h2>
-                <p className="mt-2 font-inter text-sm text-[#A8A8A8]">
-                  Enter your email and password to continue to the builder.
-                </p>
-              </div>
-
-              <form
-                className="mt-6 flex flex-col gap-4"
-                onSubmit={handleSubmit}
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.18 }}
-                >
-                  <Label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-inter"
-                  >
-                    Email
-                  </Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    id="email"
-                    placeholder="your.email@example.com"
-                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                    required
-                    disabled={isLoading || isGuestLoading}
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.26 }}
-                >
-                  <Label
-                    htmlFor="password"
-                    className="mb-2 block text-sm font-inter"
-                  >
-                    Password
-                  </Label>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    id="password"
-                    placeholder="********"
-                    className="border-2 border-[#404040] font-inter selection:bg-blue-400"
-                    required
-                    disabled={isLoading || isGuestLoading}
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.34 }}
-                >
-                  <Button
-                    type="submit"
-                    variant="ghost"
-                    className="my-3 w-full bg-white text-[#101010] hover:bg-[#e8e8e8] font-dmsans text-md"
-                    disabled={isLoading || isGuestLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Spinner />
-                        Logging in...
-                      </>
-                    ) : (
-                      "Login"
-                    )}
-                  </Button>
-
-                  <div className="relative my-3 flex w-full items-center justify-center">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[#404040]" />
-                    </div>
-                    <span className="relative bg-[#111111] px-3 font-inter text-xs text-[#a8a8a8]">
-                      or
-                    </span>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full bg-[#1e1e1e] border border-[#404040] font-dmsans text-md text-white hover:bg-[#2a2a2a]"
-                    disabled={isLoading || isGuestLoading}
-                    onClick={handleGuestLogin}
-                  >
-                    {isGuestLoading ? (
-                      <>
-                        <Spinner />
-                        Signing in...
-                      </>
-                    ) : (
-                      <>
-                        <UserCircle className="mr-2 h-4 w-4" />
-                        Continue as Guest
-                      </>
-                    )}
-                  </Button>
-                </motion.div>
-              </form>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.42 }}
-                className="mt-5 font-inter text-xs text-[#a8a8a8]"
-              >
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/signup"
-                  className="font-medium text-white underline underline-offset-2"
-                >
-                  Sign up
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Back home link */}
+    <AuthSheet
+      slip="Student sign-in slip"
+      title="Log in"
+      description="Pick up where you left off: your saved plans, versions and share links."
+      footer={
+        <>
+          New to bldr?{" "}
           <Link
-            href="/"
-            className="mt-5 font-inter text-xs text-[#606060] hover:bg-white/10 rounded-sm px-1 transition-colors"
+            href="/signup"
+            className="font-bold text-crimson underline decoration-[1.5px] underline-offset-[3px]"
           >
-            ← Back to home
+            Create a free account
           </Link>
-        </motion.div>
+        </>
+      }
+    >
+      <form className="mt-7 flex flex-col gap-5" onSubmit={handleSubmit}>
+        <div>
+          <Label htmlFor="email" className={authLabelClass}>
+            Email
+          </Label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            id="email"
+            autoComplete="email"
+            placeholder="jayhawk@ku.edu"
+            className={authInputClass}
+            required
+            disabled={isLoading || isGuestLoading}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="password" className={authLabelClass}>
+            Password
+          </Label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            id="password"
+            autoComplete="current-password"
+            className={authInputClass}
+            required
+            disabled={isLoading || isGuestLoading}
+          />
+        </div>
+
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-1 h-12 w-full text-[17px] font-extrabold [font-stretch:92%]"
+          disabled={isLoading || isGuestLoading}
+        >
+          {isLoading ? (
+            <>
+              <Spinner />
+              Logging in…
+            </>
+          ) : (
+            "Log in"
+          )}
+        </Button>
+      </form>
+
+      <div className="mt-6 border-2 border-dashed border-rule-strong p-4">
+        <p className="form-label">Just looking?</p>
+        <p className="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+          Build schedules without an account. You can sign up later to keep
+          them.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3 h-11 w-full border-2 border-crimson bg-transparent text-[16px] font-extrabold text-crimson [font-stretch:92%] hover:bg-accent hover:text-crimson"
+          disabled={isLoading || isGuestLoading}
+          onClick={handleGuestLogin}
+        >
+          {isGuestLoading ? (
+            <>
+              <Spinner />
+              Opening the builder…
+            </>
+          ) : (
+            <>
+              <UserCircle className="h-4 w-4" />
+              Continue as guest
+            </>
+          )}
+        </Button>
       </div>
-    </div>
+    </AuthSheet>
   );
 }

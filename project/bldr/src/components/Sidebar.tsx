@@ -327,7 +327,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
       appToast.error("Failed to create schedule", {
         action: "scheduleCreate",
         duration: 2000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
     } finally {
       setLoading(false);
@@ -346,7 +346,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
       appToast.error("Schedule name cannot be empty", {
         action: "scheduleRename",
         duration: 2000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -354,7 +354,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
     if (!session?.access_token) {
       appToast.error("You must be logged in to rename schedules", {
         action: "scheduleRename",
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -388,7 +388,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
       appToast.success("Schedule renamed successfully", {
         action: "scheduleRename",
         duration: 2000,
-        icon: <Check className="h-5 w-5 text-green-500" />,
+        icon: <Check className="h-5 w-5 text-success" />,
       });
     } catch (err: unknown) {
       console.error("Error renaming schedule:", err);
@@ -396,7 +396,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
         err instanceof Error ? err.message : "Failed to rename schedule",
         {
           action: "scheduleRename",
-          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          icon: <AlertCircle className="h-5 w-5 text-destructive" />,
         },
       );
     } finally {
@@ -436,13 +436,13 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
       appToast.success("Share link copied", {
         action: "scheduleShare",
         duration: 2000,
-        icon: <Copy className="h-5 w-5 text-green-500" />,
+        icon: <Copy className="h-5 w-5 text-success" />,
       });
     } catch (error) {
       console.error("Error copying share link:", error);
       appToast.error("Failed to copy share link", {
         action: "scheduleShare",
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
     }
   };
@@ -451,7 +451,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
     if (!session?.access_token) {
       appToast.error("You must be logged in to share schedules", {
         action: "scheduleShare",
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -485,7 +485,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
         {
           action: "scheduleShare",
           duration: 2000,
-          icon: <Share2 className="h-5 w-5 text-green-500" />,
+          icon: <Share2 className="h-5 w-5 text-success" />,
         },
       );
     } catch (err: unknown) {
@@ -494,7 +494,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
         err instanceof Error ? err.message : "Failed to update sharing",
         {
           action: "scheduleShare",
-          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          icon: <AlertCircle className="h-5 w-5 text-destructive" />,
         },
       );
     } finally {
@@ -513,7 +513,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
     if (!session?.access_token) {
       appToast.error("You must be logged in to delete schedules", {
         action: "scheduleDelete",
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -552,7 +552,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
       appToast.success("Schedule deleted", {
         action: "scheduleDelete",
         duration: 2000,
-        icon: <Trash2 className="h-5 w-5 text-green-500" />,
+        icon: <Trash2 className="h-5 w-5 text-success" />,
       });
     } catch (err: unknown) {
       console.error("Error deleting schedule:", err);
@@ -560,7 +560,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
         err instanceof Error ? err.message : "Failed to delete schedule",
         {
           action: "scheduleDelete",
-          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          icon: <AlertCircle className="h-5 w-5 text-destructive" />,
         },
       );
     } finally {
@@ -578,12 +578,12 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
       {isMobile && (
         <div className="fixed left-0 right-0 z-50" style={{ top: topOffset }}>
           {/* Mobile Header Bar */}
-          <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-[#2a2a2a] dark:bg-[#1a1a1a]">
+          <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={toggleMobileMenu}
-                className="cursor-pointer rounded-md p-1.5 transition hover:bg-slate-100 dark:hover:bg-[#333]"
+                className="cursor-pointer rounded-md p-1.5 transition hover:bg-muted"
               >
                 <Menu
                   size={22}
@@ -592,7 +592,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                   }`}
                 />
               </button>
-              <span className="font-figtree text-sm font-bold text-slate-700 dark:text-gray-300">
+              <span className="font-figtree text-sm font-bold text-foreground">
                 {activeSchedule?.name || draftScheduleName || "Schedules"}
               </span>
             </div>
@@ -602,7 +602,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 text-xs py-1 px-2 h-7"
+                    className="cursor-pointer font-dmsans border-2 border-crimson font-bold text-crimson hover:bg-accent hover:text-crimson text-xs py-1 px-2 h-7"
                   >
                     <UserPlus className="h-3 w-3 mr-1" />
                     Sign Up
@@ -611,7 +611,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
               )}
               <Link
                 href="/profile"
-                className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-slate-600 transition-colors hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-white/8"
+                className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted"
               >
                 <User className="h-4 w-4" />
                 <span className="font-figtree truncate max-w-20">
@@ -622,7 +622,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                 type="button"
                 aria-label="Open settings"
                 onClick={() => setSettingsDialogOpen(true)}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Settings className="h-4 w-4" />
               </button>
@@ -633,7 +633,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                       type="button"
                       aria-label="Sign out"
                       onClick={onSignOut}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
                       <LogOut className="h-4 w-4" />
                     </button>
@@ -654,7 +654,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.16, ease: sidebarExitEase }}
-                  className="fixed inset-0 bg-black/50 z-40"
+                  className="fixed inset-0 bg-foreground/50 z-40"
                   style={{ top: topOffset + 52 }}
                   onClick={toggleMobileMenu}
                 />
@@ -664,17 +664,15 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                   animate="visible"
                   exit="exit"
                   variants={mobileDropdownVariants}
-                  className="relative z-50 overflow-hidden border-b border-slate-200 bg-white shadow-2xl dark:border-[#333] dark:bg-[#1a1a1a]"
+                  className="relative z-50 overflow-hidden border-b border-border bg-card shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-4 max-h-[70vh] overflow-y-auto">
-                    <h2 className="mb-3 font-figtree text-base font-bold text-slate-800 dark:text-gray-300">
-                      Your Schedules
-                    </h2>
+                    <h2 className="display mb-3 text-[22px]">Your Schedules</h2>
 
                     {/* Semester Section */}
                     <div className="mb-3">
-                      <div className="flex items-center gap-2 text-green-400 font-bold text-sm mb-2">
+                      <div className="form-label mb-2 flex items-center gap-2">
                         <ChevronDown className="h-4 w-4" />
                         <span>Spring 2026</span>
                       </div>
@@ -683,7 +681,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                       <div className="pl-4">
                         <Label
                           htmlFor="mobile-schedule-name"
-                          className="mb-1 font-dmsans text-xs text-slate-600 dark:text-[#888888]"
+                          className="mb-1 font-dmsans text-xs text-muted-foreground"
                         >
                           Make new schedule
                         </Label>
@@ -700,7 +698,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                               }
                             }}
                             placeholder="Schedule name"
-                            className="h-9 flex-1 border border-slate-300 font-inter text-xs selection:bg-blue-400 placeholder:text-xs dark:border-[#404040]"
+                            className="h-9 flex-1 border border-border font-inter text-xs selection:bg-ballpoint placeholder:text-xs"
                           />
                           <Button
                             type="submit"
@@ -709,7 +707,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                               handleCreateSchedule(newScheduleName);
                               setMobileMenuOpen(false);
                             }}
-                            className="h-9 cursor-pointer bg-slate-700 px-3 font-dmsans text-xs text-white hover:bg-slate-600 dark:bg-[#fafafa] dark:text-[#1a1a1a] dark:hover:bg-[#e0e0e0]"
+                            className="h-9 cursor-pointer bg-primary px-3 font-dmsans text-xs text-primary-foreground hover:bg-primary/90"
                           >
                             {loading ? (
                               <Spinner className="h-3 w-3" />
@@ -727,7 +725,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                               <span className="text-xs">Loading...</span>
                             </div>
                           ) : userSchedules.length === 0 ? (
-                            <p className="py-2 text-xs text-slate-500 dark:text-gray-400">
+                            <p className="py-2 text-xs text-muted-foreground">
                               No schedules found.
                             </p>
                           ) : (
@@ -745,8 +743,8 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                   variants={scheduleItemVariants}
                                   className={`flex items-center justify-between rounded-lg text-sm font-inter ${
                                     activeSchedule?.id === schedule.id
-                                      ? "bg-slate-200 font-semibold dark:bg-[#444]"
-                                      : "bg-slate-100 hover:bg-slate-200 dark:bg-[#252525] dark:hover:bg-[#333]"
+                                      ? "bg-accent font-semibold"
+                                      : "bg-muted hover:bg-accent"
                                   } transition`}
                                 >
                                   {renamingScheduleId === schedule.id ? (
@@ -769,10 +767,10 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                         }}
                                         autoFocus
                                         disabled={isRenamingSaving}
-                                        className="h-8 flex-1 border-slate-300 bg-white text-xs disabled:opacity-50 dark:border-[#404040] dark:bg-[#2a2a2a]"
+                                        className="h-8 flex-1 border-border bg-card text-xs disabled:opacity-50"
                                       />
                                       {isRenamingSaving ? (
-                                        <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
+                                        <Loader2 className="h-4 w-4 text-muted-foreground animate-spin shrink-0" />
                                       ) : (
                                         <>
                                           <button
@@ -783,16 +781,16 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                 renameValue,
                                               )
                                             }
-                                            className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
+                                            className="cursor-pointer rounded p-1.5 transition hover:bg-accent"
                                           >
-                                            <Check className="h-4 w-4 text-green-500" />
+                                            <Check className="h-4 w-4 text-success" />
                                           </button>
                                           <button
                                             type="button"
                                             onClick={cancelRenaming}
-                                            className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
+                                            className="cursor-pointer rounded p-1.5 transition hover:bg-accent"
                                           >
-                                            <X className="h-4 w-4 text-red-500" />
+                                            <X className="h-4 w-4 text-destructive" />
                                           </button>
                                         </>
                                       )}
@@ -813,7 +811,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                             {schedule.name}
                                           </span>
                                           {schedule.isPublic && (
-                                            <LinkIcon className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                                            <LinkIcon className="h-3.5 w-3.5 shrink-0 text-success" />
                                           )}
                                         </span>
                                       </button>
@@ -829,7 +827,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                           disabled={
                                             sharingScheduleId === schedule.id
                                           }
-                                          className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-[#555]"
+                                          className="cursor-pointer rounded p-1.5 transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                                           title={
                                             schedule.isPublic
                                               ? "Disable sharing"
@@ -837,13 +835,13 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                           }
                                         >
                                           {sharingScheduleId === schedule.id ? (
-                                            <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                                            <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
                                           ) : (
                                             <Share2
                                               className={`h-4 w-4 ${
                                                 schedule.isPublic
-                                                  ? "text-green-400"
-                                                  : "text-slate-500 dark:text-gray-400"
+                                                  ? "text-success"
+                                                  : "text-muted-foreground"
                                               }`}
                                             />
                                           )}
@@ -854,10 +852,10 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                             onClick={() =>
                                               copyPublicScheduleLink(schedule)
                                             }
-                                            className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
+                                            className="cursor-pointer rounded p-1.5 transition hover:bg-accent"
                                             title="Copy share link"
                                           >
-                                            <Copy className="h-4 w-4 text-slate-500 dark:text-gray-400" />
+                                            <Copy className="h-4 w-4 text-muted-foreground" />
                                           </button>
                                         )}
                                         <button
@@ -865,18 +863,18 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                           onClick={() =>
                                             startRenaming(schedule)
                                           }
-                                          className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
+                                          className="cursor-pointer rounded p-1.5 transition hover:bg-accent"
                                         >
-                                          <Edit2 className="h-4 w-4 text-slate-500 dark:text-gray-400" />
+                                          <Edit2 className="h-4 w-4 text-muted-foreground" />
                                         </button>
                                         <button
                                           type="button"
                                           onClick={() =>
                                             handleDeleteSchedule(schedule.id)
                                           }
-                                          className="cursor-pointer rounded p-1.5 transition hover:bg-slate-200 dark:hover:bg-[#555]"
+                                          className="cursor-pointer rounded p-1.5 transition hover:bg-accent"
                                         >
-                                          <Trash2 className="h-4 w-4 text-red-400" />
+                                          <Trash2 className="h-4 w-4 text-destructive" />
                                         </button>
                                       </div>
                                     </>
@@ -907,9 +905,9 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
           } z-45 transition-all duration-300 ease-out`}
         >
           <div
-            className={`sidebar flex flex-col justify-between rounded-tr-3xl rounded-br-3xl fixed left-0 transition-all duration-300 ease-out ${
+            className={`sidebar flex flex-col justify-between fixed left-0 transition-all duration-300 ease-out ${
               isSidebarWide
-                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] bg-white shadow-2xl shadow-slate-300/60 dark:bg-[#151515] dark:shadow-black/50"
+                ? "min-w-[min(280px,25vw)] max-w-[min(280px,25vw)] border-r-2 border-crimson bg-card"
                 : "bg-transparent min-w-[70px] max-w-[70px]"
             } overflow-hidden p-4 lg:p-5`}
             style={{ top: topOffset, height: `calc(100vh - ${topOffset}px)` }}
@@ -920,15 +918,13 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                 <button
                   type="button"
                   className={`p-2 rounded-xl transition-all duration-300 cursor-pointer ${
-                    open
-                      ? "hover:bg-slate-100 dark:hover:bg-white/5"
-                      : "hover:bg-slate-100 dark:hover:bg-white/10"
+                    open ? "hover:bg-muted" : "hover:bg-muted"
                   }`}
                   onClick={toggleSidebar}
                 >
                   <SidebarIcon
                     size={22}
-                    className={`text-slate-600 transition-transform duration-500 ease-out dark:text-gray-400 ${
+                    className={`text-muted-foreground transition-transform duration-500 ease-out ${
                       open ? "" : "rotate-180"
                     }`}
                   />
@@ -947,7 +943,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                     variants={sidebarContentVariants}
                     className="flex flex-col h-full overflow-hidden w-[calc(min(280px,25vw)-2rem)] lg:w-[calc(min(280px,25vw)-2.5rem)] shrink-0"
                   >
-                    <h1 className="mb-3 font-figtree text-lg font-semibold tracking-tight text-slate-800 dark:text-gray-200 lg:mb-4 lg:text-xl">
+                    <h1 className="display mb-3 text-[24px] lg:mb-4 lg:text-[28px]">
                       Your Schedules
                     </h1>
 
@@ -960,14 +956,14 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                         value="spring-2026"
                         className="border-b-0 flex flex-col flex-1 min-h-0"
                       >
-                        <AccordionTrigger className="shrink-0 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:cursor-pointer hover:bg-slate-100 hover:no-underline dark:text-emerald-400 dark:hover:bg-white/5 lg:text-base">
+                        <AccordionTrigger className="form-label shrink-0 py-2 text-[12.5px] transition-colors hover:cursor-pointer hover:bg-accent hover:no-underline">
                           Spring 2026
                         </AccordionTrigger>
                         <AccordionContent className="font-inter flex flex-col">
                           {/* New schedule input */}
                           <Label
                             htmlFor="schedule-name"
-                            className="mb-1 shrink-0 font-dmsans text-xs text-slate-600 dark:text-[#888888] lg:text-sm"
+                            className="mb-1 shrink-0 font-dmsans text-xs text-muted-foreground lg:text-sm"
                           >
                             Make new schedule
                           </Label>
@@ -985,7 +981,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                 }
                               }}
                               placeholder="Schedule name"
-                              className="h-9 rounded-lg border border-slate-300 bg-white font-inter text-xs transition-colors selection:bg-emerald-400 placeholder:text-xs focus:border-emerald-500/50 focus:ring-emerald-500/20 dark:border-white/10 dark:bg-white/5"
+                              className="h-9 rounded-lg border border-border bg-card font-inter text-xs transition-colors placeholder:text-xs focus:border-ballpoint focus:ring-0"
                             />
                             <Button
                               type="submit"
@@ -993,7 +989,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                               onClick={() => {
                                 handleCreateSchedule(newScheduleName);
                               }}
-                              className="h-9 cursor-pointer rounded-lg bg-slate-700 px-3 font-dmsans text-xs font-medium text-white shadow-sm transition-all hover:bg-slate-600 dark:bg-white dark:text-[#1a1a1a] dark:hover:bg-white/90"
+                              className="h-9 cursor-pointer rounded-lg bg-primary px-3 font-dmsans text-xs font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
                             >
                               {loading ? (
                                 <Spinner className="h-3 w-3" />
@@ -1011,13 +1007,13 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                             >
                               {isLoadingSchedules ? (
                                 <div className="flex items-center justify-center gap-2 py-6">
-                                  <Spinner className="size-4 text-emerald-400" />
-                                  <span className="text-xs text-slate-500 dark:text-gray-400">
+                                  <Spinner className="size-4 text-success" />
+                                  <span className="text-xs text-muted-foreground">
                                     Loading...
                                   </span>
                                 </div>
                               ) : userSchedules.length === 0 ? (
-                                <p className="px-4 py-4 font-inter text-xs text-slate-500 dark:text-white/30">
+                                <p className="px-4 py-4 font-inter text-xs text-muted-foreground">
                                   No schedules found.
                                 </p>
                               ) : (
@@ -1061,10 +1057,10 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                             }}
                                             autoFocus
                                             disabled={isRenamingSaving}
-                                            className="h-7 flex-1 border-slate-300 bg-white text-xs disabled:opacity-50 dark:border-white/10 dark:bg-white/5"
+                                            className="h-7 flex-1 border-border bg-card text-xs disabled:opacity-50"
                                           />
                                           {isRenamingSaving ? (
-                                            <Loader2 className="h-4 w-4 text-gray-400 animate-spin shrink-0" />
+                                            <Loader2 className="h-4 w-4 text-muted-foreground animate-spin shrink-0" />
                                           ) : (
                                             <>
                                               <button
@@ -1075,16 +1071,16 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                     renameValue,
                                                   )
                                                 }
-                                                className="cursor-pointer rounded p-1 transition hover:bg-slate-100 dark:hover:bg-white/10"
+                                                className="cursor-pointer rounded p-1 transition hover:bg-muted"
                                               >
-                                                <Check className="h-4 w-4 text-emerald-400" />
+                                                <Check className="h-4 w-4 text-success" />
                                               </button>
                                               <button
                                                 type="button"
                                                 onClick={cancelRenaming}
-                                                className="cursor-pointer rounded p-1 transition hover:bg-slate-100 dark:hover:bg-white/10"
+                                                className="cursor-pointer rounded p-1 transition hover:bg-muted"
                                               >
-                                                <X className="h-4 w-4 text-red-400" />
+                                                <X className="h-4 w-4 text-destructive" />
                                               </button>
                                             </>
                                           )}
@@ -1093,14 +1089,14 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                         <div
                                           className={`flex items-center w-full rounded-lg transition-colors duration-150 ${
                                             activeSchedule?.id === schedule.id
-                                              ? "bg-slate-100 dark:bg-white/8"
-                                              : "hover:bg-slate-50 dark:hover:bg-white/5"
+                                              ? "bg-muted"
+                                              : "hover:bg-secondary"
                                           }`}
                                         >
                                           <span
                                             className={`ml-3 h-1.5 w-1.5 shrink-0 rounded-full ${
                                               activeSchedule?.id === schedule.id
-                                                ? "bg-emerald-400"
+                                                ? "bg-success"
                                                 : ""
                                             }`}
                                           />
@@ -1119,14 +1115,14 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                 className={`truncate font-dmsans text-xs ${
                                                   activeSchedule?.id ===
                                                   schedule.id
-                                                    ? "font-semibold text-slate-950 dark:text-white"
-                                                    : "text-slate-600 dark:text-white/55"
+                                                    ? "font-semibold text-foreground"
+                                                    : "text-muted-foreground"
                                                 }`}
                                               >
                                                 {schedule.name}
                                               </span>
                                               {schedule.isPublic && (
-                                                <LinkIcon className="h-3 w-3 shrink-0 text-emerald-400" />
+                                                <LinkIcon className="h-3 w-3 shrink-0 text-success" />
                                               )}
                                             </span>
                                           </button>
@@ -1137,19 +1133,19 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                   type="button"
                                                   className="flex items-center z-50 cursor-pointer"
                                                 >
-                                                  <MoreHorizontal className="mr-2 h-4 w-4 text-slate-500 dark:text-white/40" />
+                                                  <MoreHorizontal className="mr-2 h-4 w-4 text-muted-foreground" />
                                                 </button>
                                               </PopoverTrigger>
-                                              <PopoverContent className="w-fit rounded-md border border-slate-200 bg-white p-2 dark:border-[#404040] dark:bg-[#2a2a2a]">
+                                              <PopoverContent className="w-fit rounded-md border border-border bg-card p-2">
                                                 <div className="flex flex-col items-start justify-between gap-1 text-sm">
-                                                  <div className="flex w-full items-center justify-between gap-4 rounded-md p-2 font-inter text-slate-800 dark:text-white">
+                                                  <div className="flex w-full items-center justify-between gap-4 rounded-md p-2 font-inter text-foreground">
                                                     <span className="flex items-center gap-2">
                                                       <Share2 className="h-4 w-4" />
                                                       Share
                                                     </span>
                                                     {sharingScheduleId ===
                                                     schedule.id ? (
-                                                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                                                     ) : (
                                                       <Switch
                                                         checked={Boolean(
@@ -1169,7 +1165,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                   {schedule.isPublic && (
                                                     <button
                                                       type="button"
-                                                      className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-slate-800 transition hover:bg-slate-100 dark:text-white dark:hover:bg-[#444]"
+                                                      className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-foreground transition hover:bg-muted"
                                                       onClick={() =>
                                                         copyPublicScheduleLink(
                                                           schedule,
@@ -1180,10 +1176,10 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                       Copy link
                                                     </button>
                                                   )}
-                                                  <hr className="w-full border-t border-slate-200 dark:border-[#606060]" />
+                                                  <hr className="w-full border-t border-border" />
                                                   <button
                                                     type="button"
-                                                    className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-slate-800 transition hover:bg-slate-100 dark:text-white dark:hover:bg-[#444]"
+                                                    className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-foreground transition hover:bg-muted"
                                                     onClick={() =>
                                                       startRenaming(schedule)
                                                     }
@@ -1191,10 +1187,10 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                                     <Edit2 className="h-4 w-4" />
                                                     Rename
                                                   </button>
-                                                  <hr className="w-full border-t border-slate-200 dark:border-[#606060]" />
+                                                  <hr className="w-full border-t border-border" />
                                                   <button
                                                     type="button"
-                                                    className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-red-600 transition hover:bg-red-50 dark:text-red-500 dark:hover:bg-[#444]"
+                                                    className="flex w-full cursor-pointer flex-row items-center justify-start gap-2 rounded-md p-2 font-inter text-destructive transition hover:bg-destructive"
                                                     onClick={() =>
                                                       handleDeleteSchedule(
                                                         schedule.id,
@@ -1209,7 +1205,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                                             </Popover>
                                           ) : activeSchedule?.id ===
                                             schedule.id ? (
-                                            <span className="mr-3 shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 font-dmsans text-[10px] font-medium text-emerald-400">
+                                            <span className="form-label mr-3 shrink-0 text-[10.5px] text-ballpoint">
                                               Active
                                             </span>
                                           ) : null}
@@ -1221,10 +1217,10 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                               )}
                             </ul>
                             {showTopShadow && (
-                              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-white to-transparent dark:from-[#151515]" />
+                              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-linear-to-b from-white to-transparent" />
                             )}
                             {showBottomShadow && (
-                              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-white to-transparent dark:from-[#151515]" />
+                              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-white to-transparent" />
                             )}
                           </div>
                         </AccordionContent>
@@ -1236,7 +1232,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
             </div>
 
             {/* Bottom Section */}
-            <div className="mt-4 flex w-full shrink-0 flex-col gap-3 border-t border-slate-200 pt-4 dark:border-white/15">
+            <div className="mt-4 flex w-full shrink-0 flex-col gap-3 border-t border-border pt-4">
               {/* Upgrade button for guest users */}
               <AnimatePresence initial={false}>
                 {open && user?.is_anonymous && (
@@ -1245,12 +1241,12 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                     animate="visible"
                     exit="exit"
                     variants={sidebarContentVariants}
-                    className="min-w-[min(280px,25vw)]"
+                    className="w-full"
                   >
                     <Link href="/upgrade">
                       <Button
                         variant="outline"
-                        className="w-full cursor-pointer font-dmsans border-yellow-600/50 text-yellow-400 hover:bg-yellow-900/30 text-xs lg:text-sm py-1.5 lg:py-2"
+                        className="w-full cursor-pointer font-dmsans border-2 border-crimson font-bold text-crimson hover:bg-accent hover:text-crimson text-xs lg:text-sm py-1.5 lg:py-2"
                       >
                         <UserPlus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
                         Create Account
@@ -1268,7 +1264,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
               >
                 <Link
                   href="/profile"
-                  className={`flex min-w-0 flex-row items-center gap-1.5 rounded-md px-1 py-1 transition-colors hover:bg-slate-100 dark:hover:bg-white/8 lg:gap-2 ${
+                  className={`flex min-w-0 flex-row items-center gap-1.5 rounded-md px-1 py-1 transition-colors hover:bg-muted lg:gap-2 ${
                     open ? "flex-1 justify-start" : "shrink-0 justify-center"
                   }`}
                 >
@@ -1294,7 +1290,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                       type="button"
                       aria-label="Open settings"
                       onClick={() => setSettingsDialogOpen(true)}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     >
                       <Settings className="h-4 w-4" />
                     </button>
@@ -1305,7 +1301,7 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
                             type="button"
                             aria-label="Sign out"
                             onClick={onSignOut}
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-gray-400 dark:hover:bg-white/8 dark:hover:text-gray-200"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                           >
                             <LogOut className="h-4 w-4" />
                           </button>
@@ -1331,23 +1327,23 @@ export function Sidebar({ topOffset = 0, onSignOut }: SidebarProps) {
         open={deletingScheduleId !== null}
         onOpenChange={(open) => !open && setDeletingScheduleId(null)}
       >
-        <AlertDialogContent className="border-slate-200 bg-white dark:border-[#404040] dark:bg-[#1a1a1a]">
+        <AlertDialogContent className="border-border bg-card">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-figtree text-slate-950 dark:text-[#fafafa]">
+            <AlertDialogTitle className="font-figtree text-foreground">
               Delete Schedule?
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-inter text-slate-600 dark:text-[#888888]">
+            <AlertDialogDescription className="font-inter text-muted-foreground">
               This action cannot be undone. This will permanently delete this
               schedule from your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-200 bg-white font-dmsans text-slate-800 hover:bg-slate-100 dark:border-[#404040] dark:bg-[#2a2a2a] dark:text-white dark:hover:bg-[#333333]">
+            <AlertDialogCancel className="border-border bg-card font-dmsans text-foreground hover:bg-muted">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-destructive/60 hover:bg-destructive/70 text-white border-red-200 font-dmsans"
+              className="bg-destructive/60 hover:bg-destructive/70 text-primary-foreground border-destructive font-dmsans"
             >
               Delete
             </AlertDialogAction>

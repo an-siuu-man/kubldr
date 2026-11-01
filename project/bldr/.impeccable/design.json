@@ -1,0 +1,1255 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-01T05:33:41.989Z",
+  "title": "Design System: bldr",
+  "extensions": {
+    "scope": "Whole app. Tokens in src/app/globals.css (:root = paper worksheet, default; .dark = carbon sheet). Landing page uses its own .form-world scope in src/components/landing/landing.css and always renders paper.",
+    "themes": [
+      {
+        "name": "paper",
+        "selector": ":root",
+        "default": true,
+        "description": "Paper worksheet: manila desk, white paper, crimson ink, ballpoint blue."
+      },
+      {
+        "name": "carbon",
+        "selector": ".dark",
+        "default": false,
+        "description": "Carbon sheet: blue-black ground, paper-coloured type, lightened crimson and ballpoint, dimmed copy stock."
+      }
+    ],
+    "colorMeta": {
+      "desk": {
+        "role": "neutral",
+        "displayName": "Desk Manila",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(92.3% 0.025 89.2)",
+        "tonalRamp": [
+          "oklch(15% 0.013 89.2)",
+          "oklch(26% 0.022 89.2)",
+          "oklch(37% 0.025 89.2)",
+          "oklch(48% 0.025 89.2)",
+          "oklch(60% 0.025 89.2)",
+          "oklch(72% 0.023 89.2)",
+          "oklch(84% 0.013 89.2)",
+          "oklch(95% 0.009 89.2)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Worksheet Ground",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(94.9% 0.018 89.4)",
+        "tonalRamp": [
+          "oklch(15% 0.009 89.4)",
+          "oklch(26% 0.016 89.4)",
+          "oklch(37% 0.018 89.4)",
+          "oklch(48% 0.018 89.4)",
+          "oklch(60% 0.018 89.4)",
+          "oklch(72% 0.017 89.4)",
+          "oklch(84% 0.010 89.4)",
+          "oklch(95% 0.006 89.4)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Form Paper",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(97.9% 0.012 91.5)",
+        "tonalRamp": [
+          "oklch(15% 0.006 91.5)",
+          "oklch(26% 0.010 91.5)",
+          "oklch(37% 0.012 91.5)",
+          "oklch(48% 0.012 91.5)",
+          "oklch(60% 0.012 91.5)",
+          "oklch(72% 0.011 91.5)",
+          "oklch(84% 0.006 91.5)",
+          "oklch(95% 0.004 91.5)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Carbon Ink",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(26.2% 0.022 4.5)",
+        "tonalRamp": [
+          "oklch(15% 0.011 4.5)",
+          "oklch(26% 0.019 4.5)",
+          "oklch(37% 0.022 4.5)",
+          "oklch(48% 0.022 4.5)",
+          "oklch(60% 0.022 4.5)",
+          "oklch(72% 0.021 4.5)",
+          "oklch(84% 0.012 4.5)",
+          "oklch(95% 0.008 4.5)"
+        ]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Faded Carbon",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(45.6% 0.04 9.6)",
+        "tonalRamp": [
+          "oklch(15% 0.020 9.6)",
+          "oklch(26% 0.035 9.6)",
+          "oklch(37% 0.040 9.6)",
+          "oklch(48% 0.040 9.6)",
+          "oklch(60% 0.040 9.6)",
+          "oklch(72% 0.037 9.6)",
+          "oklch(84% 0.021 9.6)",
+          "oklch(95% 0.014 9.6)"
+        ]
+      },
+      "crimson": {
+        "role": "primary",
+        "displayName": "Registrar Crimson",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(47% 0.173 20.4)",
+        "tonalRamp": [
+          "oklch(15% 0.086 20.4)",
+          "oklch(26% 0.150 20.4)",
+          "oklch(37% 0.173 20.4)",
+          "oklch(48% 0.173 20.4)",
+          "oklch(60% 0.173 20.4)",
+          "oklch(72% 0.161 20.4)",
+          "oklch(84% 0.092 20.4)",
+          "oklch(95% 0.061 20.4)"
+        ]
+      },
+      "crimson-deep": {
+        "role": "primary",
+        "displayName": "Dried Crimson",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(39.8% 0.148 22.2)",
+        "tonalRamp": [
+          "oklch(15% 0.074 22.2)",
+          "oklch(26% 0.128 22.2)",
+          "oklch(37% 0.148 22.2)",
+          "oklch(48% 0.148 22.2)",
+          "oklch(60% 0.148 22.2)",
+          "oklch(72% 0.138 22.2)",
+          "oklch(84% 0.079 22.2)",
+          "oklch(95% 0.052 22.2)"
+        ]
+      },
+      "ballpoint": {
+        "role": "secondary",
+        "displayName": "KU Ballpoint",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(44.1% 0.15 257.4)",
+        "tonalRamp": [
+          "oklch(15% 0.075 257.4)",
+          "oklch(26% 0.130 257.4)",
+          "oklch(37% 0.150 257.4)",
+          "oklch(48% 0.150 257.4)",
+          "oklch(60% 0.150 257.4)",
+          "oklch(72% 0.140 257.4)",
+          "oklch(84% 0.080 257.4)",
+          "oklch(95% 0.052 257.4)"
+        ]
+      },
+      "ballpoint-wash": {
+        "role": "secondary",
+        "displayName": "Ballpoint Wash (landing blocks)",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(94.5% 0.009 258.3)",
+        "tonalRamp": [
+          "oklch(15% 0.004 258.3)",
+          "oklch(26% 0.008 258.3)",
+          "oklch(37% 0.009 258.3)",
+          "oklch(48% 0.009 258.3)",
+          "oklch(60% 0.009 258.3)",
+          "oklch(72% 0.008 258.3)",
+          "oklch(84% 0.005 258.3)",
+          "oklch(95% 0.003 258.3)"
+        ]
+      },
+      "ballpoint-deep": {
+        "role": "secondary",
+        "displayName": "Pressed Ballpoint (landing blocks)",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(37.3% 0.097 259.7)",
+        "tonalRamp": [
+          "oklch(15% 0.049 259.7)",
+          "oklch(26% 0.084 259.7)",
+          "oklch(37% 0.097 259.7)",
+          "oklch(48% 0.097 259.7)",
+          "oklch(60% 0.097 259.7)",
+          "oklch(72% 0.091 259.7)",
+          "oklch(84% 0.052 259.7)",
+          "oklch(95% 0.034 259.7)"
+        ]
+      },
+      "canary": {
+        "role": "tertiary",
+        "displayName": "Canary Copy",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(88.2% 0.154 97.5)",
+        "tonalRamp": [
+          "oklch(15% 0.077 97.5)",
+          "oklch(26% 0.133 97.5)",
+          "oklch(37% 0.154 97.5)",
+          "oklch(48% 0.154 97.5)",
+          "oklch(60% 0.154 97.5)",
+          "oklch(72% 0.144 97.5)",
+          "oklch(84% 0.082 97.5)",
+          "oklch(95% 0.054 97.5)"
+        ]
+      },
+      "pink": {
+        "role": "tertiary",
+        "displayName": "Pink Copy",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(86.4% 0.058 2)",
+        "tonalRamp": [
+          "oklch(15% 0.029 2)",
+          "oklch(26% 0.050 2)",
+          "oklch(37% 0.058 2)",
+          "oklch(48% 0.058 2)",
+          "oklch(60% 0.058 2)",
+          "oklch(72% 0.054 2)",
+          "oklch(84% 0.031 2)",
+          "oklch(95% 0.020 2)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Form Rule",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(47% 0.173 20.4 / 0.2)",
+        "tonalRamp": [
+          "oklch(15% 0.086 20.4)",
+          "oklch(26% 0.150 20.4)",
+          "oklch(37% 0.173 20.4)",
+          "oklch(48% 0.173 20.4)",
+          "oklch(60% 0.173 20.4)",
+          "oklch(72% 0.161 20.4)",
+          "oklch(84% 0.092 20.4)",
+          "oklch(95% 0.061 20.4)"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(47% 0.173 20.4 / 0.55)",
+        "tonalRamp": [
+          "oklch(15% 0.086 20.4)",
+          "oklch(26% 0.150 20.4)",
+          "oklch(37% 0.173 20.4)",
+          "oklch(48% 0.173 20.4)",
+          "oklch(60% 0.173 20.4)",
+          "oklch(72% 0.161 20.4)",
+          "oklch(84% 0.092 20.4)",
+          "oklch(95% 0.061 20.4)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Desk Tint",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(92.3% 0.025 89.2)",
+        "tonalRamp": [
+          "oklch(15% 0.013 89.2)",
+          "oklch(26% 0.022 89.2)",
+          "oklch(37% 0.025 89.2)",
+          "oklch(48% 0.025 89.2)",
+          "oklch(60% 0.025 89.2)",
+          "oklch(72% 0.023 89.2)",
+          "oklch(84% 0.013 89.2)",
+          "oklch(95% 0.009 89.2)"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Hover Wash",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(92.2% 0.02 53.2)",
+        "tonalRamp": [
+          "oklch(15% 0.010 53.2)",
+          "oklch(26% 0.017 53.2)",
+          "oklch(37% 0.020 53.2)",
+          "oklch(48% 0.020 53.2)",
+          "oklch(60% 0.020 53.2)",
+          "oklch(72% 0.019 53.2)",
+          "oklch(84% 0.011 53.2)",
+          "oklch(95% 0.007 53.2)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Field Edge",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(84.3% 0.027 38.5)",
+        "tonalRamp": [
+          "oklch(15% 0.013 38.5)",
+          "oklch(26% 0.023 38.5)",
+          "oklch(37% 0.027 38.5)",
+          "oklch(48% 0.027 38.5)",
+          "oklch(60% 0.027 38.5)",
+          "oklch(72% 0.025 38.5)",
+          "oklch(84% 0.014 38.5)",
+          "oklch(95% 0.009 38.5)"
+        ]
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Input Stroke",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(78.9% 0.034 34.3)",
+        "tonalRamp": [
+          "oklch(15% 0.017 34.3)",
+          "oklch(26% 0.029 34.3)",
+          "oklch(37% 0.034 34.3)",
+          "oklch(48% 0.034 34.3)",
+          "oklch(60% 0.034 34.3)",
+          "oklch(72% 0.032 34.3)",
+          "oklch(84% 0.018 34.3)",
+          "oklch(95% 0.012 34.3)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar Paper",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(96.2% 0.017 88)",
+        "tonalRamp": [
+          "oklch(15% 0.009 88)",
+          "oklch(26% 0.015 88)",
+          "oklch(37% 0.017 88)",
+          "oklch(48% 0.017 88)",
+          "oklch(60% 0.017 88)",
+          "oklch(72% 0.016 88)",
+          "oklch(84% 0.009 88)",
+          "oklch(95% 0.006 88)"
+        ]
+      },
+      "success": {
+        "role": "status",
+        "displayName": "Approved Green",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(47.5% 0.098 148.6)",
+        "tonalRamp": [
+          "oklch(15% 0.049 148.6)",
+          "oklch(26% 0.085 148.6)",
+          "oklch(37% 0.098 148.6)",
+          "oklch(48% 0.098 148.6)",
+          "oklch(60% 0.098 148.6)",
+          "oklch(72% 0.091 148.6)",
+          "oklch(84% 0.052 148.6)",
+          "oklch(95% 0.034 148.6)"
+        ]
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Pending Amber",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(50.8% 0.108 73.3)",
+        "tonalRamp": [
+          "oklch(15% 0.054 73.3)",
+          "oklch(26% 0.094 73.3)",
+          "oklch(37% 0.108 73.3)",
+          "oklch(48% 0.108 73.3)",
+          "oklch(60% 0.108 73.3)",
+          "oklch(72% 0.101 73.3)",
+          "oklch(84% 0.058 73.3)",
+          "oklch(95% 0.038 73.3)"
+        ]
+      },
+      "destructive": {
+        "role": "status",
+        "displayName": "Void Red",
+        "theme": "paper (light, default)",
+        "canonical": "oklch(50.1% 0.178 28.7)",
+        "tonalRamp": [
+          "oklch(15% 0.089 28.7)",
+          "oklch(26% 0.154 28.7)",
+          "oklch(37% 0.178 28.7)",
+          "oklch(48% 0.178 28.7)",
+          "oklch(60% 0.178 28.7)",
+          "oklch(72% 0.166 28.7)",
+          "oklch(84% 0.095 28.7)",
+          "oklch(95% 0.062 28.7)"
+        ]
+      },
+      "on-crimson": {
+        "role": "neutral",
+        "displayName": "White on Crimson",
+        "theme": "both",
+        "canonical": "oklch(100% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(26% 0.000 89.9)",
+          "oklch(37% 0.000 89.9)",
+          "oklch(48% 0.000 89.9)",
+          "oklch(60% 0.000 89.9)",
+          "oklch(72% 0.000 89.9)",
+          "oklch(84% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "desk-dark": {
+        "role": "neutral",
+        "displayName": "Desk Manila (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(17.8% 0.022 263.8)",
+        "tonalRamp": [
+          "oklch(15% 0.011 263.8)",
+          "oklch(26% 0.019 263.8)",
+          "oklch(37% 0.022 263.8)",
+          "oklch(48% 0.022 263.8)",
+          "oklch(60% 0.022 263.8)",
+          "oklch(72% 0.021 263.8)",
+          "oklch(84% 0.012 263.8)",
+          "oklch(95% 0.008 263.8)"
+        ]
+      },
+      "background-dark": {
+        "role": "neutral",
+        "displayName": "Worksheet Ground (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(19.2% 0.026 266.6)",
+        "tonalRamp": [
+          "oklch(15% 0.013 266.6)",
+          "oklch(26% 0.023 266.6)",
+          "oklch(37% 0.026 266.6)",
+          "oklch(48% 0.026 266.6)",
+          "oklch(60% 0.026 266.6)",
+          "oklch(72% 0.024 266.6)",
+          "oklch(84% 0.014 266.6)",
+          "oklch(95% 0.009 266.6)"
+        ]
+      },
+      "paper-dark": {
+        "role": "neutral",
+        "displayName": "Form Paper (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(22.3% 0.027 265.1)",
+        "tonalRamp": [
+          "oklch(15% 0.013 265.1)",
+          "oklch(26% 0.023 265.1)",
+          "oklch(37% 0.027 265.1)",
+          "oklch(48% 0.027 265.1)",
+          "oklch(60% 0.027 265.1)",
+          "oklch(72% 0.025 265.1)",
+          "oklch(84% 0.014 265.1)",
+          "oklch(95% 0.009 265.1)"
+        ]
+      },
+      "popover-dark": {
+        "role": "neutral",
+        "displayName": "Carbon Popover",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(24.4% 0.033 263.7)",
+        "tonalRamp": [
+          "oklch(15% 0.017 263.7)",
+          "oklch(26% 0.029 263.7)",
+          "oklch(37% 0.033 263.7)",
+          "oklch(48% 0.033 263.7)",
+          "oklch(60% 0.033 263.7)",
+          "oklch(72% 0.031 263.7)",
+          "oklch(84% 0.018 263.7)",
+          "oklch(95% 0.012 263.7)"
+        ]
+      },
+      "foreground-dark": {
+        "role": "neutral",
+        "displayName": "Carbon Ink (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(93.2% 0.023 87.2)",
+        "tonalRamp": [
+          "oklch(15% 0.011 87.2)",
+          "oklch(26% 0.020 87.2)",
+          "oklch(37% 0.023 87.2)",
+          "oklch(48% 0.023 87.2)",
+          "oklch(60% 0.023 87.2)",
+          "oklch(72% 0.021 87.2)",
+          "oklch(84% 0.012 87.2)",
+          "oklch(95% 0.008 87.2)"
+        ]
+      },
+      "muted-foreground-dark": {
+        "role": "neutral",
+        "displayName": "Faded Carbon (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(74.3% 0.024 84.6)",
+        "tonalRamp": [
+          "oklch(15% 0.012 84.6)",
+          "oklch(26% 0.021 84.6)",
+          "oklch(37% 0.024 84.6)",
+          "oklch(48% 0.024 84.6)",
+          "oklch(60% 0.024 84.6)",
+          "oklch(72% 0.022 84.6)",
+          "oklch(84% 0.013 84.6)",
+          "oklch(95% 0.008 84.6)"
+        ]
+      },
+      "crimson-dark": {
+        "role": "primary",
+        "displayName": "Registrar Crimson (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(69.3% 0.166 13.3)",
+        "tonalRamp": [
+          "oklch(15% 0.083 13.3)",
+          "oklch(26% 0.144 13.3)",
+          "oklch(37% 0.166 13.3)",
+          "oklch(48% 0.166 13.3)",
+          "oklch(60% 0.166 13.3)",
+          "oklch(72% 0.155 13.3)",
+          "oklch(84% 0.089 13.3)",
+          "oklch(95% 0.058 13.3)"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Carbon Primary Fill",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(54.5% 0.194 19.5)",
+        "tonalRamp": [
+          "oklch(15% 0.097 19.5)",
+          "oklch(26% 0.168 19.5)",
+          "oklch(37% 0.194 19.5)",
+          "oklch(48% 0.194 19.5)",
+          "oklch(60% 0.194 19.5)",
+          "oklch(72% 0.181 19.5)",
+          "oklch(84% 0.103 19.5)",
+          "oklch(95% 0.068 19.5)"
+        ]
+      },
+      "ballpoint-dark": {
+        "role": "secondary",
+        "displayName": "KU Ballpoint (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(76.6% 0.098 260.5)",
+        "tonalRamp": [
+          "oklch(15% 0.049 260.5)",
+          "oklch(26% 0.085 260.5)",
+          "oklch(37% 0.098 260.5)",
+          "oklch(48% 0.098 260.5)",
+          "oklch(60% 0.098 260.5)",
+          "oklch(72% 0.091 260.5)",
+          "oklch(84% 0.052 260.5)",
+          "oklch(95% 0.034 260.5)"
+        ]
+      },
+      "canary-dark": {
+        "role": "tertiary",
+        "displayName": "Canary Copy (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(33.5% 0.047 98.3)",
+        "tonalRamp": [
+          "oklch(15% 0.024 98.3)",
+          "oklch(26% 0.041 98.3)",
+          "oklch(37% 0.047 98.3)",
+          "oklch(48% 0.047 98.3)",
+          "oklch(60% 0.047 98.3)",
+          "oklch(72% 0.044 98.3)",
+          "oklch(84% 0.025 98.3)",
+          "oklch(95% 0.016 98.3)"
+        ]
+      },
+      "pink-dark": {
+        "role": "tertiary",
+        "displayName": "Pink Copy (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(30.4% 0.041 354.2)",
+        "tonalRamp": [
+          "oklch(15% 0.021 354.2)",
+          "oklch(26% 0.036 354.2)",
+          "oklch(37% 0.041 354.2)",
+          "oklch(48% 0.041 354.2)",
+          "oklch(60% 0.041 354.2)",
+          "oklch(72% 0.038 354.2)",
+          "oklch(84% 0.022 354.2)",
+          "oklch(95% 0.014 354.2)"
+        ]
+      },
+      "rule-dark": {
+        "role": "neutral",
+        "displayName": "Form Rule (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(93.2% 0.023 87.2 / 0.1)",
+        "tonalRamp": [
+          "oklch(15% 0.011 87.2)",
+          "oklch(26% 0.020 87.2)",
+          "oklch(37% 0.023 87.2)",
+          "oklch(48% 0.023 87.2)",
+          "oklch(60% 0.023 87.2)",
+          "oklch(72% 0.021 87.2)",
+          "oklch(84% 0.012 87.2)",
+          "oklch(95% 0.008 87.2)"
+        ]
+      },
+      "rule-strong-dark": {
+        "role": "neutral",
+        "displayName": "Strong Rule (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(69.3% 0.166 13.3 / 0.5)",
+        "tonalRamp": [
+          "oklch(15% 0.083 13.3)",
+          "oklch(26% 0.144 13.3)",
+          "oklch(37% 0.166 13.3)",
+          "oklch(48% 0.166 13.3)",
+          "oklch(60% 0.166 13.3)",
+          "oklch(72% 0.155 13.3)",
+          "oklch(84% 0.089 13.3)",
+          "oklch(95% 0.058 13.3)"
+        ]
+      },
+      "secondary-dark": {
+        "role": "neutral",
+        "displayName": "Desk Tint (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(25.7% 0.032 266)",
+        "tonalRamp": [
+          "oklch(15% 0.016 266)",
+          "oklch(26% 0.028 266)",
+          "oklch(37% 0.032 266)",
+          "oklch(48% 0.032 266)",
+          "oklch(60% 0.032 266)",
+          "oklch(72% 0.030 266)",
+          "oklch(84% 0.017 266)",
+          "oklch(95% 0.011 266)"
+        ]
+      },
+      "accent-dark": {
+        "role": "neutral",
+        "displayName": "Hover Wash (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(28.6% 0.035 265.7)",
+        "tonalRamp": [
+          "oklch(15% 0.018 265.7)",
+          "oklch(26% 0.030 265.7)",
+          "oklch(37% 0.035 265.7)",
+          "oklch(48% 0.035 265.7)",
+          "oklch(60% 0.035 265.7)",
+          "oklch(72% 0.033 265.7)",
+          "oklch(84% 0.019 265.7)",
+          "oklch(95% 0.012 265.7)"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Field Edge (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(31.8% 0.036 266.7)",
+        "tonalRamp": [
+          "oklch(15% 0.018 266.7)",
+          "oklch(26% 0.031 266.7)",
+          "oklch(37% 0.036 266.7)",
+          "oklch(48% 0.036 266.7)",
+          "oklch(60% 0.036 266.7)",
+          "oklch(72% 0.034 266.7)",
+          "oklch(84% 0.019 266.7)",
+          "oklch(95% 0.013 266.7)"
+        ]
+      },
+      "input-dark": {
+        "role": "neutral",
+        "displayName": "Input Stroke (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(37.2% 0.039 264.8)",
+        "tonalRamp": [
+          "oklch(15% 0.019 264.8)",
+          "oklch(26% 0.034 264.8)",
+          "oklch(37% 0.039 264.8)",
+          "oklch(48% 0.039 264.8)",
+          "oklch(60% 0.039 264.8)",
+          "oklch(72% 0.036 264.8)",
+          "oklch(84% 0.021 264.8)",
+          "oklch(95% 0.014 264.8)"
+        ]
+      },
+      "sidebar-dark": {
+        "role": "neutral",
+        "displayName": "Sidebar Paper (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(21% 0.029 266.1)",
+        "tonalRamp": [
+          "oklch(15% 0.015 266.1)",
+          "oklch(26% 0.025 266.1)",
+          "oklch(37% 0.029 266.1)",
+          "oklch(48% 0.029 266.1)",
+          "oklch(60% 0.029 266.1)",
+          "oklch(72% 0.027 266.1)",
+          "oklch(84% 0.015 266.1)",
+          "oklch(95% 0.010 266.1)"
+        ]
+      },
+      "success-dark": {
+        "role": "status",
+        "displayName": "Approved Green (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(75.8% 0.108 150.2)",
+        "tonalRamp": [
+          "oklch(15% 0.054 150.2)",
+          "oklch(26% 0.094 150.2)",
+          "oklch(37% 0.108 150.2)",
+          "oklch(48% 0.108 150.2)",
+          "oklch(60% 0.108 150.2)",
+          "oklch(72% 0.101 150.2)",
+          "oklch(84% 0.058 150.2)",
+          "oklch(95% 0.038 150.2)"
+        ]
+      },
+      "warning-dark": {
+        "role": "status",
+        "displayName": "Pending Amber (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(84.9% 0.152 97.3)",
+        "tonalRamp": [
+          "oklch(15% 0.076 97.3)",
+          "oklch(26% 0.132 97.3)",
+          "oklch(37% 0.152 97.3)",
+          "oklch(48% 0.152 97.3)",
+          "oklch(60% 0.152 97.3)",
+          "oklch(72% 0.142 97.3)",
+          "oklch(84% 0.081 97.3)",
+          "oklch(95% 0.053 97.3)"
+        ]
+      },
+      "destructive-dark": {
+        "role": "status",
+        "displayName": "Void Red (carbon)",
+        "theme": "carbon (dark)",
+        "canonical": "oklch(70% 0.158 17.3)",
+        "tonalRamp": [
+          "oklch(15% 0.079 17.3)",
+          "oklch(26% 0.137 17.3)",
+          "oklch(37% 0.158 17.3)",
+          "oklch(48% 0.158 17.3)",
+          "oklch(60% 0.158 17.3)",
+          "oklch(72% 0.147 17.3)",
+          "oklch(84% 0.084 17.3)",
+          "oklch(95% 0.055 17.3)"
+        ]
+      },
+      "course-ink": {
+        "role": "course",
+        "displayName": "Course Ink",
+        "theme": "both",
+        "canonical": "oklch(26.2% 0.022 4.5)",
+        "tonalRamp": [
+          "oklch(15% 0.011 4.5)",
+          "oklch(26% 0.019 4.5)",
+          "oklch(37% 0.022 4.5)",
+          "oklch(48% 0.022 4.5)",
+          "oklch(60% 0.022 4.5)",
+          "oklch(72% 0.021 4.5)",
+          "oklch(84% 0.012 4.5)",
+          "oklch(95% 0.008 4.5)"
+        ]
+      },
+      "course-pink": {
+        "role": "course",
+        "displayName": "Course Pink",
+        "theme": "both",
+        "canonical": "oklch(89.3% 0.039 17.9)",
+        "tonalRamp": [
+          "oklch(15% 0.019 17.9)",
+          "oklch(26% 0.034 17.9)",
+          "oklch(37% 0.039 17.9)",
+          "oklch(48% 0.039 17.9)",
+          "oklch(60% 0.039 17.9)",
+          "oklch(72% 0.036 17.9)",
+          "oklch(84% 0.021 17.9)",
+          "oklch(95% 0.014 17.9)"
+        ]
+      },
+      "course-peach": {
+        "role": "course",
+        "displayName": "Course Peach",
+        "theme": "both",
+        "canonical": "oklch(89.5% 0.04 67.3)",
+        "tonalRamp": [
+          "oklch(15% 0.020 67.3)",
+          "oklch(26% 0.035 67.3)",
+          "oklch(37% 0.040 67.3)",
+          "oklch(48% 0.040 67.3)",
+          "oklch(60% 0.040 67.3)",
+          "oklch(72% 0.037 67.3)",
+          "oklch(84% 0.021 67.3)",
+          "oklch(95% 0.014 67.3)"
+        ]
+      },
+      "course-yellow": {
+        "role": "course",
+        "displayName": "Course Yellow",
+        "theme": "both",
+        "canonical": "oklch(94.1% 0.06 107.5)",
+        "tonalRamp": [
+          "oklch(15% 0.030 107.5)",
+          "oklch(26% 0.052 107.5)",
+          "oklch(37% 0.060 107.5)",
+          "oklch(48% 0.060 107.5)",
+          "oklch(60% 0.060 107.5)",
+          "oklch(72% 0.056 107.5)",
+          "oklch(84% 0.032 107.5)",
+          "oklch(95% 0.021 107.5)"
+        ]
+      },
+      "course-lime": {
+        "role": "course",
+        "displayName": "Course Lime",
+        "theme": "both",
+        "canonical": "oklch(92.3% 0.065 129.3)",
+        "tonalRamp": [
+          "oklch(15% 0.033 129.3)",
+          "oklch(26% 0.056 129.3)",
+          "oklch(37% 0.065 129.3)",
+          "oklch(48% 0.065 129.3)",
+          "oklch(60% 0.065 129.3)",
+          "oklch(72% 0.061 129.3)",
+          "oklch(84% 0.035 129.3)",
+          "oklch(95% 0.023 129.3)"
+        ]
+      },
+      "course-mint": {
+        "role": "course",
+        "displayName": "Course Mint",
+        "theme": "both",
+        "canonical": "oklch(90.8% 0.078 144.9)",
+        "tonalRamp": [
+          "oklch(15% 0.039 144.9)",
+          "oklch(26% 0.068 144.9)",
+          "oklch(37% 0.078 144.9)",
+          "oklch(48% 0.078 144.9)",
+          "oklch(60% 0.078 144.9)",
+          "oklch(72% 0.073 144.9)",
+          "oklch(84% 0.042 144.9)",
+          "oklch(95% 0.027 144.9)"
+        ]
+      },
+      "course-aqua": {
+        "role": "course",
+        "displayName": "Course Aqua",
+        "theme": "both",
+        "canonical": "oklch(91.4% 0.057 163.4)",
+        "tonalRamp": [
+          "oklch(15% 0.029 163.4)",
+          "oklch(26% 0.049 163.4)",
+          "oklch(37% 0.057 163.4)",
+          "oklch(48% 0.057 163.4)",
+          "oklch(60% 0.057 163.4)",
+          "oklch(72% 0.053 163.4)",
+          "oklch(84% 0.030 163.4)",
+          "oklch(95% 0.020 163.4)"
+        ]
+      },
+      "course-cyan": {
+        "role": "course",
+        "displayName": "Course Cyan",
+        "theme": "both",
+        "canonical": "oklch(92% 0.047 196.4)",
+        "tonalRamp": [
+          "oklch(15% 0.024 196.4)",
+          "oklch(26% 0.041 196.4)",
+          "oklch(37% 0.047 196.4)",
+          "oklch(48% 0.047 196.4)",
+          "oklch(60% 0.047 196.4)",
+          "oklch(72% 0.044 196.4)",
+          "oklch(84% 0.025 196.4)",
+          "oklch(95% 0.016 196.4)"
+        ]
+      },
+      "course-blue": {
+        "role": "course",
+        "displayName": "Course Blue",
+        "theme": "both",
+        "canonical": "oklch(87.2% 0.04 248.3)",
+        "tonalRamp": [
+          "oklch(15% 0.020 248.3)",
+          "oklch(26% 0.035 248.3)",
+          "oklch(37% 0.040 248.3)",
+          "oklch(48% 0.040 248.3)",
+          "oklch(60% 0.040 248.3)",
+          "oklch(72% 0.037 248.3)",
+          "oklch(84% 0.021 248.3)",
+          "oklch(95% 0.014 248.3)"
+        ]
+      },
+      "course-periwinkle": {
+        "role": "course",
+        "displayName": "Course Periwinkle",
+        "theme": "both",
+        "canonical": "oklch(82.6% 0.064 284.9)",
+        "tonalRamp": [
+          "oklch(15% 0.032 284.9)",
+          "oklch(26% 0.055 284.9)",
+          "oklch(37% 0.064 284.9)",
+          "oklch(48% 0.064 284.9)",
+          "oklch(60% 0.064 284.9)",
+          "oklch(72% 0.060 284.9)",
+          "oklch(84% 0.034 284.9)",
+          "oklch(95% 0.022 284.9)"
+        ]
+      },
+      "course-lavender": {
+        "role": "course",
+        "displayName": "Course Lavender",
+        "theme": "both",
+        "canonical": "oklch(84.5% 0.068 307.6)",
+        "tonalRamp": [
+          "oklch(15% 0.034 307.6)",
+          "oklch(26% 0.059 307.6)",
+          "oklch(37% 0.068 307.6)",
+          "oklch(48% 0.068 307.6)",
+          "oklch(60% 0.068 307.6)",
+          "oklch(72% 0.063 307.6)",
+          "oklch(84% 0.036 307.6)",
+          "oklch(95% 0.024 307.6)"
+        ]
+      },
+      "course-magenta": {
+        "role": "course",
+        "displayName": "Course Magenta",
+        "theme": "both",
+        "canonical": "oklch(86.5% 0.08 326.2)",
+        "tonalRamp": [
+          "oklch(15% 0.040 326.2)",
+          "oklch(26% 0.069 326.2)",
+          "oklch(37% 0.080 326.2)",
+          "oklch(48% 0.080 326.2)",
+          "oklch(60% 0.080 326.2)",
+          "oklch(72% 0.075 326.2)",
+          "oklch(84% 0.043 326.2)",
+          "oklch(95% 0.028 326.2)"
+        ]
+      },
+      "course-rose": {
+        "role": "course",
+        "displayName": "Course Rose",
+        "theme": "both",
+        "canonical": "oklch(85.8% 0.06 346.9)",
+        "tonalRamp": [
+          "oklch(15% 0.030 346.9)",
+          "oklch(26% 0.052 346.9)",
+          "oklch(37% 0.060 346.9)",
+          "oklch(48% 0.060 346.9)",
+          "oklch(60% 0.060 346.9)",
+          "oklch(72% 0.056 346.9)",
+          "oklch(84% 0.032 346.9)",
+          "oklch(95% 0.021 346.9)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing hero headline."
+      },
+      "display-sheet": {
+        "displayName": "Display Sheet",
+        "purpose": "Shared .display primitive: titles of auth, 404 and profile sheets."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Landing section headings."
+      },
+      "panel-title": {
+        "displayName": "Panel Title",
+        "purpose": "Schedule names in the builder, sidebar and share page headings."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Landing step numbers; wordmark uses 900 at wdth 125."
+      },
+      "counter": {
+        "displayName": "Counter",
+        "purpose": "Permutation index in ballpoint, tabular figures (15px mobile, 18px desktop)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Step titles; FAQ questions at 18px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanatory copy, 36-62ch; descriptions in Faded Carbon."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Shared .form-label: crimson uppercase captions, mastheads, calendar axes."
+      },
+      "tab": {
+        "displayName": "Tab",
+        "purpose": "Builder tabs and Saved/Unsaved stamps."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Sheet-level buttons; nav links use 700 15px wdth 88."
+      },
+      "ballpoint": {
+        "displayName": "Ballpoint",
+        "purpose": "Shared .ballpoint: short aria-hidden margin notes."
+      }
+    },
+    "shadows": [
+      {
+        "name": "top-sheet",
+        "value": "0 18px 40px -24px rgb(74 30 20 / 0.45)",
+        "purpose": "Uppermost paper of a stack (landing pad, auth sheet)."
+      },
+      {
+        "name": "button-pool",
+        "value": "0 10px 20px -12px rgb(133 17 31 / 0.7)",
+        "purpose": "Soft crimson pool under the landing primary button."
+      },
+      {
+        "name": "course-block",
+        "value": "0 1px 2px rgb(0 0 0 / 0.12)",
+        "purpose": "Barely-there lift for pastel course blocks on the builder calendar."
+      }
+    ],
+    "paperStack": [
+      {
+        "name": "landing-pink",
+        "value": "translate(20px, 18px) rotate(0.9deg)",
+        "mobile": "translate(10px, 9px) rotate(0.6deg)"
+      },
+      {
+        "name": "landing-canary",
+        "value": "translate(10px, 9px) rotate(0.45deg)",
+        "mobile": "translate(5px, 5px) rotate(0.3deg)"
+      },
+      {
+        "name": "auth-pink",
+        "value": "translate(12px, 12px) rotate(0.8deg)"
+      },
+      {
+        "name": "auth-canary",
+        "value": "translate(6px, 6px) rotate(0.4deg)"
+      }
+    ],
+    "patterns": [
+      {
+        "name": "busy-hatch",
+        "value": "repeating-linear-gradient(-45deg, var(--rule-strong) 0 1.5px, var(--card) 1.5px 8px)",
+        "purpose": "Busy blocks in the builder calendar."
+      },
+      {
+        "name": "busy-hatch-preview",
+        "value": "repeating-linear-gradient(-45deg, var(--rule) 0 1.5px, transparent 1.5px 8px)",
+        "purpose": "Busy block drag preview."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-sheet",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Landing sheet flip and counter roll."
+      },
+      {
+        "name": "duration-hover",
+        "value": "150ms ease",
+        "purpose": "Background/color/border transitions on buttons, links, inputs."
+      },
+      {
+        "name": "duration-sheet",
+        "value": "550ms",
+        "purpose": "Landing outgoing sheet lifts (y -26px, rotate -1.6deg, blur 1.5px); incoming settles from y 10px, rotate 0.4deg."
+      },
+      {
+        "name": "duration-counter",
+        "value": "450ms",
+        "purpose": "Landing counter numeral roll."
+      },
+      {
+        "name": "duration-ghost",
+        "value": "2200ms easeOut",
+        "purpose": "Landing carbon ghost fade."
+      },
+      {
+        "name": "interval-autoflip",
+        "value": "3800ms",
+        "purpose": "Landing auto-flip; paused on hover/focus, stopped after manual control, off under prefers-reduced-motion."
+      },
+      {
+        "name": "permutation-enter",
+        "value": "opacity 0 -> 1, y 10px -> 0",
+        "purpose": "Builder permutation counter appearing."
+      }
+    ],
+    "focus": {
+      "value": "outline in var(--ring) (ballpoint)",
+      "landing": "2px solid ballpoint, 3px offset",
+      "inputs": "2px border turns ballpoint, no ring"
+    },
+    "selection": {
+      "background": "var(--canary)",
+      "color": "var(--foreground)"
+    },
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ],
+    "notCanonized": [
+      "Landing primary button hard 2px offset lip (0 2px 0 var(--crimson-deep)): hard offset shadow outside a neobrutalist world.",
+      "ballpoint-wash #e9edf3 and ballpoint-deep #1f3f73 are raw hexes in landing.css, not custom properties; recorded as tokens for documentation only.",
+      "Residual rounded-full badges (CurrentlySelected warnings) and shadcn Button ghost hover bg-white/8 predate the world."
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid crimson action (deep crimson fill in carbon); one per sheet or panel.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Open the builder <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-btn-primary{font-family:Archivo, system-ui, sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;background:var(--primary);color:#fff;font-size:17px;font-weight:800;font-stretch:92%;border:0;border-radius:0;cursor:pointer;transition:background-color 150ms ease;} .ds-btn-primary:hover{background:color-mix(in srgb, var(--primary) 90%, transparent);} .ds-btn-primary:focus-visible{outline:2px solid var(--ballpoint);outline-offset:3px;}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action: 2px crimson frame, crimson text, accent wash on hover.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Back to home</button>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-btn-outline{font-family:Archivo, system-ui, sans-serif;display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 20px;background:transparent;color:var(--crimson);border:2px solid var(--crimson);border-radius:0;font-size:17px;font-weight:800;font-stretch:92%;cursor:pointer;transition:background-color 150ms ease;} .ds-btn-outline:hover{background:var(--accent);} .ds-btn-outline:focus-visible{outline:2px solid var(--ballpoint);outline-offset:3px;}"
+    },
+    {
+      "name": "Captioned Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Form-label caption over a 44px field with a 2px input stroke that turns ballpoint on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email</span><input class=\"ds-input\" type=\"email\" placeholder=\"jayhawk@ku.edu\"></label>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-field{font-family:Archivo, system-ui, sans-serif;display:block;max-width:360px;} .ds-field-label{display:block;margin-bottom:6px;font-size:12px;font-weight:700;font-stretch:72%;letter-spacing:0.06em;text-transform:uppercase;color:var(--crimson);} .ds-input{font-family:Archivo, system-ui, sans-serif;box-sizing:border-box;width:100%;height:44px;padding:0 12px;background:var(--card);color:var(--foreground);border:2px solid var(--input);border-radius:2px;font-size:16px;caret-color:var(--ballpoint);outline:none;transition:border-color 150ms ease;} .ds-input::placeholder{color:var(--muted-foreground);} .ds-input:focus-visible{border-color:var(--ballpoint);}"
+    },
+    {
+      "name": "Panel Tabs",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Uppercase condensed tab strip framed in crimson; the active tab becomes paper with a crimson underline.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab ds-tab--active\" role=\"tab\" aria-selected=\"true\">Search</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Selected</button></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-tabs{font-family:Archivo, system-ui, sans-serif;display:flex;height:44px;padding:4px;max-width:360px;background:var(--secondary);border:2px solid var(--crimson);border-bottom:0;} .ds-tab{font-family:Archivo, system-ui, sans-serif;flex:1;background:transparent;border:0;border-radius:0;color:var(--muted-foreground);font-size:12px;font-weight:700;font-stretch:80%;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;} .ds-tab:hover{color:var(--crimson);} .ds-tab--active{background:var(--card);color:var(--crimson);border-bottom:2px solid var(--crimson);} .ds-tab:focus-visible{outline:2px solid var(--ballpoint);outline-offset:3px;}"
+    },
+    {
+      "name": "Status Stamps",
+      "kind": "chip",
+      "refersTo": "status-saved",
+      "description": "Saved / Unsaved / Guest as 2px bordered rectangular stamps.",
+      "html": "<div class=\"ds-stamps\"><span class=\"ds-status ds-status--saved\">Saved</span><span class=\"ds-status ds-status--unsaved\">Unsaved</span><span class=\"ds-status ds-status--guest\">Guest</span></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-stamps{font-family:Archivo, system-ui, sans-serif;display:flex;gap:8px;padding:12px;background:var(--card);} .ds-status{padding:2px 8px;border:2px solid currentColor;border-radius:0;font-size:12px;font-weight:700;font-stretch:80%;letter-spacing:0.06em;text-transform:uppercase;font-weight:800;} .ds-status--saved{color:var(--success);} .ds-status--unsaved{color:var(--crimson);} .ds-status--guest{color:var(--ballpoint);}"
+    },
+    {
+      "name": "Permutation Counter",
+      "kind": "custom",
+      "refersTo": "permutation-counter",
+      "description": "The builder's signature: crimson-framed box, ballpoint index, crimson total.",
+      "html": "<div class=\"ds-perm\"><span class=\"ds-perm-icon\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m18 14 4 4-4 4\"/><path d=\"m18 2 4 4-4 4\"/><path d=\"M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22\"/><path d=\"M2 6h1.972a4 4 0 0 1 3.6 2.2\"/><path d=\"M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45\"/></svg></span><button class=\"ds-perm-btn\" aria-label=\"Previous schedule\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 18-6-6 6-6\"/></svg></button><span class=\"ds-perm-n\">577</span><span class=\"ds-perm-of\">of</span><span class=\"ds-perm-total\">3345</span><button class=\"ds-perm-btn\" aria-label=\"Next schedule\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg></button></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-perm{font-family:Archivo, system-ui, sans-serif;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:var(--card);border:2px solid var(--crimson);} .ds-perm-icon{display:flex;color:var(--crimson);} .ds-perm-btn{display:grid;place-items:center;width:28px;height:28px;padding:0;background:transparent;border:0;border-radius:0;color:var(--crimson);cursor:pointer;} .ds-perm-btn:hover{background:var(--accent);} .ds-perm-btn:focus-visible{outline:2px solid var(--ballpoint);outline-offset:3px;} .ds-perm-n{font-size:18px;font-weight:900;font-stretch:115%;font-variant-numeric:tabular-nums;color:var(--ballpoint);} .ds-perm-of{padding:0 2px;font-size:12px;font-weight:700;font-stretch:72%;letter-spacing:0.06em;text-transform:uppercase;color:var(--crimson);} .ds-perm-total{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--crimson);}"
+    },
+    {
+      "name": "Course and Busy Blocks",
+      "kind": "custom",
+      "refersTo": "course-block",
+      "description": "Pastel course blocks with fixed dark ink in both themes; busy time dashed over a rule-strong hatch.",
+      "html": "<div class=\"ds-cal\"><div class=\"ds-course\" style=\"background:#c1d8ef\">EECS 168<small>LEEP2 G415</small></div><div class=\"ds-course\" style=\"background:#efd8c1\">MATH 125<small>Snow 152</small></div><div class=\"ds-busy\">Busy<small>work</small></div></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-cal{font-family:Archivo, system-ui, sans-serif;display:flex;gap:6px;padding:10px;background:var(--card);border:2px solid var(--crimson);} .ds-course,.ds-busy{display:flex;flex-direction:column;justify-content:center;width:110px;height:60px;padding:4px;border-radius:0;font-size:12px;font-weight:800;} .ds-course small,.ds-busy small{font-weight:500;font-size:11px;} .ds-course{color:#2e2023;border:1px solid rgb(0 0 0 / 0.15);box-shadow:0 1px 2px rgb(0 0 0 / 0.12);} .ds-busy{color:var(--crimson);border:1px dashed var(--rule-strong);background:repeating-linear-gradient(-45deg,var(--rule-strong) 0 1.5px,var(--card) 1.5px 8px);}"
+    },
+    {
+      "name": "Form Sheet with Masthead",
+      "kind": "card",
+      "refersTo": "form-sheet",
+      "description": "Paper face, 2px crimson frame, masthead strip of form labels, display title, footer under a strong rule.",
+      "html": "<div class=\"ds-sheet\"><div class=\"ds-mast\"><span>Returned to sender</span><span>Error 404</span></div><div class=\"ds-sheet-body\"><h2 class=\"ds-display\">This page isn't on file.</h2><p class=\"ds-desc\">The link may be old, or the schedule may no longer be shared.</p></div><div class=\"ds-sheet-foot\">Back to home</div></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-sheet{font-family:Archivo, system-ui, sans-serif;max-width:420px;background:var(--card);color:var(--foreground);border:2px solid var(--crimson);} .ds-mast{display:flex;justify-content:space-between;gap:12px;padding:10px 20px;border-bottom:2px solid var(--crimson);} .ds-mast span{font-size:12px;font-weight:700;font-stretch:72%;letter-spacing:0.06em;text-transform:uppercase;color:var(--crimson);} .ds-sheet-body{padding:24px 20px;} .ds-display{margin:0;font-size:40px;font-weight:900;font-stretch:115%;letter-spacing:-0.03em;line-height:0.95;color:var(--crimson);} .ds-desc{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--muted-foreground);} .ds-sheet-foot{padding:16px 20px;border-top:1px solid var(--rule-strong);font-size:15px;}"
+    },
+    {
+      "name": "Auth Sheet Stack",
+      "kind": "custom",
+      "refersTo": "form-sheet",
+      "description": "Login/signup/upgrade slip with canary and pink copies offset beneath and the top-sheet shadow.",
+      "html": "<div class=\"ds-desk\"><div class=\"ds-stack\"><div class=\"ds-copy ds-copy--pink\"></div><div class=\"ds-copy ds-copy--canary\"></div><div class=\"ds-top\"><div class=\"ds-top-mast\"><span>Log in</span><span>Flagship Schedule Builder</span></div><div class=\"ds-top-body\"><h2>Welcome back.</h2></div></div></div></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-desk{font-family:Archivo, system-ui, sans-serif;padding:24px;background:var(--desk);} .ds-stack{position:relative;max-width:360px;padding:0 12px 16px 0;} .ds-copy{position:absolute;inset:0 12px 16px 0;border:2px solid var(--crimson);} .ds-copy--pink{background:var(--pink);transform:translate(12px,12px) rotate(0.8deg);} .ds-copy--canary{background:var(--canary);transform:translate(6px,6px) rotate(0.4deg);} .ds-top{position:relative;background:var(--card);border:2px solid var(--crimson);box-shadow:0 18px 40px -24px rgb(74 30 20 / 0.45);} .ds-top-mast{display:flex;justify-content:space-between;gap:12px;padding:10px 20px;border-bottom:2px solid var(--crimson);} .ds-top-mast span{font-size:12px;font-weight:700;font-stretch:72%;letter-spacing:0.06em;text-transform:uppercase;color:var(--crimson);} .ds-top-body{padding:24px 20px;} .ds-top-body h2{margin:0;font-size:40px;font-weight:900;font-stretch:115%;letter-spacing:-0.03em;line-height:0.95;color:var(--crimson);}"
+    },
+    {
+      "name": "Rubber Stamp",
+      "kind": "custom",
+      "refersTo": "stamp",
+      "description": "Rotated crimson stamp (\"47 FIT\", \"Not found\") laid over a sheet.",
+      "html": "<div class=\"ds-stamp-wrap\"><div class=\"ds-stamp\">Not found</div></div>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-stamp-wrap{padding:24px;background:var(--card);} .ds-stamp{font-family:Archivo, system-ui, sans-serif;display:inline-block;padding:4px 12px;border:3px solid var(--crimson);color:var(--crimson);font-size:22px;font-weight:900;font-stretch:120%;line-height:1;text-transform:uppercase;transform:rotate(-7deg);opacity:0.9;}"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "button-outline",
+      "description": "Desk header with crimson wordmark, condensed crimson links, boxed sign-up.",
+      "html": "<nav class=\"ds-nav\"><span class=\"ds-mark\">bldr</span><div class=\"ds-links\"><a class=\"ds-link\" href=\"#\">Log in</a><a class=\"ds-link ds-link--boxed\" href=\"#\">Sign up free</a></div></nav>",
+      "css": ":host{--desk:#ece5d3;--background:#f3eee1;--paper:#fbf8ef;--card:#fbf8ef;--foreground:#2e2023;--muted-foreground:#6b4e52;--crimson:#a6192e;--primary:#a6192e;--ballpoint:#0b4fa3;--canary:#f4d84f;--pink:#f4c3cf;--rule:rgb(166 25 46 / 0.2);--rule-strong:rgb(166 25 46 / 0.55);--secondary:#ece5d3;--accent:#f1e2d9;--border:#dcc6bf;--input:#cfb3ac;--success:#2f6b3c;--warning:#8a5a00;} :host-context(.dark){--desk:#0c111b;--background:#0f1420;--paper:#151b28;--card:#151b28;--foreground:#efe8d8;--muted-foreground:#b3ab9b;--crimson:#f06a7e;--primary:#c8283f;--ballpoint:#8fb4f2;--canary:#3d3719;--pink:#3f2630;--rule:rgb(239 232 216 / 0.1);--rule-strong:rgb(240 106 126 / 0.5);--secondary:#1c2333;--accent:#222a3c;--border:#2a3245;--input:#364055;--success:#7cc48c;--warning:#e9cd45;} .ds-nav{font-family:Archivo, system-ui, sans-serif;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;background:var(--desk);border-bottom:1px solid var(--rule-strong);} .ds-mark{font-weight:900;font-size:28px;line-height:1;letter-spacing:-0.03em;font-stretch:125%;color:var(--crimson);} .ds-links{display:flex;gap:8px;} .ds-link{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;font-size:15px;font-weight:700;font-stretch:88%;color:var(--crimson);text-decoration:none;transition:background-color 150ms ease;} .ds-link:hover{background:var(--accent);} .ds-link:focus-visible{outline:2px solid var(--ballpoint);outline-offset:3px;} .ds-link--boxed{border:2px solid var(--crimson);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Registrar Carbon Copy",
+    "overview": "Every schedule is one sheet in a triplicate KU enrollment pad. The app is a warm paper desk with forms lying on it: a white top copy, canary and pink copies peeking out beneath, crimson spot ink printing every rule, label and heading, and KU-blue ballpoint filling in the answers. On the landing page the pad flips through conflict-free combinations; in the builder the same pad becomes working panels framed in crimson, with the permutation count written in ballpoint (\"577 of 3345\").\n\nDensity is that of a real form: ruled hairlines, boxed fields, condensed uppercase captions, generous paper margins around tight data. Hierarchy comes from one typeface pushed across its width axis (expanded black for display, condensed for labels and tabs), not from extra families or color. Depth is physical: real paper planes offset and slightly rotated, not glows or floating cards.\n\nThe dark variant is the **carbon sheet**: the same form read off the blue-black carbon paper, with paper-coloured type and lightened crimson and ballpoint impressions. Copy stock goes dim because it fills whole regions.\n\nThe world explicitly refuses the generic SaaS shell: no glow blobs, no icon-in-rounded-square feature cards, no gradient surfaces, no pill badges or eyebrow pills.",
+    "keyCharacteristics": [
+      "Two inks only: crimson (printed form) and ballpoint blue (what the student writes in).",
+      "Canary and pink are paper stock, filling whole sections, strips or copies.",
+      "Archivo across its `wdth` axis for everything; Reenie Beanie only for short handwritten asides.",
+      "Square or near-square corners (0 to 4px); 2px crimson frames, 1px tinted hairlines.",
+      "Depth from stacked, offset, rotated paper planes.",
+      "Two themes, one form: paper worksheet (default) and carbon sheet (dark)."
+    ],
+    "rules": [
+      {
+        "name": "The Two Inks Rule",
+        "body": "Crimson is the printed form; ballpoint is what a person wrote on it. Anything that is part of the template (frames, labels, headings, controls) is crimson. Anything that is a student's data or choice (counts, the active plan, filled values, notes) is ballpoint. Course pastels and status colours are the only exceptions, and both carry meaning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Copy Stock Rule",
+        "body": "Canary and pink are paper, not accents. They fill whole sections, strips, panels or copy planes; they are never used as text colour, small badges or highlights.",
+        "section": "colors"
+      },
+      {
+        "name": "The Carbon Inversion Rule",
+        "body": "Dark mode is the carbon sheet, not a new palette: every role keeps its job, inks lighten (`crimson-dark`, `ballpoint-dark`), copy stock dims (`canary-dark`, `pink-dark`), and solid fills stay deep enough for white text (`primary-dark`). Course blocks do not invert.",
+        "section": "colors"
+      },
+      {
+        "name": "The Width Axis Rule",
+        "body": "Hierarchy is set on Archivo's width axis, not with new families: expanded (112 to 125%) means printed heading, numeral or count; condensed (72 to 92%) means label, tab or control. Never introduce a second sans or a display serif.",
+        "section": "typography"
+      },
+      {
+        "name": "The Margin Note Rule",
+        "body": "Reenie Beanie carries only short, decorative asides (marked `aria-hidden`) a few words long. Never put information, instructions or controls in the handwriting face.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper Stack Rule",
+        "body": "Depth is shown by offset, slightly rotated paper planes. Shadows belong only to the top sheet of a stack, the landing primary button and course blocks; panels, sheets and bands are otherwise flat and divided by rules.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** build every surface from the app tokens in `globals.css` (`crimson`, `ballpoint`, `canary`, `pink`, `paper`, `desk`, `rule`, `rule-strong`, `success`, `warning`) and the shared `.form-label`, `.ballpoint`, `.display` primitives.",
+      "**Do** print template elements in crimson and write student data in ballpoint (The Two Inks Rule).",
+      "**Do** frame working panels in 2px crimson and open standalone sheets with a masthead strip.",
+      "**Do** let canary and pink own whole bands, strips or copy planes.",
+      "**Do** build hierarchy with Archivo's width axis: expanded black for titles and counts, condensed uppercase for labels and tabs.",
+      "**Do** check every new surface in both paper and carbon; keep solid fills deep enough for white text in carbon.",
+      "**Do** keep course blocks on the fixed pastel palette with dark ink in both themes.",
+      "**Do** reserve dashed lines for busy time, previews, loading, carbon ghosts and perforations.",
+      "**Do** honor reduced motion and provide a pause control for anything that moves on its own."
+    ],
+    "donts": [
+      "**Don't** use pill shapes, `rounded-full` badges or radii above 4px.",
+      "**Don't** add glows, blurred colour blobs, decorative gradients or glassy surfaces; the only gradients are mechanical patterns (hatching, ruled lines).",
+      "**Don't** cast shadows from flat panels or bands; only stack tops, the landing primary button and course blocks get one.",
+      "**Don't** introduce a third ink, a second sans or a display serif.",
+      "**Don't** set information or controls in Reenie Beanie.",
+      "**Don't** place a small label directly above a section headline as an eyebrow; labels caption fields, panels and mastheads.",
+      "**Don't** reuse the landing button's hard 2px offset lip.",
+      "**Don't** let the landing page's `.form-world` follow dark mode; it is paper only."
+    ]
+  }
+}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import CalendarEditor from "@/components/CalendarEditor";
 import { Button } from "@/components/ui/button";
+import { formatScheduleTerm } from "@/lib/scheduleFormat";
 import type { Schedule } from "@/types";
 
 type PublicSchedulePageProps = {
@@ -52,24 +53,28 @@ export default async function PublicSchedulePage({
   }
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
+    <main className="min-h-screen bg-desk text-foreground">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-4 sm:px-5 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-3 border-b-2 border-crimson pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <Link href="/" className="font-dmsans text-lg font-bold">
-              <span className="text-white">b</span>
-              <span className="text-red-500">l</span>
-              <span className="text-blue-600">d</span>
-              <span className="text-yellow-300">r</span>
+            <Link
+              href="/"
+              className="font-black text-[24px] leading-none tracking-[-0.03em] text-crimson [font-stretch:125%]"
+            >
+              bldr
             </Link>
-            <h1 className="mt-2 truncate font-figtree text-2xl font-semibold lg:text-3xl">
+            <p className="form-label mt-4">Shared schedule · read-only copy</p>
+            <h1 className="display mt-1 truncate text-[clamp(1.75rem,4vw,2.75rem)]">
               {schedule.name}
             </h1>
-            <p className="font-inter text-sm text-[#A8A8A8]">
-              {schedule.semester} {schedule.year}
+            <p className="mt-1 text-[15px] text-muted-foreground">
+              {formatScheduleTerm(schedule.semester, schedule.year)}
             </p>
           </div>
-          <Button asChild className="w-fit font-dmsans">
+          <Button
+            asChild
+            className="h-11 w-fit rounded-none px-5 text-[16px] font-extrabold [font-stretch:92%]"
+          >
             <Link href="/">Build your own schedule</Link>
           </Button>
         </header>

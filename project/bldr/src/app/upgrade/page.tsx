@@ -1,16 +1,12 @@
 "use client";
-import { motion } from "framer-motion";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  CheckCircle2,
-  Lock,
-  Sparkles,
-  XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, Lock, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import AuthSheet, {
+  authInputClass,
+  authLabelClass,
+} from "@/components/AuthSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +46,7 @@ export default function UpgradeAccount() {
           appToast.success("You already have an account!", {
             action: "account",
             duration: 2000,
-            icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+            icon: <CheckCircle2 className="h-5 w-5 text-success" />,
           });
           router.push("/builder");
         }
@@ -73,7 +69,7 @@ export default function UpgradeAccount() {
         action: "account",
         description: "Please ensure both password fields match.",
         duration: 3000,
-        icon: <XCircle className="h-5 w-5 text-yellow-500" />,
+        icon: <XCircle className="h-5 w-5 text-warning" />,
       });
       return;
     }
@@ -82,7 +78,7 @@ export default function UpgradeAccount() {
       appToast.error("Password must be at least 6 characters long", {
         action: "account",
         duration: 3000,
-        icon: <Lock className="h-5 w-5 text-red-500" />,
+        icon: <Lock className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -101,7 +97,7 @@ export default function UpgradeAccount() {
           action: "account",
           description: error.message,
           duration: 3000,
-          icon: <XCircle className="h-5 w-5 text-red-500" />,
+          icon: <XCircle className="h-5 w-5 text-destructive" />,
         });
         return;
       }
@@ -112,7 +108,7 @@ export default function UpgradeAccount() {
           description:
             "Please check your email to verify your account, then log in.",
           duration: 5000,
-          icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
+          icon: <CheckCircle2 className="h-5 w-5 text-success" />,
         });
 
         // Sign out the anonymous session and redirect to login
@@ -126,7 +122,7 @@ export default function UpgradeAccount() {
         action: "account",
         description: "An unexpected error occurred",
         duration: 3000,
-        icon: <AlertTriangle className="h-5 w-5 text-red-500" />,
+        icon: <AlertTriangle className="h-5 w-5 text-destructive" />,
       });
     } finally {
       setIsLoading(false);
@@ -135,11 +131,10 @@ export default function UpgradeAccount() {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-dmsans mb-2">Loading...</h2>
-          <p className="text-[#A8A8A8] font-inter">Please wait</p>
-        </div>
+      <div className="flex h-screen items-center justify-center bg-desk">
+        <p className="form-label flex items-center gap-2">
+          <Spinner className="h-4 w-4" /> Checking your session…
+        </p>
       </div>
     );
   }
@@ -149,151 +144,86 @@ export default function UpgradeAccount() {
   }
 
   return (
-    <div className="upgrade-page">
-      <div className="flex flex-col justify-start items-center h-screen py-10">
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-          className="header w-full flex flex-col justify-start items-center mb-10"
+    <AuthSheet
+      slip="Guest to student form"
+      title="Keep your schedules"
+      description="Make your guest session a free account. The schedules you've built stay linked to it."
+      backHref="/builder"
+      backLabel="Back to builder"
+      footer={
+        <Link
+          href="/builder"
+          className="font-bold text-crimson underline decoration-[1.5px] underline-offset-[3px]"
         >
-          <h1 className="text-5xl font-figtree font-semibold mb-3">
-            Upgrade to
-            <span className="font-dmsans font-bold">
-              <span className="text-white">{" b"}</span>
-              <span className="text-red-500">l</span>
-              <span className="text-blue-600">d</span>
-              <span className="text-yellow-300">r</span>
-            </span>
-          </h1>
-          <h2 className="text-3xl font-dmsans text-[#A8A8A8] ">
-            Save your schedules permanently
-          </h2>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
-          className="upgrade-form flex flex-col justify-center items-center w-fit border border-[#404040] p-10 rounded-lg"
+          Not now, back to the builder
+        </Link>
+      }
+    >
+      <form className="mt-7 flex flex-col gap-5" onSubmit={handleUpgrade}>
+        <div>
+          <Label htmlFor="email" className={authLabelClass}>
+            Email
+          </Label>
+          <Input
+            type="email"
+            id="email"
+            autoComplete="email"
+            placeholder="jayhawk@ku.edu"
+            className={authInputClass}
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="password" className={authLabelClass}>
+            Password
+          </Label>
+          <Input
+            type="password"
+            id="password"
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
+            className={authInputClass}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="confirm-password" className={authLabelClass}>
+            Confirm password
+          </Label>
+          <Input
+            type="password"
+            id="confirm-password"
+            autoComplete="new-password"
+            placeholder="Type it again"
+            className={authInputClass}
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-1 h-12 w-full text-[17px] font-extrabold [font-stretch:92%]"
+          disabled={isLoading}
         >
-          <div className="form-header w-full flex flex-col justify-start items-start mb-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-6 w-6 text-yellow-400" />
-              <h1 className="text-3xl font-bold font-dmsans">
-                Create Your Account
-              </h1>
-            </div>
-            <h2 className="text-[#A8A8A8] text-xs font-inter mb-4">
-              Your existing schedules will be linked to your new account
-            </h2>
-          </div>
-          <form className="flex flex-col gap-4 w-96" onSubmit={handleUpgrade}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-            >
-              <Label htmlFor="email" className="text-sm font-inter mb-2 block">
-                Email
-              </Label>
-              <Input
-                type="email"
-                id="email"
-                placeholder="your.email@example.com"
-                className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.5 }}
-            >
-              <Label
-                htmlFor="password"
-                className="text-sm font-inter mb-2 block"
-              >
-                Password
-              </Label>
-              <Input
-                type="password"
-                id="password"
-                placeholder="At least 6 characters"
-                className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.6 }}
-            >
-              <Label
-                htmlFor="confirm-password"
-                className="text-sm font-inter mb-2 block"
-              >
-                Confirm Password
-              </Label>
-              <Input
-                type="password"
-                id="confirm-password"
-                placeholder="Re-enter password"
-                className={`font-inter border-[#404040] border-2 selection:bg-blue-400`}
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.7 }}
-            >
-              <Button
-                type="submit"
-                variant={"secondary"}
-                className={`w-full transition cursor-pointer font-dmsans text-md my-3`}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Spinner />
-                    Upgrading...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Upgrade Account
-                  </>
-                )}
-              </Button>
-            </motion.div>
-          </form>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.8 }}
-            className="text-[#a8a8a8] text-xs mt-3 font-inter"
-          >
-            <Link
-              href="/builder"
-              className="font-medium text-white font-inter inline-flex items-center gap-1 hover:bg-white/10 rounded-sm px-1"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              Back to builder
-            </Link>
-          </motion.div>
-        </motion.div>
-      </div>
-    </div>
+          {isLoading ? (
+            <>
+              <Spinner />
+              Saving your account…
+            </>
+          ) : (
+            "Create account"
+          )}
+        </Button>
+      </form>
+    </AuthSheet>
   );
 }

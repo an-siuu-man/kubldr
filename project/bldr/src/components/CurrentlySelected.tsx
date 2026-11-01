@@ -215,7 +215,7 @@ export default function CurrentlySelected() {
       <motion.div
         layout
         transition={{ layout: layoutSpring }}
-        className="flex h-full w-full flex-col items-center justify-start overflow-hidden rounded-b-[10px] rounded-t-none border-2 border-slate-200 bg-white transition-all duration-150 dark:border-[#303030] dark:bg-[#111111]"
+        className="flex h-full w-full flex-col items-center justify-start overflow-hidden border-2 border-crimson bg-card transition-all duration-150"
       >
         <motion.div
           layout
@@ -227,7 +227,7 @@ export default function CurrentlySelected() {
             transition={{ layout: layoutSpring }}
             className="flex items-center justify-between pt-1 pb-1.5 shrink-0 w-full"
           >
-            <h2 className="text-sm lg:text-base xl:text-lg text-purple-400 font-bold font-figtree">
+            <h2 className="text-sm lg:text-base xl:text-lg text-crimson font-bold font-figtree">
               Currently Selected
             </h2>
             <AnimatePresence initial={false} mode="popLayout">
@@ -245,7 +245,7 @@ export default function CurrentlySelected() {
                         type="button"
                         onClick={() => setMissingNoteCollapsed(false)}
                         aria-label="Show missing components reminder"
-                        className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-yellow-500/80 bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 transition-colors cursor-pointer"
+                        className="inline-flex h-6 w-6 items-center justify-center border border-warning/80 bg-warning/20 text-warning hover:bg-warning/30 transition-colors cursor-pointer"
                       >
                         <AlertCircle className="h-3.5 w-3.5" />
                       </button>
@@ -277,13 +277,13 @@ export default function CurrentlySelected() {
                 }}
                 className="w-full overflow-hidden"
               >
-                <div className="mb-2 w-full rounded-md border border-yellow-500/50 bg-yellow-900/20 px-2.5 py-2">
+                <div className="mb-2 w-full rounded-md border border-warning/50 bg-warning/20 px-2.5 py-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-yellow-500/15 text-yellow-300">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center bg-warning/15 text-warning">
                         <AlertCircle className="h-3 w-3" />
                       </span>
-                      <p className="text-[10px] lg:text-xs text-yellow-100 font-inter leading-4">
+                      <p className="text-[10px] lg:text-xs text-warning font-inter leading-4">
                         You are missing {missingComponentCount} component
                         {missingComponentCount === 1 ? "" : "s"} across{" "}
                         {missingClassCount} class
@@ -295,7 +295,7 @@ export default function CurrentlySelected() {
                       type="button"
                       onClick={() => setMissingNoteCollapsed(true)}
                       aria-label="Dismiss missing components reminder"
-                      className="inline-flex h-5 w-5 items-center justify-center rounded-full text-yellow-200 hover:bg-yellow-500/20 transition-colors cursor-pointer"
+                      className="inline-flex h-5 w-5 items-center justify-center text-warning hover:bg-warning/20 transition-colors cursor-pointer"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
@@ -307,10 +307,10 @@ export default function CurrentlySelected() {
 
           <div className="relative flex-1 min-h-0 w-full">
             {showTopShadow && (
-              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-white to-transparent dark:from-[#080808]" />
+              <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 z-10 bg-linear-to-b from-white to-transparent" />
             )}
             {showBottomShadow && (
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-white to-transparent dark:from-[#080808]" />
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 z-10 bg-linear-to-t from-white to-transparent" />
             )}
             <motion.section
               ref={listRef}
@@ -320,7 +320,7 @@ export default function CurrentlySelected() {
               aria-label="Currently selected classes"
             >
               {typedDraftSchedule.length === 0 ? (
-                <div className="font-figtree text-xs text-slate-500 dark:text-[#888888] lg:text-sm">
+                <div className="font-figtree text-xs text-muted-foreground lg:text-sm">
                   No classes added
                 </div>
               ) : (
@@ -334,17 +334,17 @@ export default function CurrentlySelected() {
                       layout
                       transition={{ layout: layoutSpring }}
                       key={`${toKeyPart(classGroup.classKey, "class")}-${groupIndex}`}
-                      className="mb-2 rounded-md border-2 border-slate-200 bg-slate-50 p-3 dark:border-[#303030] dark:bg-[#181818]"
+                      className="mb-2 rounded-md border-2 border-border bg-secondary p-3"
                     >
                       <div className="mb-4 flex items-start justify-between gap-2">
-                        <div className="font-inter text-xs font-bold text-slate-950 dark:text-white lg:text-sm">
+                        <div className="font-inter text-xs font-bold text-foreground lg:text-sm">
                           {classGroup.dept} {classGroup.code}:{" "}
                           {classGroup.title}
                         </div>
                         {hasMissingComponents && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-yellow-500/70 bg-yellow-500/15 text-yellow-300">
+                              <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center border border-warning/70 bg-warning/15 text-warning">
                                 <AlertCircle className="h-3.5 w-3.5" />
                               </span>
                             </TooltipTrigger>
@@ -353,7 +353,7 @@ export default function CurrentlySelected() {
                                 You haven&apos;t added all components for this
                                 class.
                               </p>
-                              <p className="mt-1 text-[11px] text-yellow-300">
+                              <p className="mt-1 text-[11px] text-warning">
                                 Missing: {missingComponents.join(", ")}
                               </p>
                             </TooltipContent>
@@ -364,13 +364,13 @@ export default function CurrentlySelected() {
                         {classGroup.sections.map((section) => (
                           <div
                             key={section.originalIndex}
-                            className="group relative rounded-md border border-slate-200 bg-white p-2 dark:border-[#404040] dark:bg-[#101010]"
+                            className="group relative rounded-md border border-border bg-card p-2"
                           >
                             <div className="flex flex-col gap-1">
-                              <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-purple-400 font-inter">
+                              <div className="flex flex-row items-center justify-start gap-1 text-xs lg:text-sm font-semibold text-crimson font-inter">
                                 {section.component} ({section.classID})
                                 {(section.seats_available ?? 0) <= 0 && (
-                                  <span className="flex items-center text-red-400">
+                                  <span className="flex items-center text-destructive">
                                     <AlertCircle className="inline h-3 w-3 lg:h-4 lg:w-4 mr-1" />
                                     <span className="text-[10px] lg:text-xs">
                                       No open seats
@@ -378,7 +378,7 @@ export default function CurrentlySelected() {
                                   </span>
                                 )}
                               </div>
-                              <div className="font-inter text-[10px] text-slate-600 dark:text-[#888888] lg:text-xs">
+                              <div className="font-inter text-[10px] text-muted-foreground lg:text-xs">
                                 {section.days} |{" "}
                                 {formatDisplayTimeRange(
                                   section.starttime,
@@ -387,7 +387,7 @@ export default function CurrentlySelected() {
                                 )}
                               </div>
                               {section.instructor && (
-                                <div className="font-inter text-[10px] text-slate-600 dark:text-[#888888] lg:text-xs">
+                                <div className="font-inter text-[10px] text-muted-foreground lg:text-xs">
                                   {section.instructor}
                                 </div>
                               )}
@@ -400,7 +400,7 @@ export default function CurrentlySelected() {
                               className="absolute top-1 right-1 cursor-pointer rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                               title="Remove section"
                             >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </button>
                           </div>
                         ))}

@@ -1,400 +1,509 @@
 "use client";
 
-import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  CalendarDays,
-  FolderKanban,
-  Info,
-  Search,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { MotionConfig } from "framer-motion";
+import { ArrowRight, Check, Link2, Lock, Scissors } from "lucide-react";
 import Link from "next/link";
-import { CalendarPreview } from "@/components/landing/CalendarPreview";
-import { FloatingTiles } from "@/components/landing/FloatingTiles";
-import {
-  SearchPreview,
-  SectionDetailPreview,
-  VersionsPreview,
-} from "@/components/landing/previews";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { CarbonPad } from "@/components/landing/CarbonPad";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/contexts/AuthContext";
+import { createClient } from "@/lib/supabase/client";
+import "@/components/landing/landing.css";
 
-// ─── Content data ────────────────────────────────────────────────────────────
+// ─── Content ────────────────────────────────────────────────────────────────
 
-const faqs = [
+const steps = [
   {
-    q: "Is bldr free to use?",
-    a: "Yes — bldr is completely free. Create an account with your email, or jump straight in as a guest with no sign-up required.",
+    title: "List your courses",
+    body: "Search the KU catalog by department, number or title. EECS 168, MATH 125, whatever is on your degree map this term.",
   },
   {
-    q: "Do I need to make an account, or can I use it as a guest?",
-    a: "You can start as a guest without registering. Guest sessions let you build and explore schedules right away. Creating a free account unlocks saved schedules, multiple versions, and sharing.",
+    title: "bldr fills in every combination",
+    body: "Every way your sections fit together without a time conflict, working around any busy blocks you mark for work, practice or sleep.",
   },
   {
-    q: "Is bldr only for KU students?",
-    a: "bldr is built specifically for the University of Kansas course catalog, so the real-time class search and seat data are KU-specific. That said, the scheduling workflow is universal — any college student can find value in the calendar and version tools.",
-  },
-  {
-    q: "How does schedule sharing work?",
-    a: "Once you save a schedule, you can toggle on a public link in the share panel. Anyone with the link gets a read-only calendar view — they can see your courses and times, but they cannot edit or copy your schedule.",
-  },
-  {
-    q: "Is my schedule data private?",
-    a: "By default, all schedules are private and only visible to you. Public share links are strictly opt-in — you decide what gets shared, and you can revoke access at any time.",
+    title: "Pick one, keep the rest",
+    body: "Save the one you like as your plan, keep backups as versions, and send a read-only link to your advisor or roommate.",
   },
 ];
 
-// ─── Section heading helper ────────────────────────────────────────────────────
+const versions = [
+  { name: "Plan A", active: true },
+  { name: "Plan B (no lab)", active: false },
+  { name: "Early classes", active: false },
+  { name: "No Fridays", active: false },
+];
 
-function SectionHeading({
-  eyebrow,
-  headline,
+const faqs = [
+  {
+    q: "Is bldr free?",
+    a: "Yes, completely. Start as a guest with no sign-up, or make a free account with your email.",
+  },
+  {
+    q: "Do I need an account, or can I use it as a guest?",
+    a: "Guest mode lets you build and browse schedules right away. A free account adds saved schedules, multiple versions and sharing.",
+  },
+  {
+    q: "Is bldr only for KU students?",
+    a: "bldr is built on the University of Kansas course catalog, so class search and seat data are KU-specific. The calendar and version tools work the same for anyone, but the courses are KU's.",
+  },
+  {
+    q: "How current is the seat data?",
+    a: "Class and seat data is synced from KU's class search on a schedule, not live. Treat seat counts as a guide and confirm in Enroll & Pay before you enroll.",
+  },
+  {
+    q: "How does sharing work?",
+    a: "Once a schedule is saved, turn on its public link in the share panel. Anyone with the link sees a read-only calendar of your courses and times. Your busy blocks are never shown.",
+  },
+  {
+    q: "Is my schedule private?",
+    a: "Yes, by default every schedule is visible only to you. Public links are opt-in, and you can turn them off at any time.",
+  },
+];
+
+// ─── Guest start ────────────────────────────────────────────────────────────
+
+function useGuestStart() {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const start = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error || !data.user) {
+        setError(
+          "Couldn't start a guest session. Try again, or log in instead.",
+        );
+        return;
+      }
+      router.push("/builder");
+      router.refresh();
+    } catch {
+      setError("Couldn't reach bldr. Check your connection and try again.");
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return { start, pending, error };
+}
+
+function PrimaryAction({
+  isLoggedIn,
+  guest,
+  className = "",
 }: {
-  eyebrow: string;
-  headline: string;
+  isLoggedIn: boolean;
+  guest: ReturnType<typeof useGuestStart>;
+  className?: string;
 }) {
+  if (isLoggedIn) {
+    return (
+      <Link href="/builder" className={`form-button ${className}`}>
+        Open your builder
+        <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.5} />
+      </Link>
+    );
+  }
   return (
-    <div className="mx-auto max-w-3xl text-center">
-      <p className="font-dmsans text-xs uppercase tracking-[0.3em] text-white/40">
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 font-figtree text-3xl font-semibold tracking-tight text-white sm:text-5xl">
-        {headline}
-      </h2>
-    </div>
+    <button
+      type="button"
+      onClick={guest.start}
+      disabled={guest.pending}
+      className={`form-button ${className}`}
+    >
+      {guest.pending ? (
+        <>
+          <Spinner className="h-4 w-4" />
+          Opening the builder…
+        </>
+      ) : (
+        <>
+          Try it as a guest
+          <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.5} />
+        </>
+      )}
+    </button>
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
   const { user } = useAuth();
   const isLoggedIn = Boolean(user);
+  const guest = useGuestStart();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#080808] text-white">
-      {/* ── Background layers ── */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(250,204,21,0.14),_transparent_24%),radial-gradient(circle_at_bottom,_rgba(239,68,68,0.12),_transparent_32%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:72px_72px] opacity-25" />
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          HEADER — sticky, blurred
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-8 lg:px-10">
-          {/* Wordmark */}
-          <Link href="/" className="flex items-center gap-2">
-            <img
-              src="/logo.svg"
-              alt="bldr logo"
-              className="h-10 w-auto"
-              draggable={false}
-            />
-            <span className="font-dmsans text-3xl font-bold tracking-tight">
-              <span className="text-white">b</span>
-              <span className="text-red-500">l</span>
-              <span className="text-blue-500">d</span>
-              <span className="text-yellow-300">r</span>
-            </span>
-          </Link>
-
-          {/* Nav CTAs */}
-          <div className="flex items-center gap-2.5">
-            {isLoggedIn ? (
-              <Button
-                asChild
-                variant="ghost"
-                className="bg-white font-dmsans text-[#101010] shadow-[0_8px_28px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
-              >
-                <Link href="/builder">
-                  Go to Builder
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <>
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="hidden border border-white/10 bg-white/5 font-dmsans text-white hover:bg-white/10 sm:inline-flex"
-                >
-                  <Link href="/login">Log in</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="bg-white font-dmsans text-[#101010] shadow-[0_8px_28px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
-                >
-                  <Link href="/signup">
-                    Start building
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="relative z-10">
-        {/* ═══════════════════════════════════════════════════════════════════
-            HERO — centered, Notion-style, with CalendarPreview
-        ═══════════════════════════════════════════════════════════════════ */}
-        <section className="relative mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-8 lg:px-10 lg:pt-28">
-          {/* Floating accent tiles (desktop only) */}
-          <FloatingTiles />
-
-          {/* Centered headline block */}
-          <motion.div
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-3xl text-center"
-          >
-            {/* Badge */}
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-4 py-2 font-inter text-sm text-blue-100">
-              <Sparkles className="h-4 w-4 text-blue-300" />
-              Designed to make class registration less chaotic
-            </div>
-
-            {/* Headline */}
-            <h1 className="font-figtree text-5xl font-semibold leading-[1.08] tracking-tight text-white sm:text-7xl lg:text-[88px]">
-              Browse every schedule,
-              <br />
-              not just the first one.
-            </h1>
-
-            {/* Sub-copy */}
-            {/* <p className="mx-auto mt-6 max-w-xl font-inter text-base leading-7 text-white/55 sm:text-lg">
-              bldr combines live course search, a visual weekly calendar,
-              schedule versioning, and section-level seat data so you can plan
-              faster — with fewer tabs and fewer surprises.
-            </p> */}
-
-            {/* Dual CTA */}
-            <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+    <MotionConfig reducedMotion="user">
+      <div className="form-world min-h-screen">
+        {/* Header */}
+        <header className="sticky top-0 z-50 border-b border-[var(--form-rule-strong)] bg-[var(--form-desk)]/95 backdrop-blur-[2px]">
+          <div className="mx-auto flex max-w-[1360px] items-center justify-between gap-4 px-4 py-3 sm:px-8 lg:px-14">
+            <Link
+              href="/"
+              className="flex items-center gap-2.5"
+              aria-label="bldr home"
+            >
+              <img
+                src="/logo.svg"
+                alt=""
+                className="h-9 w-auto"
+                draggable={false}
+              />
+              <span className="font-black text-[30px] leading-none tracking-[-0.03em] text-[var(--crimson)] [font-stretch:125%]">
+                bldr
+              </span>
+            </Link>
+            <nav className="flex items-center gap-1 sm:gap-2">
+              <a href="#how" className="form-nav-link hidden md:inline-flex">
+                How it works
+              </a>
+              <a href="#faq" className="form-nav-link hidden md:inline-flex">
+                FAQ
+              </a>
               {isLoggedIn ? (
-                <Button
-                  asChild
-                  size="lg"
-                  variant="ghost"
-                  className="bg-white font-dmsans text-[#101010] shadow-[0_16px_48px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
-                >
-                  <Link href="/builder">
-                    Go to Builder
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <Link href="/builder" className="form-nav-link">
+                  Your builder
+                </Link>
               ) : (
                 <>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="ghost"
-                    className="bg-white font-dmsans text-[#101010] shadow-[0_16px_48px_rgba(255,255,255,0.14)] hover:bg-[#e8e8e8]"
+                  <Link href="/login" className="form-nav-link">
+                    Log in
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="form-nav-link form-nav-link--boxed hidden sm:inline-flex"
                   >
-                    <Link href="/signup">
-                      Create a free account
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="ghost"
-                    className="border border-white/12 bg-white/5 font-dmsans text-white hover:bg-white/10"
-                  >
-                    <Link href="/login">Log in or continue as guest</Link>
-                  </Button>
+                    Sign up free
+                  </Link>
                 </>
               )}
-            </div>
-          </motion.div>
+            </nav>
+          </div>
+        </header>
 
-          {/* Product preview — calendar in browser chrome */}
-          <motion.div
-            initial={{ opacity: 0, y: 48 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.75,
-              delay: 0.18,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="mx-auto mt-14 max-w-5xl"
+        <main>
+          {/* ── Hero: the carbon pad ── */}
+          <section className="mx-auto max-w-[1360px] px-4 pb-20 pt-8 sm:px-8 sm:pt-12 lg:px-14 lg:pb-28">
+            <div className="carbon-pad">
+              <div className="carbon-copy carbon-copy--pink" aria-hidden />
+              <div className="carbon-copy carbon-copy--canary" aria-hidden />
+
+              <div className="carbon-copy carbon-copy--top grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+                <div className="flex items-center justify-between gap-4 border-b-2 border-[var(--crimson)] px-5 py-3 sm:px-8 lg:col-span-2 lg:px-10">
+                  <p className="form-label">
+                    Enrollment worksheet · for KU students
+                  </p>
+                  <p className="form-label hidden sm:block">
+                    Spring 2027 · form bldr-27
+                  </p>
+                </div>
+
+                <div className="flex flex-col border-b border-[var(--form-rule-strong)] p-5 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
+                  <h1 className="text-balance font-black text-[clamp(2.75rem,5.6vw,5.25rem)] leading-[0.92] tracking-[-0.03em] text-[var(--crimson)] [font-stretch:115%]">
+                    Every schedule that fits.{" "}
+                    <span className="text-[var(--ballpoint)]">
+                      Not just the first.
+                    </span>
+                  </h1>
+
+                  <p className="mb-9 mt-6 max-w-[34rem] text-pretty text-[clamp(1.05rem,1.3vw,1.2rem)] leading-[1.55] text-[var(--form-ink)]">
+                    Add the classes you need. bldr lays out every conflict-free
+                    combination of sections, and you flip through them until one
+                    feels right.
+                  </p>
+
+                  <div className="mt-auto border-2 border-[var(--crimson)]">
+                    <p className="form-label border-b border-[var(--crimson)] px-3 py-1.5">
+                      {isLoggedIn
+                        ? "Welcome back"
+                        : "Start here · no account needed"}
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-3.5">
+                      <span
+                        className="ballpoint text-[32px] leading-none"
+                        aria-hidden
+                      >
+                        {isLoggedIn ? "back at it —" : "just looking —"}
+                      </span>
+                      <PrimaryAction
+                        isLoggedIn={isLoggedIn}
+                        guest={guest}
+                        className="w-full sm:w-auto"
+                      />
+                    </div>
+                  </div>
+                  {guest.error && (
+                    <p
+                      role="alert"
+                      className="mt-3 text-[15px] font-semibold text-[var(--crimson)]"
+                    >
+                      {guest.error}
+                    </p>
+                  )}
+                  {!isLoggedIn && (
+                    <p className="mt-4 text-[15px] leading-relaxed text-[var(--form-ink)]">
+                      Want to keep your plans?{" "}
+                      <Link href="/signup" className="form-link">
+                        Create a free account
+                      </Link>{" "}
+                      or{" "}
+                      <Link href="/login" className="form-link">
+                        log in
+                      </Link>
+                      .
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-5 sm:p-8 lg:p-10">
+                  <CarbonPad />
+                </div>
+              </div>
+
+              <div className="carbon-tabs" aria-hidden>
+                <span className="bg-[var(--form-paper)]">
+                  White · your plan
+                </span>
+                <span className="bg-[var(--canary)]">Canary · backup</span>
+                <span className="bg-[var(--pink)]">Pink · advisor</span>
+              </div>
+            </div>
+          </section>
+
+          {/* ── How it works: canary copy ── */}
+          <section
+            id="how"
+            className="scroll-mt-20 border-y-2 border-[var(--crimson)] bg-[var(--canary)]"
           >
-            <CalendarPreview />
-          </motion.div>
-        </section>
+            <div className="mx-auto max-w-[1360px] px-4 py-16 sm:px-8 lg:px-14 lg:py-24">
+              <h2 className="max-w-[18ch] text-balance font-black text-[clamp(2rem,3.6vw,3.25rem)] leading-[0.98] tracking-[-0.025em] text-[var(--crimson)] [font-stretch:112%]">
+                How to fill out this worksheet
+              </h2>
+              <ol className="mt-10 grid border-t-2 border-[var(--crimson)] md:grid-cols-3">
+                {steps.map((s, i) => (
+                  <li
+                    key={s.title}
+                    className="border-b border-[var(--form-rule-strong)] py-6 md:border-b-0 md:border-l md:px-7 md:py-8 md:first:border-l-0 md:first:pl-0"
+                  >
+                    <span className="font-black text-[56px] leading-none text-[var(--crimson)] [font-stretch:125%]">
+                      {i + 1}
+                    </span>
+                    <h3 className="mt-4 font-extrabold text-[22px] leading-tight text-[var(--form-ink)] [font-stretch:95%]">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2.5 max-w-[38ch] text-[16px] leading-[1.6] text-[var(--form-ink)]">
+                      {s.body}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            FEATURE BLOCKS
-        ═══════════════════════════════════════════════════════════════════ */}
-        <section className="mx-auto max-w-7xl space-y-24 px-4 pb-24 pt-10 sm:px-8 lg:px-10">
-          {/* Section heading */}
-          <SectionHeading
-            eyebrow="Core features"
-            headline="Everything the builder needs, without the usual registration clutter."
-          />
+          {/* ── The fine print: what's on the sheet ── */}
+          <section className="mx-auto max-w-[1360px] px-4 py-16 sm:px-8 lg:px-14 lg:py-24">
+            <h2 className="max-w-[20ch] text-balance font-black text-[clamp(2rem,3.6vw,3.25rem)] leading-[0.98] tracking-[-0.025em] text-[var(--crimson)] [font-stretch:112%]">
+              The fine print, filled in for you
+            </h2>
 
-          {/* ── Compact 2-up row: auth + visual calendar (no preview needed) ── */}
-          <div className="grid gap-5 sm:grid-cols-2">
-            {[
-              {
-                icon: ShieldCheck,
-                accent: "text-emerald-300",
-                surface: "from-emerald-500/12 to-emerald-500/3",
-                title: "Secure accounts and guest access",
-                quote: "I don't want to make an account just to try this out.",
-                response:
-                  "Guest mode's got you — jump in now, sign up later (or never).",
-              },
-              {
-                icon: CalendarDays,
-                accent: "text-amber-300",
-                surface: "from-amber-500/12 to-amber-500/3",
-                title: "Visual weekly calendar",
-                quote: "Wait, does my 9am actually overlap with my lab?",
-                response:
-                  "One glance at the grid and you'll know before it's a problem.",
-              },
-            ].map((f) => {
-              const Icon = f.icon;
-              return (
-                <div
-                  key={f.title}
-                  className={`rounded-[20px] border border-white/8 bg-gradient-to-br ${f.surface} p-6`}
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/10 bg-[#101010]">
-                    <Icon className={`h-5 w-5 ${f.accent}`} />
+            <div className="form-sheet mt-10 grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+              {/* Section detail */}
+              <div className="border-b border-[var(--form-rule-strong)] p-5 sm:p-8 lg:border-b-0 lg:border-r">
+                <p className="form-label">Section detail</p>
+                <p className="mt-3 max-w-[40ch] text-[17px] leading-[1.6]">
+                  Know the section before you commit: instructor, room, meeting
+                  times and seats left, right on the block.
+                </p>
+                <dl className="mt-6 grid grid-cols-2 border-2 border-[var(--crimson)] text-[15px]">
+                  <div className="col-span-2 border-b border-[var(--crimson)] px-3 py-2.5">
+                    <dt className="form-label">Course</dt>
+                    <dd className="mt-0.5 font-extrabold text-[20px] text-[var(--ballpoint)]">
+                      EECS 168 · Programming I{" "}
+                      <span className="font-semibold text-[var(--form-muted)]">
+                        (LEC)
+                      </span>
+                    </dd>
                   </div>
-                  <h3 className="mt-5 font-figtree text-xl font-semibold text-white">
-                    {f.title}
-                  </h3>
-                  <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
-                    "{f.quote}"
-                  </p>
-                  <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
-                    {f.response}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── Block A: Real-time class search (full-width split) ── */}
-          <div>
-            <div className="overflow-hidden rounded-[24px] border border-white/8 bg-[#0f0f0f]">
-              <div className="grid gap-0 lg:grid-cols-2">
-                {/* Copy side */}
-                <div className="flex flex-col justify-center p-8 lg:p-12">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/10 bg-[#1a1a1a]">
-                    <Search className="h-5 w-5 text-blue-300" />
+                  <div className="border-b border-r border-[var(--crimson)] px-3 py-2.5">
+                    <dt className="form-label">Section</dt>
+                    <dd className="mt-0.5 font-semibold">52</dd>
                   </div>
-                  <h3 className="mt-6 font-figtree text-2xl font-semibold text-white sm:text-3xl">
-                    Real-time class search.
-                  </h3>
-                  <p className="mt-4 font-inter text-base italic leading-7 text-white/45">
-                    "Is EECS 448 even open right now?"
+                  <div className="border-b border-[var(--crimson)] px-3 py-2.5">
+                    <dt className="form-label">Room</dt>
+                    <dd className="mt-0.5 font-semibold">LEEP2 G415</dd>
+                  </div>
+                  <div className="border-b border-r border-[var(--crimson)] px-3 py-2.5">
+                    <dt className="form-label">Meets</dt>
+                    <dd className="mt-0.5 font-semibold">MW · 11:00–12:15</dd>
+                  </div>
+                  <div className="border-b border-[var(--crimson)] px-3 py-2.5">
+                    <dt className="form-label">Instructor</dt>
+                    <dd className="mt-0.5 font-semibold">Staff</dd>
+                  </div>
+                  <div className="col-span-2 flex items-center justify-between gap-3 px-3 py-2.5">
+                    <div>
+                      <dt className="form-label">Seats</dt>
+                      <dd className="mt-0.5 font-extrabold text-[var(--crimson)]">
+                        7 of 35 left
+                      </dd>
+                    </div>
+                    <span
+                      className="ballpoint text-[26px] leading-none"
+                      aria-hidden
+                    >
+                      grab it early
+                    </span>
+                  </div>
+                </dl>
+                <p className="mt-4 text-[14px] leading-relaxed text-[var(--form-muted)]">
+                  Sample section. Seat data is synced from KU's class search, so
+                  confirm in Enroll &amp; Pay before you enroll.
+                </p>
+              </div>
+
+              {/* Versions + sharing */}
+              <div className="flex flex-col">
+                <div className="border-b border-[var(--form-rule-strong)] p-5 sm:p-8">
+                  <p className="form-label">Versions</p>
+                  <p className="mt-3 max-w-[36ch] text-[17px] leading-[1.6]">
+                    Keep backups. If your 8 AM fills before your enrollment
+                    time, Plan B is one click away.
                   </p>
-                  <p className="mt-2 font-inter text-base leading-7 text-white/70">
-                    Live seat counts, zero refreshing — just search and see.
-                  </p>
+                  <ul className="mt-5">
+                    {versions.map((v) => (
+                      <li
+                        key={v.name}
+                        className={`flex items-center justify-between border-b border-[var(--form-rule)] py-2.5 text-[16px] ${
+                          v.active
+                            ? "font-extrabold text-[var(--ballpoint)]"
+                            : "text-[var(--form-ink)]"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span className="grid h-[18px] w-[18px] place-items-center border-2 border-[var(--crimson)]">
+                            {v.active && (
+                              <Check
+                                className="h-3 w-3 text-[var(--ballpoint)]"
+                                strokeWidth={4}
+                              />
+                            )}
+                          </span>
+                          {v.name}
+                        </span>
+                        {v.active && <span className="form-label">Active</span>}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                {/* Preview side */}
-                <div className="flex items-center justify-center border-t border-white/6 bg-[#0a0a0a] p-8 lg:border-l lg:border-t-0">
-                  <SearchPreview />
+                <div className="bg-[var(--pink)] p-5 sm:p-8 lg:flex-1">
+                  <p className="form-label">Sharing</p>
+                  <ul className="mt-3 space-y-3 text-[16px] leading-[1.55]">
+                    <li className="flex gap-3">
+                      <Link2
+                        className="mt-1 h-[18px] w-[18px] shrink-0 text-[var(--crimson)]"
+                        strokeWidth={2.5}
+                      />
+                      <span>
+                        Send a read-only link to your advisor or roommate. Turn
+                        it off whenever you like.
+                      </span>
+                    </li>
+                    <li className="flex gap-3">
+                      <Lock
+                        className="mt-1 h-[18px] w-[18px] shrink-0 text-[var(--crimson)]"
+                        strokeWidth={2.5}
+                      />
+                      <span>
+                        Schedules are private by default, and busy blocks never
+                        show on a shared link.
+                      </span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* ── Block B: 2-col grid — Versions + Section details ── */}
-          <div className="grid gap-5 lg:grid-cols-2">
-            <div>
-              <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/8 bg-[#0f0f0f]">
-                <div className="flex flex-col p-8">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/10 bg-[#1a1a1a]">
-                    <FolderKanban className="h-5 w-5 text-rose-300" />
-                  </div>
-                  <h3 className="mt-5 font-figtree text-xl font-semibold text-white sm:text-2xl">
-                    Multiple schedule versions.
-                  </h3>
-                  <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
-                    "What if my 8am doesn't get approved — do I lose my whole
-                    plan?"
-                  </p>
-                  <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
-                    Keep a backup semester (or five) without touching your
-                    favorite.
-                  </p>
-                </div>
-                <div className="mt-auto flex justify-center border-t border-white/6 bg-[#0a0a0a] p-6">
-                  <VersionsPreview />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-white/8 bg-[#0f0f0f]">
-                <div className="flex flex-col p-8">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/10 bg-[#1a1a1a]">
-                    <Info className="h-5 w-5 text-cyan-300" />
-                  </div>
-                  <h3 className="mt-5 font-figtree text-xl font-semibold text-white sm:text-2xl">
-                    Section details and seat visibility.
-                  </h3>
-                  <p className="mt-3 font-inter text-sm italic leading-6 text-white/45">
-                    "Who's even teaching this section, and is it already full?"
-                  </p>
-                  <p className="mt-1.5 font-inter text-sm leading-6 text-white/70">
-                    Instructor, meeting times, and seats left — right there
-                    before you commit.
-                  </p>
-                </div>
-                <div className="mt-auto flex justify-center border-t border-white/6 bg-[#0a0a0a] p-6">
-                  <SectionDetailPreview />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════════════════════════════
-            FAQ ACCORDION
-        ═══════════════════════════════════════════════════════════════════ */}
-        <section className="mx-auto max-w-3xl px-4 pb-28 pt-4 sm:px-8 lg:px-10">
-          <h2 className="mb-10 font-figtree text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            FAQ
-          </h2>
-
-          <Accordion
-            type="single"
-            collapsible
-            className="divide-y divide-white/8 border-t border-white/8"
+          {/* ── FAQ: pink copy ── */}
+          <section
+            id="faq"
+            className="scroll-mt-20 border-y-2 border-[var(--crimson)] bg-[var(--pink)]"
           >
-            {faqs.map((faq) => (
-              <AccordionItem key={faq.q} value={faq.q} className="border-b-0">
-                <AccordionTrigger className="py-5 font-figtree text-base font-medium text-white/90 hover:text-white hover:no-underline sm:text-lg [&>svg]:text-white/40">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <p className="pb-5 font-inter text-sm leading-7 text-white/50">
-                    {faq.a}
+            <div className="mx-auto grid max-w-[1360px] gap-8 px-4 py-16 sm:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:px-14 lg:py-24">
+              <h2 className="max-w-[14ch] text-balance font-black text-[clamp(2rem,3.6vw,3.25rem)] leading-[0.98] tracking-[-0.025em] text-[var(--crimson)] [font-stretch:112%]">
+                Questions at the window
+              </h2>
+              <Accordion
+                type="single"
+                collapsible
+                className="border-t-2 border-[var(--crimson)]"
+              >
+                {faqs.map((faq) => (
+                  <AccordionItem
+                    key={faq.q}
+                    value={faq.q}
+                    className="border-b border-[var(--form-rule-strong)]"
+                  >
+                    <AccordionTrigger className="py-5 text-left font-extrabold text-[18px] text-[var(--form-ink)] hover:no-underline focus-visible:ring-0 [font-stretch:95%] [&>svg]:size-5 [&>svg]:text-[var(--crimson)]">
+                      {faq.q}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <p className="max-w-[62ch] pb-5 text-[16px] leading-[1.65] text-[var(--form-ink)]">
+                        {faq.a}
+                      </p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </section>
+
+          {/* ── Close: tear-off slip ── */}
+          <section className="mx-auto max-w-[1360px] px-4 py-16 sm:px-8 lg:px-14 lg:py-24">
+            <div className="tear-slip">
+              <Scissors
+                className="tear-slip__scissors h-5 w-5 text-[var(--crimson)]"
+                strokeWidth={2.25}
+                aria-hidden
+              />
+              <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="max-w-[22ch] text-balance font-black text-[clamp(1.9rem,3.2vw,2.9rem)] leading-[1] tracking-[-0.025em] text-[var(--crimson)] [font-stretch:112%]">
+                    Walk into enrollment with a plan, and a backup.
                   </p>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </section>
-      </main>
-    </div>
+                </div>
+                <PrimaryAction isLoggedIn={isLoggedIn} guest={guest} />
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="border-t-2 border-[var(--crimson)]">
+          <div className="mx-auto flex max-w-[1360px] flex-col gap-3 px-4 py-8 text-[14px] leading-relaxed text-[var(--form-muted)] sm:px-8 md:flex-row md:justify-between lg:px-14">
+            <p>
+              <span className="font-black text-[var(--crimson)] [font-stretch:125%]">
+                bldr
+              </span>{" "}
+              is built by KU students. It is not affiliated with or endorsed by
+              the University of Kansas.
+            </p>
+            <p>Seat data is synced from KU's class search and may lag.</p>
+          </div>
+        </footer>
+      </div>
+    </MotionConfig>
   );
 }
