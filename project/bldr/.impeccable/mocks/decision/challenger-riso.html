@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;background:#f4efe3;font-family:'Bricolage Grotesque',sans-serif;color:#2453c6;
+background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1.2px);background-size:5px 5px}
+nav{display:flex;justify-content:space-between;padding:24px 56px;font-weight:700;font-size:18px}
+.mark{font-size:34px;font-weight:800;color:#e0283a;mix-blend-mode:multiply}
+nav a{color:#2453c6;text-decoration:none;margin-left:26px}
+.wrap{display:grid;grid-template-columns:600px 1fr;gap:40px;padding:10px 56px}
+h1{font-size:128px;line-height:.86;font-weight:800;letter-spacing:-.04em;position:relative}
+h1 .r{color:#e0283a;mix-blend-mode:multiply;position:absolute;left:5px;top:4px}
+.sub{font-size:22px;line-height:1.4;margin-top:28px;color:#2453c6;max-width:500px}
+.cta{display:flex;gap:16px;margin-top:30px}
+.cta div{background:#e0283a;color:#f4efe3;padding:18px 26px;font-weight:800;font-size:20px;border-radius:40px}
+.cta div.g{background:none;border:3px solid #2453c6;color:#2453c6}
+.cal{position:relative;margin-top:20px;height:640px;border:4px solid #2453c6;background:rgba(36,83,198,.06)}
+.cal .hd{display:grid;grid-template-columns:60px repeat(5,1fr);font-weight:800;font-size:18px;border-bottom:4px solid #2453c6}
+.cal .hd div{padding:10px}
+.grid{position:absolute;top:48px;left:60px;right:0;bottom:0;background-image:linear-gradient(#2453c6 1px,transparent 1px);background-size:100% 74px;opacity:.35}
+.b{position:absolute;background:#e0283a;mix-blend-mode:multiply;color:#f4efe3;font-weight:800;font-size:17px;padding:8px 10px;border-radius:6px}
+.b.y{background:#f6c445;color:#2453c6}
+.count{position:absolute;right:-20px;top:-34px;background:#f6c445;color:#e0283a;font-weight:800;font-size:44px;padding:6px 20px;transform:rotate(4deg);mix-blend-mode:multiply}
+</style></head><body>
+<nav><div class="mark">bldr</div><div><a href="#">How it works</a><a href="#">FAQ</a><a href="#">Log in</a></div></nav>
+<div class="wrap">
+ <div>
+  <h1>Every<br>schedule<br>that fits.<span class="r" aria-hidden="true">Every<br>schedule<br>that fits.</span></h1>
+  <p class="sub">Pick your KU classes. bldr prints every conflict-free combination; you flip through the stack.</p>
+  <div class="cta"><div>Try it as a guest</div><div class="g">Log in</div></div>
+ </div>
+ <div class="cal">
+  <div class="count">03 / 47</div>
+  <div class="hd"><div></div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div></div>
+  <div class="grid"></div>
+  <div class="b" style="left:80px;top:130px;width:120px;height:66px">MATH 125</div>
+  <div class="b" style="left:356px;top:130px;width:120px;height:66px">MATH 125</div>
+  <div class="b y" style="left:218px;top:58px;width:120px;height:66px">ENGL 102</div>
+  <div class="b y" style="left:494px;top:58px;width:120px;height:66px">ENGL 102</div>
+  <div class="b" style="left:80px;top:280px;width:120px;height:66px">EECS 168</div>
+  <div class="b" style="left:356px;top:280px;width:120px;height:66px">EECS 168</div>
+  <div class="b" style="left:632px;top:280px;width:120px;height:66px">EECS 168</div>
+  <div class="b y" style="left:218px;top:430px;width:120px;height:130px">CHEM 130 LAB</div>
+  <div class="b" style="left:80px;top:500px;width:120px;height:66px">HIST 129</div>
+ </div>
+</div>
+</body></html>

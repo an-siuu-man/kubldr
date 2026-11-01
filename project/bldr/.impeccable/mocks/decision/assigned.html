@@ -1,0 +1,81 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Reenie+Beanie&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1440px;height:900px;overflow:hidden;background:#e9e2d0;font-family:Archivo,sans-serif;color:#2a1a1c}
+:root{--crim:#a6192e;--blue:#0b4fa3;--canary:#f3d548;--pink:#f2b8c6;--paper:#fbf8ef}
+nav{display:flex;justify-content:space-between;align-items:center;padding:22px 56px}
+.mark{font-weight:900;font-stretch:125%;font-size:30px;color:var(--crim);letter-spacing:-.02em}
+nav a{font-stretch:80%;font-weight:600;font-size:15px;color:var(--crim);text-decoration:none;margin-left:28px}
+.stage{position:relative;margin:6px 56px 0;height:790px}
+.copy{position:absolute;inset:0;border:2px solid var(--crim)}
+.c3{background:var(--pink);transform:translate(26px,22px) rotate(1.3deg)}
+.c2{background:var(--canary);transform:translate(13px,11px) rotate(.6deg)}
+.c1{background:var(--paper);display:grid;grid-template-columns:520px 1fr}
+.left{border-right:2px solid var(--crim);padding:30px 34px;display:flex;flex-direction:column}
+.formno{font-stretch:70%;font-weight:700;font-size:13px;color:var(--crim);display:flex;justify-content:space-between;border-bottom:1px solid var(--crim);padding-bottom:8px}
+h1{font-weight:900;font-stretch:118%;font-size:76px;line-height:.9;color:var(--crim);margin-top:26px;letter-spacing:-.03em}
+h1 em{font-style:normal;color:var(--blue)}
+.sub{font-size:19px;line-height:1.45;margin-top:22px;max-width:430px;color:#3b2a2c}
+.field{margin-top:auto;border:2px solid var(--crim)}
+.field .lbl{font-stretch:70%;font-weight:700;font-size:12px;color:var(--crim);padding:6px 10px;border-bottom:1px solid var(--crim)}
+.field .row{display:flex;align-items:center;justify-content:space-between;padding:14px 12px}
+.hand{font-family:'Reenie Beanie',cursive;color:var(--blue);font-size:34px;line-height:1}
+.btn{background:var(--crim);color:#fff;font-weight:800;font-stretch:90%;font-size:18px;padding:16px 22px;border:none}
+.alt{font-size:15px;color:var(--crim);margin-top:14px;font-weight:600}
+.right{padding:26px 30px;position:relative}
+.top{display:flex;justify-content:space-between;align-items:end;border-bottom:1px solid var(--crim);padding-bottom:10px}
+.top .t{font-weight:800;font-stretch:80%;font-size:22px;color:var(--crim)}
+.counter{display:flex;align-items:center;gap:14px}
+.counter b{font-weight:900;font-stretch:110%;font-size:40px;color:var(--blue)}
+.counter span{font-stretch:70%;font-weight:700;font-size:13px;color:var(--crim)}
+.arrow{width:42px;height:42px;border:2px solid var(--crim);display:grid;place-items:center;color:var(--crim);font-weight:900}
+table{width:100%;border-collapse:collapse;margin-top:12px;table-layout:fixed}
+th{font-stretch:70%;font-weight:700;font-size:13px;color:var(--crim);text-align:left;padding:6px 8px;border-bottom:2px solid var(--crim)}
+th:first-child{width:62px}
+td{height:52px;border-bottom:1px solid rgba(166,25,46,.35);border-left:1px solid rgba(166,25,46,.35);position:relative;vertical-align:top}
+td.h{border-left:none;font-stretch:70%;font-size:12px;color:var(--crim);padding:4px 6px}
+.blk{position:absolute;left:4px;right:4px;top:4px;border:2px solid var(--blue);background:rgba(11,79,163,.08);padding:4px 6px}
+.blk b{display:block;font-weight:800;font-size:13px;color:var(--blue)}
+.blk i{font-style:normal;font-size:11px;color:#3b4a6a}
+.ghost{position:absolute;left:6px;right:2px;top:8px;height:46px;border:2px dashed rgba(11,79,163,.18)}
+.stamp{position:absolute;right:46px;bottom:40px;transform:rotate(-8deg);border:4px solid var(--crim);color:var(--crim);padding:10px 18px;font-weight:900;font-stretch:120%;font-size:30px;opacity:.85}
+.stamp small{display:block;font-size:12px;font-stretch:80%;font-weight:700}
+.tabs{position:absolute;right:-2px;bottom:-34px;display:flex;gap:6px;font-stretch:70%;font-weight:700;font-size:12px}
+.tabs div{padding:8px 12px;border:2px solid var(--crim);border-top:none}
+</style></head><body>
+<nav><div class="mark">bldr</div><div><a href="#">How it works</a><a href="#">FAQ</a><a href="#">Log in</a></div></nav>
+<div class="stage">
+ <div class="copy c3"></div><div class="copy c2"></div>
+ <div class="copy c1">
+  <div class="left">
+   <div class="formno"><span>UNIVERSITY OF KANSAS · ENROLLMENT WORKSHEET</span><span>FORM BLDR-26</span></div>
+   <h1>Every schedule that fits. <em>Not just the first.</em></h1>
+   <p class="sub">Add the classes you need. bldr lays out every conflict-free combination of sections, and you flip through them until one feels right.</p>
+   <div class="field">
+    <div class="lbl">STUDENT SIGNATURE (OPTIONAL)</div>
+    <div class="row"><span class="hand">just looking —</span><button class="btn">Try it as a guest →</button></div>
+   </div>
+   <div class="alt">Free account saves plans and share links · Log in</div>
+  </div>
+  <div class="right">
+   <div class="top"><div class="t">SPRING 2027 · 15 CREDIT HOURS</div>
+    <div class="counter"><div class="arrow">‹</div><b>03</b><span>OF 47<br>SCHEDULES</span><div class="arrow">›</div></div></div>
+   <table>
+    <tr><th></th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th></tr>
+    <tr><td class="h">8:00</td><td></td><td><div class="blk"><b>ENGL 102</b><i>Wescoe 4012</i></div></td><td></td><td><div class="blk"><b>ENGL 102</b><i>Wescoe 4012</i></div></td><td></td></tr>
+    <tr><td class="h">9:00</td><td><div class="blk"><b>MATH 125</b><i>Snow 152</i></div></td><td></td><td><div class="blk"><b>MATH 125</b><i>Snow 152</i></div></td><td><div class="ghost"></div></td><td><div class="blk"><b>MATH 125</b><i>Snow 152</i></div></td></tr>
+    <tr><td class="h">10:00</td><td></td><td><div class="ghost"></div></td><td></td><td></td><td></td></tr>
+    <tr><td class="h">11:00</td><td><div class="blk"><b>EECS 168</b><i>LEAP2 G415</i></div></td><td></td><td><div class="blk"><b>EECS 168</b><i>LEAP2 G415</i></div></td><td></td><td><div class="blk"><b>EECS 168</b><i>LEAP2 G415</i></div></td></tr>
+    <tr><td class="h">12:00</td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="h">1:00</td><td></td><td><div class="blk"><b>CHEM 130 LAB</b><i>Malott 3004</i></div></td><td></td><td></td><td></td></tr>
+    <tr><td class="h">2:00</td><td><div class="blk"><b>HIST 129</b><i>Fraser 101</i></div></td><td></td><td><div class="blk"><b>HIST 129</b><i>Fraser 101</i></div></td><td></td><td></td></tr>
+    <tr><td class="h">3:00</td><td></td><td></td><td></td><td></td><td></td></tr>
+   </table>
+   <div class="stamp">47 FIT<small>NO FRIDAY AFTERNOONS IN 12</small></div>
+  </div>
+ </div>
+ <div class="tabs"><div style="background:#fbf8ef">WHITE · STUDENT</div><div style="background:#f3d548">CANARY · BACKUP</div><div style="background:#f2b8c6">PINK · ADVISOR</div></div>
+</div>
+</body></html>
