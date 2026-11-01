@@ -3,6 +3,7 @@ import {
   type ClassDetailRow,
   deriveCreditHours,
   formatClassSection,
+  formatScheduleTerm,
   pickSearchClassMeta,
   type SearchClassMeta,
 } from "./scheduleFormat";
@@ -150,5 +151,24 @@ describe("formatClassSection", () => {
     expect(section.dept).toBe("PHYS");
     expect(section.code).toBe("211");
     expect(section.title).toBe("Physics I");
+  });
+});
+
+// ─── formatScheduleTerm ───────────────────────────────────────────────────────
+
+describe("formatScheduleTerm", () => {
+  it("does not repeat a year the semester already contains", () => {
+    expect(formatScheduleTerm("Spring 2026", 2026)).toBe("Spring 2026");
+  });
+
+  it("appends the year when the semester has none", () => {
+    expect(formatScheduleTerm("Fall", 2026)).toBe("Fall 2026");
+    expect(formatScheduleTerm("Fall", "2026")).toBe("Fall 2026");
+  });
+
+  it("handles missing parts", () => {
+    expect(formatScheduleTerm("", 2027)).toBe("2027");
+    expect(formatScheduleTerm("Summer 2027", null)).toBe("Summer 2027");
+    expect(formatScheduleTerm(undefined, undefined)).toBe("");
   });
 });

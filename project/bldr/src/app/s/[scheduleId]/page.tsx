@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import CalendarEditor from "@/components/CalendarEditor";
 import { Button } from "@/components/ui/button";
+import { formatScheduleTerm } from "@/lib/scheduleFormat";
 import type { Schedule } from "@/types";
 
 type PublicSchedulePageProps = {
@@ -67,7 +68,7 @@ export default async function PublicSchedulePage({
               {schedule.name}
             </h1>
             <p className="mt-1 text-[15px] text-muted-foreground">
-              {schedule.semester} {schedule.year}
+              {formatScheduleTerm(schedule.semester, schedule.year)}
             </p>
           </div>
           <Button

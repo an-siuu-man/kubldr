@@ -72,3 +72,17 @@ export function formatClassSection(row: ClassDetailRow): ClassSection {
     room: row.room || undefined,
   };
 }
+
+/**
+ * Formats a schedule's term for display. `semester` is usually already
+ * "Spring 2026", so the year is only appended when it isn't there yet.
+ */
+export function formatScheduleTerm(
+  semester: string | null | undefined,
+  year: number | string | null | undefined,
+): string {
+  const term = (semester ?? "").trim();
+  const yearText = year === null || year === undefined ? "" : String(year);
+  if (!yearText || term.includes(yearText)) return term;
+  return term ? `${term} ${yearText}` : yearText;
+}

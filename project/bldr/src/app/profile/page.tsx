@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppToast } from "@/hooks/use-app-toast";
+import { formatScheduleTerm } from "@/lib/scheduleFormat";
 
 type ScheduleSummary = {
   id: string;
@@ -440,7 +441,7 @@ export default function ProfilePage() {
                         {schedule.name}
                       </p>
                       <p className="font-inter text-xs text-muted-foreground">
-                        {schedule.semester} {schedule.year}
+                        {formatScheduleTerm(schedule.semester, schedule.year)}
                         {schedule.isPublic && (
                           <span className="ml-1.5 text-success">· Public</span>
                         )}
