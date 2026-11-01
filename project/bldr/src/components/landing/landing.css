@@ -1,0 +1,351 @@
+/* Landing page: carbon-copy enrollment worksheet. Layered so Tailwind utilities (hidden, w-full…) still win. */
+@layer components {
+  .form-world {
+    --form-desk: #ece5d3;
+    --form-paper: #fbf8ef;
+    --form-ink: #2e2023;
+    --form-muted: #6b4e52;
+    --crimson: #a6192e;
+    --crimson-deep: #85111f;
+    --ballpoint: #0b4fa3;
+    --canary: #f4d84f;
+    --pink: #f4c3cf;
+    --form-rule: rgb(166 25 46 / 0.22);
+    --form-rule-strong: rgb(166 25 46 / 0.55);
+    --carbon-row: 52px;
+    --carbon-time: 52px;
+
+    background: var(--form-desk);
+    color: var(--form-ink);
+    color-scheme: light;
+    font-family: var(--font-archivo), system-ui, sans-serif;
+    caret-color: var(--ballpoint);
+  }
+
+  .form-world ::selection {
+    background: var(--canary);
+    color: var(--crimson-deep);
+  }
+
+  .form-world :focus-visible {
+    outline: 2px solid var(--ballpoint);
+    outline-offset: 3px;
+  }
+
+  .form-world .form-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    font-stretch: 72%;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--crimson);
+  }
+
+  .form-world .ballpoint {
+    display: inline-block;
+    font-family: var(--font-ballpoint), cursive;
+    color: var(--ballpoint);
+    transform: rotate(-2deg);
+  }
+
+  .form-world .form-link {
+    color: var(--crimson);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .form-world .form-link:hover {
+    color: var(--crimson-deep);
+  }
+
+  .form-world .form-nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 15px;
+    font-weight: 700;
+    font-stretch: 88%;
+    color: var(--crimson);
+    transition: background-color 150ms ease;
+  }
+  .form-world .form-nav-link:hover {
+    background: rgb(166 25 46 / 0.08);
+  }
+  .form-world .form-nav-link--boxed {
+    border: 2px solid var(--crimson);
+  }
+
+  .form-world .form-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 22px;
+    background: var(--crimson);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    font-stretch: 92%;
+    white-space: nowrap;
+    box-shadow:
+      0 1px 2px rgb(133 17 31 / 0.35),
+      0 10px 20px -12px rgb(133 17 31 / 0.7);
+    transition:
+      background-color 150ms ease,
+      transform 150ms ease,
+      box-shadow 150ms ease;
+  }
+  .form-world .form-button:hover {
+    background: var(--crimson-deep);
+  }
+  .form-world .form-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgb(133 17 31 / 0.35);
+  }
+  .form-world .form-button:disabled {
+    cursor: progress;
+    opacity: 0.85;
+  }
+
+  .form-world .form-icon-button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--crimson);
+    color: var(--crimson);
+    transition:
+      background-color 150ms ease,
+      color 150ms ease;
+  }
+  .form-world .form-icon-button:hover {
+    background: var(--crimson);
+    color: #fff;
+  }
+
+  /* The pad: three stacked copies */
+  .form-world .carbon-pad {
+    position: relative;
+    padding: 0 22px 34px 0;
+  }
+  .form-world .carbon-copy {
+    border: 2px solid var(--crimson);
+  }
+  .form-world .carbon-copy--pink,
+  .form-world .carbon-copy--canary {
+    position: absolute;
+    inset: 0 22px 34px 0;
+  }
+  .form-world .carbon-copy--pink {
+    background: var(--pink);
+    transform: translate(20px, 18px) rotate(0.9deg);
+  }
+  .form-world .carbon-copy--canary {
+    background: var(--canary);
+    transform: translate(10px, 9px) rotate(0.45deg);
+  }
+  .form-world .carbon-copy--top {
+    position: relative;
+    background: var(--form-paper);
+    box-shadow: 0 18px 40px -24px rgb(74 30 20 / 0.45);
+  }
+  .form-world .carbon-tabs {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    gap: 6px;
+  }
+  .form-world .carbon-tabs span {
+    border: 2px solid var(--crimson);
+    border-top: none;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-stretch: 72%;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--crimson);
+  }
+
+  /* Schedule grid */
+  .form-world .carbon-grid__head {
+    display: grid;
+    grid-template-columns: var(--carbon-time) repeat(5, minmax(0, 1fr));
+    border-bottom: 2px solid var(--crimson);
+    padding-bottom: 6px;
+  }
+  .form-world .carbon-grid__head > span {
+    padding-left: 8px;
+  }
+  .form-world .carbon-grid__body {
+    position: relative;
+  }
+  .form-world .carbon-grid__row {
+    height: var(--carbon-row);
+    border-bottom: 1px solid var(--form-rule);
+  }
+  .form-world .carbon-grid__hour {
+    display: block;
+    padding-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .form-world .carbon-grid__plot {
+    position: absolute;
+    inset: 0 0 0 var(--carbon-time);
+    border-left: 1px solid var(--form-rule);
+  }
+  .form-world .carbon-grid__plot::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to right,
+      var(--form-rule) 1px,
+      transparent 1px
+    );
+    background-size: 20% 100%;
+  }
+  .form-world .carbon-block {
+    position: absolute;
+    left: calc(var(--day) * 20% + 3px);
+    width: calc(20% - 6px);
+    top: calc(var(--start) * var(--carbon-row) + 3px);
+    height: calc(var(--len) * var(--carbon-row) - 6px);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+    padding: 5px 7px;
+    border: 2px solid var(--ballpoint);
+    background: #e9edf3;
+    color: var(--ballpoint);
+  }
+  .form-world .carbon-block__code {
+    font-size: 13.5px;
+    font-weight: 800;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+  .form-world .carbon-block__room {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #1f3f73;
+    white-space: nowrap;
+  }
+  .form-world .carbon-block--busy {
+    border-style: dashed;
+    border-color: var(--crimson);
+    color: var(--crimson);
+    background: repeating-linear-gradient(
+      -45deg,
+      rgb(166 25 46 / 0.1) 0 2px,
+      var(--form-paper) 2px 9px
+    );
+  }
+  .form-world .carbon-block--busy .carbon-block__room {
+    color: var(--crimson);
+  }
+  .form-world .carbon-block--ghost {
+    border: 2px dashed rgb(11 79 163 / 0.35);
+    background: transparent;
+  }
+
+  .form-world .form-stamp {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    border: 3px solid var(--crimson);
+    padding: 6px 16px 7px;
+    color: var(--crimson);
+    font-size: 28px;
+    font-weight: 900;
+    font-stretch: 120%;
+    line-height: 1;
+    text-transform: uppercase;
+    position: absolute;
+    right: 10px;
+    bottom: 12px;
+    z-index: 20;
+    pointer-events: none;
+    background: rgb(251 248 239 / 0.35);
+    mix-blend-mode: multiply;
+    transform: rotate(-6deg);
+    opacity: 0.9;
+  }
+  .form-world .form-stamp small {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    font-stretch: 75%;
+    letter-spacing: 0.08em;
+  }
+
+  /* A plain form sheet (no copies behind it) */
+  .form-world .form-sheet {
+    border: 2px solid var(--crimson);
+    background: var(--form-paper);
+  }
+
+  /* Closing tear-off slip */
+  .form-world .tear-slip {
+    position: relative;
+    border: 2px solid var(--crimson);
+    border-top: 2px dashed var(--crimson);
+    background: var(--form-paper);
+    padding: 32px 24px 28px;
+  }
+  .form-world .tear-slip__scissors {
+    position: absolute;
+    top: -11px;
+    left: 28px;
+    box-sizing: content-box;
+    padding: 0 4px;
+    background: var(--form-desk);
+  }
+
+  @media (min-width: 640px) {
+    .form-world .tear-slip {
+      padding: 44px 40px 40px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .form-world {
+      --carbon-row: 44px;
+      --carbon-time: 38px;
+    }
+    .form-world .carbon-pad {
+      padding: 0 10px 30px 0;
+    }
+    .form-world .carbon-copy--pink,
+    .form-world .carbon-copy--canary {
+      inset: 0 10px 30px 0;
+    }
+    .form-world .carbon-copy--pink {
+      transform: translate(10px, 9px) rotate(0.6deg);
+    }
+    .form-world .carbon-copy--canary {
+      transform: translate(5px, 5px) rotate(0.3deg);
+    }
+    .form-world .carbon-tabs span:not(:first-child) {
+      display: none;
+    }
+    .form-world .carbon-block {
+      padding: 3px 4px;
+      border-width: 1.5px;
+    }
+    .form-world .carbon-block__code {
+      font-size: 11px;
+      white-space: normal;
+    }
+    .form-world .carbon-block__room {
+      display: none;
+    }
+  }
+}
