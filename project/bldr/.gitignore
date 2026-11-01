@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# impeccable: local review screenshots and decision-page state
+.impeccable/review/
+.impeccable/questions/
