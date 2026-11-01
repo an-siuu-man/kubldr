@@ -40,20 +40,20 @@ const toKeyPart = (value: unknown, fallback: string) => {
 };
 
 const COMPONENT_COLORS: Record<string, string> = {
-  LEC: "text-blue-400",
-  LAB: "text-green-400",
-  LBN: "text-emerald-400",
-  DIS: "text-violet-400",
-  REC: "text-orange-400",
-  SEM: "text-yellow-400",
-  STU: "text-pink-400",
-  CLI: "text-cyan-400",
-  IND: "text-rose-400",
+  LEC: "text-ballpoint",
+  LAB: "text-success",
+  LBN: "text-success",
+  DIS: "text-crimson",
+  REC: "text-warning",
+  SEM: "text-warning",
+  STU: "text-crimson",
+  CLI: "text-ballpoint",
+  IND: "text-destructive",
 };
 
 const componentBadgeClass = (component?: string) => {
   const key = component?.trim().toUpperCase() ?? "";
-  return COMPONENT_COLORS[key] ?? "text-[#a8a8a8]";
+  return COMPONENT_COLORS[key] ?? "text-muted-foreground";
 };
 
 /**
@@ -111,7 +111,7 @@ export default function Class(props: ClassProps) {
    * @param {string} dept - Department code (e.g., "EECS")
    * @param {string} code - Course code (e.g., "581")
    */
-  const callAPI = async (dept: string, code: string) => {
+  const callApi = async (dept: string, code: string) => {
     const r = await fetch(`/api/getClassInfo`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -123,8 +123,8 @@ export default function Class(props: ClassProps) {
 
   // Fetch class info when component mounts
   useEffect(() => {
-    callAPI(props.dept, props.classcode);
-  }, [callAPI, props.classcode, props.dept]);
+    callApi(props.dept, props.classcode);
+  }, [callApi, props.classcode, props.dept]);
 
   // Debug logging for class info updates
   useEffect(() => {
@@ -145,13 +145,13 @@ export default function Class(props: ClassProps) {
             duration: 0.18,
             ease: "easeOut",
           }}
-          className="mb-3 flex max-w-full flex-col items-center justify-start rounded-md border-2 border-slate-200 bg-white p-1.5 text-slate-950 shadow-sm dark:border-[#404040] dark:bg-transparent dark:text-[#fafafa] lg:mb-4 lg:p-2"
+          className="mb-3 flex max-w-full flex-col items-center justify-start border border-rule-strong bg-card p-1.5 text-foreground lg:mb-4 lg:p-2"
         >
           <h1 className="font-dmsans text-xs lg:text-sm font-bold self-start leading-tight">
             {classInfo.data[0].dept} {classInfo.data[0].code}:{" "}
             {classInfo.data[0].title}
           </h1>
-          <p className="self-start line-clamp-2 font-inter text-[10px] text-slate-600 dark:text-[#b0b0b0] lg:text-xs">
+          <p className="self-start line-clamp-2 font-inter text-[10px] text-muted-foreground lg:text-xs">
             {classInfo.data[0].description || "No description available."}
           </p>
           <div className="flex flex-col gap-2 mt-2 w-full">
@@ -163,7 +163,7 @@ export default function Class(props: ClassProps) {
                   `${toKeyPart(section.classID, "class")}-${toKeyPart(section.component, "comp")}-${toKeyPart(section.days, "days")}-${toKeyPart(section.starttime, "start")}-${toKeyPart(section.endtime, "end")}-${index}`
                 }
                 onClick={() => handleSectionClick(section, classInfo.data[0])}
-                className="w-full cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 text-left font-inter transition duration-100 hover:bg-slate-100 dark:border-[#404040] dark:bg-[#181818] dark:hover:bg-[#232323]"
+                className="w-full cursor-pointer border border-border bg-secondary p-2 text-left transition duration-100 hover:border-ballpoint hover:bg-accent"
               >
                 <div className="flex flex-row w-full justify-between gap-1 sm:gap-2 items-start">
                   <div className="flex flex-row gap-2 items-start">
@@ -178,7 +178,7 @@ export default function Class(props: ClassProps) {
                       </span>
                     </div>
                     <div className="flex flex-col justify-start items-start font-inter">
-                      <span className="break-words text-xs text-slate-950 dark:text-[#fafafa] lg:text-sm">
+                      <span className="break-words text-xs text-foreground lg:text-sm">
                         {section.days}{" "}
                         {formatDisplayTimeRange(
                           section.starttime,
@@ -188,11 +188,11 @@ export default function Class(props: ClassProps) {
                         )}
                       </span>
                       {section.instructor ? (
-                        <span className="max-w-[90px] truncate text-[10px] text-slate-600 dark:text-[#a8a8a8] sm:max-w-[120px] lg:max-w-[150px] lg:text-xs">
+                        <span className="max-w-[90px] truncate text-[10px] text-muted-foreground sm:max-w-[120px] lg:max-w-[150px] lg:text-xs">
                           {section.instructor}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-600 dark:text-[#a8a8a8] lg:text-xs">
+                        <span className="text-[10px] text-muted-foreground lg:text-xs">
                           Instructor TBA
                         </span>
                       )}
@@ -201,12 +201,12 @@ export default function Class(props: ClassProps) {
                   <span
                     className={`text-xs lg:text-sm font-semibold justify-self-end ${
                       (section.seats_available ?? 0) <= 0
-                        ? "text-gray-500"
+                        ? "text-muted-foreground"
                         : (section.seats_available ?? 0) <= 3
-                          ? "text-red-400"
+                          ? "text-destructive"
                           : (section.seats_available ?? 0) < 10
-                            ? "text-yellow-400"
-                            : "text-green-400"
+                            ? "text-warning"
+                            : "text-success"
                     }`}
                   >
                     {section.seats_available}
@@ -226,7 +226,7 @@ export default function Class(props: ClassProps) {
           transition={{ duration: 0.14, ease: "easeOut" }}
         >
           <Loader />
-          <p className="mx-2 font-inter text-[10px] text-slate-600 dark:text-[#b0b0b0] lg:text-xs">
+          <p className="mx-2 font-inter text-[10px] text-muted-foreground lg:text-xs">
             Loading {props.dept} {props.classcode}...
           </p>
         </motion.div>

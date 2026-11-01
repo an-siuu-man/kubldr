@@ -192,7 +192,7 @@ export default function Builder() {
       appToast.success("Logged out successfully", {
         action: "auth",
         duration: 2000,
-        icon: <LogOut className="h-5 w-5 text-green-500" />,
+        icon: <LogOut className="h-5 w-5 text-success" />,
       });
       router.push("/login");
       router.refresh();
@@ -201,7 +201,7 @@ export default function Builder() {
       appToast.error("Failed to logout", {
         action: "auth",
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
     }
   };
@@ -211,7 +211,7 @@ export default function Builder() {
       appToast.error("You must be logged in to save schedules", {
         action: "scheduleSave",
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -220,7 +220,7 @@ export default function Builder() {
       appToast.error("Please fill in schedule name, semester, and year", {
         action: "scheduleSave",
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -280,7 +280,7 @@ export default function Builder() {
         appToast.success("Schedule updated successfully!", {
           action: "scheduleSave",
           duration: 3000,
-          icon: <Check className="h-5 w-5 text-green-500" />,
+          icon: <Check className="h-5 w-5 text-success" />,
         });
       } else {
         // Add new schedule
@@ -290,7 +290,7 @@ export default function Builder() {
         appToast.success("Schedule saved successfully!", {
           action: "scheduleSave",
           duration: 3000,
-          icon: <Check className="h-5 w-5 text-green-500" />,
+          icon: <Check className="h-5 w-5 text-success" />,
         });
       }
 
@@ -299,7 +299,7 @@ export default function Builder() {
         setTimeout(() => {
           appToast.custom(
             <div className="flex flex-col gap-2">
-              <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
+              <p className="font-inter text-xs text-foreground lg:text-sm">
                 Schedule saved! Create an account to keep it permanently.
               </p>
               <Link href="/upgrade">
@@ -318,7 +318,7 @@ export default function Builder() {
               type: "warning",
               action: "account",
               duration: 6000,
-              icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+              icon: <AlertTriangle className="h-5 w-5 text-warning" />,
             },
           );
         }, 500);
@@ -333,7 +333,7 @@ export default function Builder() {
       appToast.error(errorMessage, {
         action: "scheduleSave",
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
     } finally {
       setIsSaving(false);
@@ -343,7 +343,7 @@ export default function Builder() {
   const handleClearSchedule = () => {
     appToast.custom(
       <div className="flex flex-col gap-2">
-        <p className="font-inter text-xs text-slate-900 dark:text-white lg:text-sm">
+        <p className="font-inter text-xs text-foreground lg:text-sm">
           Clear all classes from schedule?
         </p>
         <div className="flex gap-2">
@@ -356,7 +356,7 @@ export default function Builder() {
               appToast.success("Schedule cleared", {
                 action: "scheduleClear",
                 duration: 2000,
-                icon: <Trash2 className="h-5 w-5 text-green-500" />,
+                icon: <Trash2 className="h-5 w-5 text-success" />,
               });
             }}
             className="font-dmsans cursor-pointer text-xs px-3 py-1"
@@ -379,7 +379,7 @@ export default function Builder() {
         type: "warning",
         action: "scheduleClear",
         duration: Infinity,
-        icon: <AlertCircle className="h-5 w-5 text-yellow-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-warning" />,
       },
     );
   };
@@ -395,7 +395,7 @@ export default function Builder() {
       appToast.error("Save your schedule before sharing it", {
         action: "scheduleShare",
         duration: 3000,
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
       return;
     }
@@ -431,7 +431,7 @@ export default function Builder() {
         {
           action: "scheduleShare",
           duration: 2000,
-          icon: <Share2 className="h-5 w-5 text-green-500" />,
+          icon: <Share2 className="h-5 w-5 text-success" />,
         },
       );
     } catch (err: unknown) {
@@ -440,7 +440,7 @@ export default function Builder() {
         err instanceof Error ? err.message : "Failed to update sharing",
         {
           action: "scheduleShare",
-          icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+          icon: <AlertCircle className="h-5 w-5 text-destructive" />,
         },
       );
     } finally {
@@ -456,13 +456,13 @@ export default function Builder() {
       appToast.success("Share link copied", {
         action: "scheduleShare",
         duration: 2000,
-        icon: <Copy className="h-5 w-5 text-green-500" />,
+        icon: <Copy className="h-5 w-5 text-success" />,
       });
     } catch (error) {
       console.error("Error copying share link:", error);
       appToast.error("Failed to copy share link", {
         action: "scheduleShare",
-        icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+        icon: <AlertCircle className="h-5 w-5 text-destructive" />,
       });
     }
   };
@@ -474,9 +474,7 @@ export default function Builder() {
           <h2 className="text-2xl flex gap-2 items-center font-dmsans mb-2">
             <Spinner className="h-6 w-6" /> Loading...
           </h2>
-          <p className="font-inter text-slate-500 dark:text-[#A8A8A8]">
-            Please wait
-          </p>
+          <p className="font-inter text-muted-foreground">Please wait</p>
         </div>
       </div>
     );
@@ -497,8 +495,8 @@ export default function Builder() {
         }
         className={`h-auto cursor-pointer px-2 py-1 font-dmsans text-[10px] lg:px-3 lg:py-1.5 lg:text-xs ${
           activeSchedule.isPublic
-            ? "bg-destructive/60 text-white hover:bg-destructive/70"
-            : "bg-slate-700 text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+            ? "bg-destructive/60 text-primary-foreground hover:bg-destructive/70"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
         }`}
       >
         {isTogglingShare ? (
@@ -518,7 +516,7 @@ export default function Builder() {
                 type="button"
                 aria-label="Copy share link"
                 onClick={handleCopyShareLink}
-                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:h-8 lg:w-8"
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90 lg:h-8 lg:w-8"
               >
                 <Copy className="h-3.5 w-3.5" />
               </button>
@@ -537,7 +535,7 @@ export default function Builder() {
       appToast.info("Draft cleared", {
         action: "scheduleClear",
         duration: 2000,
-        icon: <Undo2 className="h-5 w-5 text-blue-400" />,
+        icon: <Undo2 className="h-5 w-5 text-ballpoint" />,
       });
       return;
     }
@@ -551,7 +549,7 @@ export default function Builder() {
     appToast.success("Reverted to last saved state", {
       action: "scheduleClear",
       duration: 2000,
-      icon: <Undo2 className="h-5 w-5 text-green-500" />,
+      icon: <Undo2 className="h-5 w-5 text-success" />,
     });
   };
 
@@ -564,17 +562,17 @@ export default function Builder() {
         initial={{ y: "-100%" }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-center justify-center gap-2 border-b border-orange-300 bg-orange-50 px-4 py-2 text-center dark:border-orange-600/50 dark:bg-orange-900/40"
+        className="flex items-center justify-center gap-2 border-b-2 border-crimson bg-canary px-4 py-2 text-center"
       >
-        <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-orange-400 shrink-0" />
-        <p className="font-inter text-[10px] text-orange-900 dark:text-orange-100 lg:text-xs">
+        <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-crimson shrink-0" />
+        <p className="text-[11px] text-foreground lg:text-[13px]">
           The University of Kansas now requires the user to be logged in with
           SSO to access instructor and location info for classes. We have to
           respect that decision. To see that info, check out{" "}
           <Link
             href="https://classes.ku.edu"
             target="_blank"
-            className="text-primary border-b-1 cursor-pointer border-primary"
+            className="font-bold text-crimson underline underline-offset-2"
           >
             classes.ku.edu
           </Link>
@@ -582,7 +580,7 @@ export default function Builder() {
       </motion.div>
 
       <div
-        className="flex flex-col overflow-hidden bg-slate-100 dark:bg-[#080808] md:flex-row"
+        className="flex flex-col overflow-hidden bg-background md:flex-row"
         style={{ height: `calc(100vh - ${bannerHeight}px)` }}
       >
         {/* Sidebar */}
@@ -594,16 +592,10 @@ export default function Builder() {
             {/* Header */}
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-xl lg:text-2xl xl:text-3xl font-figtree font-semibold mb-1">
-                  <span className="font-dmsans font-bold">
-                    <span className="text-slate-950 dark:text-white">b</span>
-                    <span className="text-red-500">l</span>
-                    <span className="text-blue-600">d</span>
-                    <span className="text-yellow-300">r</span>
-                  </span>{" "}
-                  Schedule Builder
+                <h1 className="display mb-1 text-[clamp(1.5rem,2.4vw,2.25rem)]">
+                  Schedule builder
                 </h1>
-                <p className="font-inter text-xs text-slate-600 dark:text-[#A8A8A8] lg:text-sm">
+                <p className="font-inter text-xs text-muted-foreground lg:text-sm">
                   Welcome back, {user.is_anonymous ? "Guest" : user.email}!
                 </p>
               </div>
@@ -616,17 +608,17 @@ export default function Builder() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="mb-2 flex items-center justify-between rounded-lg border border-yellow-300 bg-yellow-50 p-2 dark:border-yellow-600/50 dark:bg-yellow-900/40 lg:mb-4 lg:p-3"
+                  className="mb-2 mt-3 flex items-center justify-between border-2 border-crimson bg-canary p-2 lg:mb-4 lg:p-3"
                 >
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-yellow-500 shrink-0" />
+                    <AlertTriangle className="h-3 w-3 lg:h-4 lg:w-4 text-crimson shrink-0" />
                     <div>
-                      <p className="font-figtree text-[10px] text-yellow-900 dark:text-yellow-200 lg:text-xs">
+                      <p className="text-[11px] text-foreground lg:text-sm">
                         <span className="font-semibold">Guest mode.</span>{" "}
                         Schedules will be lost when you close this tab.{" "}
                         <Link
                           href="/upgrade"
-                          className="underline hover:bg-yellow-900/20 rounded-sm font-medium"
+                          className="font-bold text-crimson underline underline-offset-2"
                         >
                           Create an account
                         </Link>{" "}
@@ -650,15 +642,15 @@ export default function Builder() {
                   <CalendarEditor />
                 </div>
                 {activeSchedule && (
-                  <div className="w-full max-w-[98%] lg:max-w-[95%] xl:max-w-[1100px] flex items-center justify-between gap-2 mt-2 lg:mt-3">
-                    <div className="flex flex-1 basis-0 flex-wrap items-center justify-start gap-1.5 font-inter text-[10px] text-slate-600 dark:text-[#A8A8A8] lg:gap-2 lg:text-xs">
+                  <div className="mt-2 flex w-full max-w-[98%] flex-wrap items-center justify-between gap-2 lg:mt-3 lg:max-w-[95%] xl:max-w-[1100px] xl:flex-nowrap">
+                    <div className="flex flex-1 basis-0 flex-wrap items-center justify-start gap-1.5 font-inter text-[10px] text-muted-foreground lg:gap-2 lg:text-xs">
                       <motion.div
                         layout
                         initial={false}
                         transition={{
                           layout: { duration: 0.22, ease: "easeOut" },
                         }}
-                        className="bg-white text-gray-950 rounded-full py-0.5 lg:py-1 px-2 inline-flex items-center"
+                        className="inline-flex items-center border border-rule-strong bg-card px-2 py-0.5 text-foreground lg:py-1"
                       >
                         <span className="whitespace-nowrap text-[10px] lg:text-xs">
                           Credits:
@@ -674,7 +666,7 @@ export default function Builder() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 6, scale: 0.98 }}
                             transition={{ duration: 0.22 }}
-                            className="bg-green-800/50 border border-green-600/50 text-green-300 rounded-full py-0.5 lg:py-1 px-2 text-[10px] lg:text-xs"
+                            className="border-2 border-success px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-success [font-stretch:80%] lg:py-1 lg:text-xs"
                           >
                             Saved
                           </motion.div>
@@ -687,7 +679,7 @@ export default function Builder() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 6, scale: 0.98 }}
                             transition={{ duration: 0.22 }}
-                            className="rounded-full py-0.5 lg:py-1 px-2 text-yellow-200 bg-yellow-800/40 border border-yellow-600/50 text-[10px] lg:text-xs"
+                            className="border-2 border-crimson px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.06em] text-crimson [font-stretch:80%] lg:py-1 lg:text-xs"
                           >
                             Unsaved
                           </motion.div>
@@ -701,7 +693,7 @@ export default function Builder() {
                     <div className="flex-1 basis-0 flex flex-row items-center gap-1.5 lg:gap-2 justify-end">
                       <Button
                         onClick={handleRevertChanges}
-                        className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
+                        className="h-auto cursor-pointer bg-primary px-2 py-1 font-dmsans text-[10px] text-primary-foreground hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
                         disabled={schedulesMatch || isSaving}
                       >
                         <Undo2 className="h-3 w-3 mr-0.5 lg:mr-1" />
@@ -709,7 +701,7 @@ export default function Builder() {
                       </Button>
                       <Button
                         onClick={handleSaveSchedule}
-                        className="h-auto cursor-pointer bg-slate-700 px-2 py-1 font-dmsans text-[10px] text-white hover:bg-slate-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
+                        className="h-auto cursor-pointer bg-primary px-2 py-1 font-dmsans text-[10px] text-primary-foreground hover:bg-primary/90 lg:px-3 lg:py-1.5 lg:text-xs"
                         disabled={isSaving || schedulesMatch}
                       >
                         {isSaving ? (
@@ -724,14 +716,14 @@ export default function Builder() {
                           </>
                         ) : (
                           <>
-                            <CheckCheck className="text-green-600 h-3 w-3" />
+                            <CheckCheck className="text-success h-3 w-3" />
                             <span className="hidden sm:inline">Synced</span>
                           </>
                         )}
                       </Button>
                       <Button
                         onClick={handleClearSchedule}
-                        className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-white cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
+                        className="font-dmsans bg-destructive/60 hover:bg-destructive/70 text-primary-foreground cursor-pointer text-[10px] lg:text-xs px-2 lg:px-3 py-1 lg:py-1.5 h-auto"
                         disabled={draftSchedule.length === 0}
                       >
                         <Trash2 className="h-3 w-3 mr-0.5 lg:mr-1" />
@@ -762,10 +754,10 @@ export default function Builder() {
                   className="w-[280px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex flex-col gap-0 overflow-hidden"
                   style={{ height: `${calendarHeight}px` }}
                 >
-                  <TabsList className="relative isolate mb-0 w-full rounded-b-none rounded-t-lg border border-slate-200 bg-slate-50 dark:border-[#303030] dark:bg-[#181818]">
+                  <TabsList className="relative isolate mb-0 h-11 w-full rounded-none border-2 border-b-0 border-crimson bg-secondary p-1">
                     <TabsTrigger
                       value="search"
-                      className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-green-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-green-400 lg:text-sm"
+                      className="relative z-10 flex-1 border-transparent bg-transparent text-[12px] font-bold uppercase tracking-[0.06em] text-muted-foreground shadow-none [font-stretch:80%] data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-crimson data-[state=active]:shadow-none lg:text-sm"
                     >
                       {activeTab === "search" && (
                         <motion.span
@@ -775,14 +767,14 @@ export default function Builder() {
                             stiffness: 420,
                             damping: 34,
                           }}
-                          className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
+                          className="absolute inset-0 border-b-2 border-crimson bg-card"
                         />
                       )}
                       <span className="relative z-10">Search</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="selected"
-                      className="relative z-10 flex-1 border-transparent bg-transparent font-figtree text-xs text-slate-500 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-purple-700 data-[state=active]:shadow-none dark:text-[#A8A8A8] dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-purple-400 lg:text-sm"
+                      className="relative z-10 flex-1 border-transparent bg-transparent text-[12px] font-bold uppercase tracking-[0.06em] text-muted-foreground shadow-none [font-stretch:80%] data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:text-crimson data-[state=active]:shadow-none lg:text-sm"
                     >
                       {activeTab === "selected" && (
                         <motion.span
@@ -792,13 +784,13 @@ export default function Builder() {
                             stiffness: 420,
                             damping: 34,
                           }}
-                          className="absolute inset-0 rounded-md bg-white shadow-sm dark:bg-[#2b2b2b] dark:shadow-none"
+                          className="absolute inset-0 border-b-2 border-crimson bg-card"
                         />
                       )}
                       <span className="relative z-10 inline-flex items-center gap-1.5">
                         <span>Selected</span>
                         {draftSchedule.length > 0 && (
-                          <span className="inline-flex h-4 min-w-4 items-center justify-center bg-purple-900/60 text-purple-300 border border-purple-700/50 rounded-full text-[10px] px-1.5 leading-none">
+                          <span className="inline-flex h-4 min-w-4 items-center justify-center bg-crimson px-1.5 text-[10px] leading-none text-primary-foreground tabular-nums">
                             {draftSchedule.length}
                           </span>
                         )}

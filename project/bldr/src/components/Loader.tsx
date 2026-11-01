@@ -29,7 +29,7 @@ export default function Loader() {
     <div className="w-8 h-8 flex items-center justify-center bg-transparent">
       {/* Spinning circle with transparent top border for the "gap" effect */}
       <motion.div
-        className="w-8 h-8 border-4 border-gray-500 border-t-transparent rounded-full"
+        className="w-8 h-8 border-4 border-input border-t-transparent rounded-full"
         initial={{ rotate: 0 }}
         animate={{ rotate: 360 }}
         transition={{ duration: 1, repeat: Infinity }} // Continuous 1-second rotation

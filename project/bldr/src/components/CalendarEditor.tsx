@@ -182,7 +182,7 @@ const CalendarEditor = ({
     updateBusyBlockInDraft,
     removeBusyBlockFromDraft,
   } = useScheduleBuilder();
-  const { theme, timeFormat } = useAppSettings();
+  const { timeFormat } = useAppSettings();
 
   // In-progress busy block drag (null when not dragging)
   const [busyDrag, setBusyDrag] = useState<BusyDragState | null>(null);
@@ -456,14 +456,12 @@ const CalendarEditor = ({
   const hours = Array.from({ length: 13 }, (_, i) => 8 + i);
   const formatDecimalDisplayTime = (time: number) =>
     formatDisplayTime(decimalToTimeString(time), timeFormat);
+  // Busy time is cross-hatched like a "not available" box on a paper form;
+  // the tokens switch with the theme.
   const busyBlockBackgroundImage =
-    theme === "dark"
-      ? "repeating-linear-gradient(45deg, #454545 0, #454545 6px, #383838 6px, #383838 12px)"
-      : "repeating-linear-gradient(45deg, rgba(203,213,225,0.9) 0, rgba(203,213,225,0.9) 6px, rgba(226,232,240,0.9) 6px, rgba(226,232,240,0.9) 12px)";
+    "repeating-linear-gradient(-45deg, var(--rule-strong) 0 1.5px, var(--card) 1.5px 8px)";
   const busyBlockPreviewBackgroundImage =
-    theme === "dark"
-      ? "repeating-linear-gradient(45deg, rgba(69,69,69,0.7) 0, rgba(69,69,69,0.7) 6px, rgba(56,56,56,0.7) 6px, rgba(56,56,56,0.7) 12px)"
-      : "repeating-linear-gradient(45deg, rgba(203,213,225,0.75) 0, rgba(203,213,225,0.75) 6px, rgba(226,232,240,0.75) 6px, rgba(226,232,240,0.75) 12px)";
+    "repeating-linear-gradient(-45deg, var(--rule) 0 1.5px, transparent 1.5px 8px)";
 
   /**
    * Handles removing a class section from the draft schedule
@@ -492,7 +490,7 @@ const CalendarEditor = ({
 
   return (
     <div
-      className="relative grid grid-rows-1 rounded-[10px] border-2 border-slate-300 bg-slate-50 px-2 py-2 text-slate-950 shadow-sm dark:border-[#404040] dark:bg-[#2c2c2c] dark:text-white w-full aspect-square md:aspect-auto md:h-full md:min-h-[500px]"
+      className="relative grid grid-rows-1 border-2 border-crimson bg-card px-2 py-2 text-foreground w-full aspect-square md:aspect-auto md:h-full md:min-h-[500px]"
       onMouseLeave={isDraggingBusyBlock ? () => setBusyDrag(null) : undefined}
     >
       <div className="w-full h-full overflow-hidden">
@@ -508,13 +506,13 @@ const CalendarEditor = ({
               <table className="table-fixed h-full w-full border-collapse">
                 <thead>
                   <tr>
-                    <th className="text-center font-semibold font-figtree h-6 lg:h-8 w-8 lg:w-10 md:w-[50px] text-[10px] lg:text-xs">
+                    <th className="form-label text-center h-6 lg:h-8 w-8 lg:w-10 md:w-[50px] text-[10px] lg:text-xs">
                       Time
                     </th>
                     {days.map((day) => (
                       <th
                         key={day}
-                        className="text-center font-semibold font-figtree p-0.5 lg:p-1 text-[10px] lg:text-xs"
+                        className="form-label text-center p-0.5 lg:p-1"
                       >
                         <span className="hidden lg:inline">{day}</span>
                         <span className="hidden md:inline lg:hidden">
@@ -529,9 +527,9 @@ const CalendarEditor = ({
                   {hours.map((hour) => (
                     <tr
                       key={hour}
-                      className="relative h-[calc((100%-2rem)/13)] min-h-5 border-t border-slate-200 dark:border-[#404040]"
+                      className="relative h-[calc((100%-2rem)/13)] min-h-5 border-t border-border"
                     >
-                      <td className="align-top pr-0.5 lg:pr-1 text-[8px] lg:text-[10px] text-right font-figtree whitespace-nowrap text-slate-500 dark:text-white">
+                      <td className="align-top pr-0.5 lg:pr-1 text-[8px] lg:text-[10px] text-right font-figtree whitespace-nowrap text-muted-foreground">
                         {formatDecimalDisplayTime(hour)}
                       </td>
                       {days.map((day) => (
@@ -544,7 +542,7 @@ const CalendarEditor = ({
                               : (e) => handleCellMouseDown(day, e)
                           }
                         >
-                          <div className="absolute top-[50%] translate-y-[-50%] w-full border-t border-dashed border-slate-200 dark:border-[#424242] z-0" />
+                          <div className="absolute top-[50%] translate-y-[-50%] w-full border-t border-dashed border-border z-0" />
 
                           {calendarClasses
                             .filter((cls: ClassSection) => {
@@ -616,9 +614,9 @@ const CalendarEditor = ({
                                             data-block
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md text-[#333333] shadow-md z-10 overflow-hidden cursor-pointer select-none ${
+                                            className={`absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 border border-black/15 text-[#2e2023] shadow-[0_1px_2px_rgb(0_0_0/0.12)] z-10 overflow-hidden cursor-pointer select-none ${
                                               cls.pinned
-                                                ? "ring-2 ring-amber-500"
+                                                ? "ring-2 ring-warning"
                                                 : ""
                                             }`}
                                             style={{
@@ -637,7 +635,7 @@ const CalendarEditor = ({
                                             <div className="flex items-center justify-between font-bold text-[9px] lg:text-[10px] xl:text-xs font-dmsans truncate w-full">
                                               <span className="flex items-center gap-0.5 truncate">
                                                 {!readOnly && cls.pinned && (
-                                                  <Pin className="h-2.5 w-2.5 lg:h-3 lg:w-3 text-amber-600 shrink-0" />
+                                                  <Pin className="h-2.5 w-2.5 lg:h-3 lg:w-3 text-[#8a5a00] shrink-0" />
                                                 )}
                                                 <span className="truncate">
                                                   {cls.dept} {cls.code} (
@@ -645,7 +643,7 @@ const CalendarEditor = ({
                                                 </span>
                                               </span>
                                               {noOpenSeats && (
-                                                <AlertTriangle className="inline-block h-3 lg:h-4 text-red-600 shrink-0" />
+                                                <AlertTriangle className="inline-block h-3 lg:h-4 text-[#b3261e] shrink-0" />
                                               )}
                                             </div>
                                           </motion.div>
@@ -659,12 +657,12 @@ const CalendarEditor = ({
                                           }}
                                         >
                                           <div className="w-80 max-w-[calc(100vw-2rem)]">
-                                            <div className="border-b border-slate-200 px-3 py-2 dark:border-white/10">
-                                              <p className="text-sm font-bold text-slate-950 dark:text-slate-50">
+                                            <div className="border-b border-border px-3 py-2">
+                                              <p className="text-sm font-bold text-foreground">
                                                 {cls.dept} {cls.code} (
                                                 {cls.component})
                                               </p>
-                                              <p className="truncate text-xs text-slate-600 dark:text-slate-400">
+                                              <p className="truncate text-xs text-muted-foreground">
                                                 {cls.title}
                                               </p>
                                             </div>
@@ -672,26 +670,26 @@ const CalendarEditor = ({
                                             <div className="space-y-2.5 px-3 pt-2.5 pb-4 text-xs">
                                               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                                                 <p className="min-w-0 leading-5">
-                                                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                  <span className="font-semibold text-foreground">
                                                     Section:
                                                   </span>{" "}
-                                                  <span className="text-slate-950 dark:text-slate-100">
+                                                  <span className="text-foreground">
                                                     #{cls.classID}
                                                   </span>
                                                 </p>
                                                 <p className="min-w-0 leading-5">
-                                                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                  <span className="font-semibold text-foreground">
                                                     Room:
                                                   </span>{" "}
-                                                  <span className="text-slate-950 dark:text-slate-100">
+                                                  <span className="text-foreground">
                                                     {displayLocation}
                                                   </span>
                                                 </p>
                                                 <p className="col-span-2 min-w-0 leading-5">
-                                                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                  <span className="font-semibold text-foreground">
                                                     Meeting:
                                                   </span>{" "}
-                                                  <span className="text-slate-950 dark:text-slate-100">
+                                                  <span className="text-foreground">
                                                     {cls.days || "TBA"} •{" "}
                                                     {formatDisplayTimeRange(
                                                       cls.starttime,
@@ -701,39 +699,39 @@ const CalendarEditor = ({
                                                   </span>
                                                 </p>
                                                 <p className="col-span-2 min-w-0 leading-5">
-                                                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                  <span className="font-semibold text-foreground">
                                                     Instructor:
                                                   </span>{" "}
-                                                  <span className="text-slate-950 dark:text-slate-100">
+                                                  <span className="text-foreground">
                                                     {cls.instructor || "Staff"}
                                                   </span>
                                                 </p>
                                               </div>
 
-                                              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-slate-200 pt-2.5 text-[11px] leading-5 dark:border-white/10">
+                                              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-border pt-2.5 text-[11px] leading-5">
                                                 {!readOnly && cls.pinned && (
                                                   <p className="min-w-0">
-                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                    <span className="font-semibold text-foreground">
                                                       Status:
                                                     </span>{" "}
-                                                    <span className="font-semibold text-amber-400">
+                                                    <span className="font-semibold text-warning">
                                                       Pinned
                                                     </span>
                                                   </p>
                                                 )}
                                                 {noOpenSeats && (
                                                   <p className="min-w-0">
-                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                    <span className="font-semibold text-foreground">
                                                       Seats:
                                                     </span>{" "}
-                                                    <span className="font-semibold text-red-400">
+                                                    <span className="font-semibold text-destructive">
                                                       Closed
                                                     </span>
                                                   </p>
                                                 )}
                                                 {!readOnly && (
-                                                  <p className="col-span-2 min-w-0 text-slate-600 dark:text-slate-400">
-                                                    <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                                  <p className="col-span-2 min-w-0 text-muted-foreground">
+                                                    <span className="font-semibold text-foreground">
                                                       Actions:
                                                     </span>{" "}
                                                     Double-click to{" "}
@@ -753,22 +751,22 @@ const CalendarEditor = ({
                                     </TooltipProvider>
                                   </ContextMenuTrigger>
                                   {!readOnly && (
-                                    <ContextMenuContent className="border-slate-200 bg-white dark:border-[#404040] dark:bg-[#2a2a2a]">
+                                    <ContextMenuContent className="border-border bg-card">
                                       <ContextMenuItem
-                                        className="cursor-pointer font-dmsans text-amber-600 focus:bg-slate-100 focus:text-amber-600 dark:text-amber-400 dark:focus:bg-[#404040] dark:focus:text-amber-400"
+                                        className="cursor-pointer font-dmsans text-warning focus:bg-muted focus:text-warning"
                                         onClick={() => handleTogglePin(cls)}
                                       >
                                         {cls.pinned ? (
-                                          <PinOff className="mr-1 h-4 text-amber-400" />
+                                          <PinOff className="mr-1 h-4 text-warning" />
                                         ) : (
-                                          <Pin className="mr-1 h-4 text-amber-400" />
+                                          <Pin className="mr-1 h-4 text-warning" />
                                         )}
                                         {cls.pinned
                                           ? "Unpin Section"
                                           : "Pin Section"}
                                       </ContextMenuItem>
                                       <ContextMenuItem
-                                        className="cursor-pointer font-dmsans text-destructive focus:bg-slate-100 focus:text-destructive dark:focus:bg-[#404040]"
+                                        className="cursor-pointer font-dmsans text-destructive focus:bg-muted focus:text-destructive"
                                         onClick={() => handleRemoveSection(cls)}
                                       >
                                         <Trash2 className="mr-1 h-4 text-destructive" />
@@ -806,7 +804,7 @@ const CalendarEditor = ({
                                       data-block
                                       initial={{ opacity: 0, scale: 0.8 }}
                                       animate={{ opacity: 1, scale: 1 }}
-                                      className="absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 rounded-md border border-slate-500 text-slate-900 shadow-md z-10 overflow-hidden cursor-grab active:cursor-grabbing select-none dark:border-[#5a5a5a] dark:text-[#d4d4d4]"
+                                      className="absolute flex flex-col items-start justify-center left-0.5 right-0.5 p-0.5 lg:p-1 border border-dashed border-rule-strong text-crimson z-10 overflow-hidden cursor-grab active:cursor-grabbing select-none"
                                       onMouseDown={(e) =>
                                         handleBusyBlockMouseDown(block, e)
                                       }
@@ -855,9 +853,9 @@ const CalendarEditor = ({
                                       </span>
                                     </motion.div>
                                   </ContextMenuTrigger>
-                                  <ContextMenuContent className="border-slate-200 bg-white dark:border-[#404040] dark:bg-[#2a2a2a]">
+                                  <ContextMenuContent className="border-border bg-card">
                                     <ContextMenuItem
-                                      className="cursor-pointer font-dmsans text-destructive focus:bg-slate-100 focus:text-destructive dark:focus:bg-[#404040]"
+                                      className="cursor-pointer font-dmsans text-destructive focus:bg-muted focus:text-destructive"
                                       onSelect={() =>
                                         removeBusyBlockFromDraft(block.uuid)
                                       }
@@ -890,7 +888,7 @@ const CalendarEditor = ({
                               }
                               return (
                                 <div
-                                  className="absolute left-0.5 right-0.5 rounded-md border border-dashed border-slate-500 z-20 pointer-events-none flex flex-col items-start justify-center p-0.5 lg:p-1 text-slate-900 dark:border-[#8a8a8a] dark:text-[#d4d4d4]"
+                                  className="absolute left-0.5 right-0.5 border border-dashed border-ballpoint z-20 pointer-events-none flex flex-col items-start justify-center p-0.5 lg:p-1 text-foreground"
                                   style={{
                                     top: `${(previewStart - hour) * 100}%`,
                                     height: `${(previewEnd - previewStart) * 100}%`,
